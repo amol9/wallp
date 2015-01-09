@@ -6,6 +6,7 @@ from wallp.deviantart import DeviantArt
 from wallp.bing import Bing
 from wallp.imgur import Imgur
 from wallp.google import Google
+from wallp.bitmap import Bitmap
 from wallp.globals import Const
 from wallp.service import service_factory, ServiceException
 from wallp.logger import log
