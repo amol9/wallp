@@ -2,11 +2,12 @@ from os.path import join as joinpath
 import re
 from urllib import urlencode
 from random import randint
+import json
 
-from service import Service, ServiceException
-import web
-from logger import log
-
+from wallp.service import Service, ServiceException, service_factory
+import wallp.web as web
+from wallp.logger import log
+from wallp.htmlparser import HtmlParser
 
 search_url = "http://imgur.com/search?"
 search_result_link_prefix = "http://imgur.com"
@@ -35,22 +36,89 @@ class Imgur(Service):
 
 	def get_image_url_from_page(self, page_url):
 		html = web.download(page_url)
+		parser = HtmlParser()
+		parser.feed(html)
+		etree = parser.etree
 
-		url_regex = re.compile(".*<div\s+id=\"content\".*?src=\"(.*?)\".*?</div>.*", re.M | re.S)
-		matches = url_regex.findall(html)
+		image_divs = etree.findall('.//div[@class=\'left main-image\']/div[@class=\'panel\']'
+						'/div[@id=\'image\']//div[@class=\'image textbox\']')
 
-		url = None
-		if matches:
-			print 'links on page'
-			for m in matches:
-				url = m
-				print url
+		if len(image_divs) == 0:
+			log.error('can\'t find main div on imgur page')
+			raise ServiceException()
 
-		log.debug('imgur url: ' + url)
+		#import pdb; pdb.set_trace()
+		if len(image_divs) == 1:
+			log.debug('imgur: 1 image on page')
+			img = image_divs[0].find('.//img')
+			if img is not None:
+				url = img.attrib['src']
+			else:
+				raise ServiceException()
+		else:
+			urls = []
+			trunc_div = etree.find('.//div[@id=\'album-truncated\']')
+			if trunc_div == None or get_full_album == False:
+				for div in image_divs:
+					img = div.find('.//img')
+					if img is not None:
+						urls.append(img.attrib['src'])
+			else:
+				page_id = page_url[page_url.rfind('/')+1:]
+				full_album_url = 'http://imgur.com/a/%s?gallery'%page_id
+
+				log.debug('imgur: getting full album, %s'%full_album_url)
+				urls = self.get_urls_from_full_album(full_album_url)
+
+			log.debug('imgur: %d urls found'%len(urls))
+			if len(urls) == 0:
+				raise ServiceException()
+
+			url = urls[randint(0, len(urls) - 1)]
+				
+		log.debug('imgur: selected url = %s'%url)
+
 		if not url.startswith('http'):
 			url = 'http:' + url
 
 		return url
+
+
+	def get_urls_from_full_album(self, full_album_url):
+		html = web.download(full_album_url)
+
+		really_big_album = False
+		layout_regex = re.compile("layout\s+:\s+\'g\'", re.M)
+		match = layout_regex.findall(html)
+
+		if match is not None:
+			really_big_album = True
+
+		urls = []
+		if not really_big_album:
+			parser = HtmlParser()
+			parser.feed(html)
+			etree = parser.etree
+
+			image_divs = etree.findall('.//div[@class=\'left main\']/div[@class=\'panel\']'
+							'/div[@id=\'image-container\']//div[@class=\'image\']')
+
+			for div in image_divs:
+				a = div.find('.//a')
+				if a is not None:
+					urls.append(a.attrib['href'])
+
+		else:
+			log.debug('really big album')
+			images_regex = re.compile("images\s+:\s+({.*})", re.M)
+			matches = images_regex.findall(html)
+
+			if matches is not None:
+				images_data = json.loads(matches[0])
+				for item in images_data['items']:
+					urls.append('//i.imgur.com/%s%s'%(item['hash'], item['ext']))
+				
+		return urls	
 
 	
 	def search(self, query=None):
@@ -83,6 +151,9 @@ class Imgur(Service):
 				link_urls.append(m)
 
 		return link_urls
+
+
+service_factory.add('imgur', Imgur)
 
 '''
 imgur mega dumps: 

@@ -9,7 +9,7 @@ class Logger():
 
 		if stdout:
 			logst = logging.StreamHandler(sys.stdout)
-			logst.setLevel(logging.INFO)
+			logst.setLevel(logging.DEBUG)
 			self._log.addHandler(logst)
 		
 		if logfile:
@@ -18,7 +18,7 @@ class Logger():
 			logfh.setLevel(logging.INFO)
 			self._log.addHandler(logfh)
 	
-		self._log.setLevel(logging.INFO)
+		self._log.setLevel(logging.DEBUG)
 
 		return
 
