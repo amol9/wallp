@@ -7,17 +7,34 @@ from wallp.globals import Const
 class Config():
 	def __init__(self):
 		self._config = ConfigParser()
-		self._config.read(Const.config_filename)
+		if exists(Const.config_filepath):
+			self._config.read(Const.config_filepath)
 
 
-	def get(self, section, setting):
-		return self._config.get(section, setting)
+	def get(self, section, option, dafault=None):
+		value = self._config.get(section, option)
+
+		if self._config.has_section(section):
+			if self._config.has_option(option):
+				return self._config.get(section, option)
+			else:
+				if default is not None:
+					self._config.set(section, option, default)
+		else:
+			if default is not None:
+				self._config.add_section(section)
+				self._config.set(section, option, default)
+		return default
 
 
-	def get_list(self, section, setting, sep=','):
-		value = self._config.get(section, setting)
-		print 'value: ', value
-		return value.split(sep)
+	def get_list(self, section, option, default=None, sep=','):
+		value = self.get(section, option, default)
+		return value.split(sep) if value is not None else None
+
+
+	def __del__(self):
+		with open(Const.config_filepath, 'w') as f:
+			self._config.write(f)
 
 
 config = Config()

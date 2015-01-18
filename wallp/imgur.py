@@ -36,12 +36,18 @@ class Imgur(Service):
 
 	def get_image_url_from_page(self, page_url):
 		html = web.download(page_url)
-		parser = HtmlParser()
+		parser = HtmlParser(skip_tags=['head'])
 		parser.feed(html)
 		etree = parser.etree
 
-		image_divs = etree.findall('.//div[@class=\'left main-image\']/div[@class=\'panel\']'
-						'/div[@id=\'image\']//div[@class=\'image textbox\']')
+		#import pdb; pdb.set_trace()
+		image_divs = None
+		if page_url.find('/a/') != -1:
+			image_divs = etree.findall('.//div[@class=\'left main\']/div[@class=\'panel\']'
+							'/div[@id=\'image-container\']//div[@class=\'image\']')
+		else:
+			image_divs = etree.findall('.//div[@class=\'left main-image\']/div[@class=\'panel\']'
+							'/div[@id=\'image\']//div[@class=\'image textbox\']')
 
 		if len(image_divs) == 0:
 			log.error('can\'t find main div on imgur page')
@@ -53,6 +59,7 @@ class Imgur(Service):
 			img = image_divs[0].find('.//img')
 			if img is not None:
 				url = img.attrib['src']
+				log.testresult(1)
 			else:
 				raise ServiceException()
 		else:
@@ -71,6 +78,7 @@ class Imgur(Service):
 				urls = self.get_urls_from_full_album(full_album_url)
 
 			log.debug('imgur: %d urls found'%len(urls))
+			log.testresult(len(urls))
 			if len(urls) == 0:
 				raise ServiceException()
 

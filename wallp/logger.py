@@ -39,4 +39,16 @@ class Logger():
 		self._log.error(msg)
 
 
+	def testresult(self, result):
+		self._testresult.append(result)
+
+
+	def get_testresult(self):
+		return self._testresult
+
+	
+	def clear_testresult(self):
+		self._testresult = []
+
+
 log = Logger(stdout=True)

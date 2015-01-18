@@ -5,13 +5,20 @@ from HTMLParser import HTMLParser
 
 
 class HtmlParser(HTMLParser):
-	def __init__(self):
+	def __init__(self, skip_tags=[]):
 		self._root = None
 		self._stack = []
+		self._skip_tags = skip_tags
+		self._skip = False, None
 		HTMLParser.__init__(self)
 
 	
 	def handle_starttag(self, tag, attrs):
+		#print 'start: %s'%tag
+		if tag in self._skip_tags:
+			self._skip = True, tag
+			return
+
 		attr_dict = dict((k, v) for (k, v) in attrs)
 		if self._root == None:
 			self._root = Element(tag, attr_dict)
@@ -21,11 +28,24 @@ class HtmlParser(HTMLParser):
 			self._stack.append(e)
 
 
+
 	def handle_endtag(self, tag):
-		self._stack.pop()
+		#print 'end: %s'%tag
+		if self._skip[0] == True:
+			if tag == self._skip[1]:
+				self._skip = False, None
+			else:
+				return
+		t = ''
+		#if tag == self._stack[-1].tag:
+		t = self._stack.pop()
+		#print 'pop: %s'%t
 
 
 	def handle_data(self, data):
+		if self._skip[0]:
+			return
+
 		if self._stack:
 			if self._stack[-1].text:
 				self._stack[-1].text += data

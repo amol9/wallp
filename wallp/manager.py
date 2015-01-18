@@ -12,7 +12,12 @@ from wallp.service import service_factory, ServiceException
 from wallp.logger import log
 from wallp.system import *
 
+
 class Manager():
+	def __init__(self):
+		if not exists(Const.data_dir):
+			mkdir(Const.data_dir)
+
 
 	def get_image(self, site=None, choice=None):
 		service = None
