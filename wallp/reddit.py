@@ -16,15 +16,12 @@ subreddit_list =	['earthporn', 'wallpapers', 'wallpaperdump', 'specart', 'quotes
 			 'ImaginaryLandscapes+ImaginaryMonsters+ImaginaryCharacters+ImaginaryTechnology']
 posts_limit = 10
 
-#todo: handle links to imgur albums
 
 class Reddit(Service):
 	name = 'reddit'
 
 	def __init__(self):
-		self._subreddit_list = config.get_list('reddit', 'subreddit_list')
-		if len(self._subreddit_list) == 0 or self._subreddit_list == None:
-			self._subreddit_list = subreddit_list
+		self._subreddit_list = config.get_list('reddit', 'subreddit_list', default=subreddit_list)
 
 
 	def get_image(self, pictures_dir, basename, subreddit=None):
@@ -36,19 +33,25 @@ class Reddit(Service):
 		posts = reddit.get_subreddit(subreddit).get_hot(limit=posts_limit)
 
 		urls = [p.url for p in posts]
-		url = urls[randint(0, len(urls) - 1)]
-		ext = url[url.rfind('.')+1:]
-
-		log.info('url: ' + url + ', extension: ' + ext)
-
-		if ext[0:3] == 'com':
-			if url.find('imgur') != -1:
-				imgur = Imgur()
-				url = imgur.get_image_url_from_page(url)
+		retries = 3
+		while retries > 0:
+			try:
+				url = urls[randint(0, len(urls) - 1)]
 				ext = url[url.rfind('.')+1:]
-			else:
-				print('not a direct link to image')
-				return
+
+				log.info('url: ' + url + ', extension: ' + ext)
+
+				if ext not in Const.image_extensions:
+					if url.find('imgur') != -1:
+						imgur = Imgur()
+						url = imgur.get_image_url_from_page(url)
+						ext = url[url.rfind('.')+1:]
+					else:
+						log.debug('not a direct link to image')
+						raise ServiceException()
+				retries = 0
+			except ServiceException:
+				retries -= 1
 
 		save_filepath = joinpath(pictures_dir, basename) + '.' + ext
 

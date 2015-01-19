@@ -1,6 +1,7 @@
 import json
 from urllib import urlencode
 from os.path import join as joinpath
+from random import randint
 
 from wallp.service import Service, service_factory
 import wallp.web as web
@@ -23,7 +24,7 @@ class Google(Service):
 		}
 
 		url = search_base_url + urlencode(params) + "&start=" + str(0)
-		res = web.download_with_progress(url)
+		res = web.download(url)
 		jdata = json.load(res)
 
 		results = j['responseData']['results']

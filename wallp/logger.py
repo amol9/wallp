@@ -3,7 +3,7 @@ import sys
 
 
 class Logger():
-	def __init__(self, stdout=False, logfile=None):
+	def __init__(self, stdout=False, logfile=None, log_testresults=False):
 		self._log = logging.getLogger('wallp')
 		self._log.propagate = False
 
@@ -19,6 +19,8 @@ class Logger():
 			self._log.addHandler(logfh)
 	
 		self._log.setLevel(logging.DEBUG)
+
+		self._log_testresults = log_testresults
 
 		return
 
@@ -40,11 +42,15 @@ class Logger():
 
 
 	def testresult(self, result):
-		self._testresult.append(result)
+		if self._log_testresults:
+			self._testresult.append(result)
 
 
 	def get_testresult(self):
-		return self._testresult
+		if self._log_testresults:
+			return self._testresult
+		else:
+			raise Exception('test result logging is disabled')
 
 	
 	def clear_testresult(self):

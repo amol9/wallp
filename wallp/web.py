@@ -35,7 +35,7 @@ def download(url, save_filepath=None, progress=True, nocache=False):
 	if save_filepath == None:
 		out = BytesIO()
 	else:
-		out = open(save_filepath, 'w')
+		out = open(save_filepath, 'w+')
 
 	chunk = res.read(chunksize)
 	while chunk:

@@ -1,4 +1,5 @@
 from urllib import urlencode
+from urllib2 import HTTPError
 from os.path import join as joinpath
 import xml.etree.ElementTree as ET
 from random import randint

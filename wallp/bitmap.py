@@ -24,7 +24,7 @@ class Bitmap(Service):
 			pa_size, _ = self.get_pixel_array_size(width, height)
 			self.write_bmp_header(f, pa_size)
 			self.write_dib_header(f, width, height)
-			self.write_pixel_array(f, width, height, color)
+			self.write_pixel_array(f, width, height, color if color else '0x0000F0')
 
 		return basename + '.bmp'
 

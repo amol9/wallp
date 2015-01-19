@@ -4,20 +4,56 @@ import sys
 from HTMLParser import HTMLParser
 
 
+class DebugDump():
+	def __init__(self, debug=False, filter=None, children=True):
+		self._debug = debug
+		self._filter = filter
+		self._start_level = None
+
+	
+	def dump_tag(self, tag, attrs=None, end=False, level=0, msg=None):
+		if self._debug:
+			if self._filter and self._start_level is None:
+				matches = [(k, v) for (k, v) in self._filter if (k, v) in attrs] if attrs else []
+				#print matches
+				if len(matches) == 0:
+					return
+				self._start_level = level
+
+			if self._start_level is not None:
+				if end:
+					if level == self._start_level:
+						self._start_level = None
+			
+			spaces = ''.join([' ' for i in range(level)])
+			attr_string = None
+			if attrs:
+				attr_string = ''
+				for (k, v) in attrs:
+					attr_string += ' ' + str(k) + '=\"' + str(v) + '\"'
+			print('%s<%s%s%s>%s'%(spaces, ('/' if end else ''), tag, (attr_string if attr_string else ''),
+						(' ' + msg if msg else '')))
+		
+
 class HtmlParser(HTMLParser):
-	def __init__(self, skip_tags=[]):
+	def __init__(self, skip_tags=[], ddump=None):
 		self._root = None
 		self._stack = []
 		self._skip_tags = skip_tags
 		self._skip = False, None
+		self._ddump = ddump
+
 		HTMLParser.__init__(self)
 
 	
 	def handle_starttag(self, tag, attrs):
-		#print 'start: %s'%tag
+		if self._skip[0] == True:
+			return
 		if tag in self._skip_tags:
 			self._skip = True, tag
 			return
+
+		if self._ddump: self._ddump.dump_tag(tag, attrs, level=len(self._stack))
 
 		attr_dict = dict((k, v) for (k, v) in attrs)
 		if self._root == None:
@@ -28,18 +64,21 @@ class HtmlParser(HTMLParser):
 			self._stack.append(e)
 
 
-
 	def handle_endtag(self, tag):
-		#print 'end: %s'%tag
 		if self._skip[0] == True:
 			if tag == self._skip[1]:
 				self._skip = False, None
-			else:
-				return
-		t = ''
-		#if tag == self._stack[-1].tag:
-		t = self._stack.pop()
-		#print 'pop: %s'%t
+			return
+		
+		if tag == self._stack[-1].tag or True:
+			self._stack.pop()
+		else:
+			if self._ddump:
+				m = self._stack[-1]
+				attrs = [(k, v) for (k, v) in m.attrib.iteritems()]
+				self._ddump.dump_tag(m.tag, attrs=attrs, level=len(self._stack), msg='mismatch')
+
+		if self._ddump: self._ddump.dump_tag(tag, end=True, level=len(self._stack))
 
 
 	def handle_data(self, data):
@@ -61,8 +100,27 @@ class HtmlParser(HTMLParser):
 
 
 if __name__ == '__main__':
-	parser = HtmlParser()
-	with open(sys.argv[1], 'r') as f:
-		parser.feed(f.read())
-	root = parser.etree
-	print root.tag
+	dd = DebugDump(debug=False, filter=[('class', 'left main')])
+	parser = HtmlParser(skip_tags=['head'], ddump=dd)
+
+	arg = sys.argv[1]
+	if arg.startswith('http'):
+		import wallp.web as web
+		data = web.download(arg)
+		parser.feed(data)
+	else:
+		with open(sys.argv[1], 'r') as f:
+			parser.feed(f.read())
+
+	etree = parser.etree
+	print etree.tag
+
+	if arg.find('/a/') != -1:
+		image_divs = etree.findall('.//div[@class=\'left main\']/div[@class=\'panel\']'
+						'/div[@id=\'image-container\']//div[@class=\'image\']')
+	else:
+		image_divs = etree.findall('.//div[@class=\'left main-image\']/div[@class=\'panel\']'
+						'/div[@id=\'image\']//div[@class=\'image textbox\']')
+
+	#import pdb; pdb.set_trace()
+	print 'image_divs:', len(image_divs)

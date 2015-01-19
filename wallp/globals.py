@@ -10,3 +10,4 @@ class Const():
 	cache_dir = expanduser(joinpath(data_dir, 'cache'))
 	config_filepath = expanduser(joinpath(data_dir, config_filename))
 	cache_enabled = True
+	image_extensions = ['jpg', 'png', 'bmp', 'jpeg']

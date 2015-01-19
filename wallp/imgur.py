@@ -1,6 +1,7 @@
 from os.path import join as joinpath
 import re
 from urllib import urlencode
+from urllib2 import HTTPError
 from random import randint
 import json
 
@@ -26,7 +27,7 @@ class Imgur(Service):
 		image_url = self.get_image_url_from_page(page_url)
 		ext = image_url[image_url.rfind('.')+1:]
 		try:
-			save_path = joinpath(pictures_dir, basename, ext)
+			save_path = joinpath(pictures_dir, basename + '.' + ext)
 			web.download(image_url, save_path)
 		except HTTPError:
 			raise ServiceException
@@ -35,25 +36,31 @@ class Imgur(Service):
 
 
 	def get_image_url_from_page(self, page_url):
+		if page_url.find('/a/') != -1:
+			url = self.get_url_from_full_album(page_url)
+		else:
+			url = self.get_url_from_gallery(page_url)
+
+		if not url.startswith('http'):
+			url = 'http:' + url
+
+		log.debug('imgur: selected url = %s'%url)
+		return url
+
+
+	def get_url_from_gallery(self, page_url):		
 		html = web.download(page_url)
 		parser = HtmlParser(skip_tags=['head'])
 		parser.feed(html)
 		etree = parser.etree
 
-		#import pdb; pdb.set_trace()
-		image_divs = None
-		if page_url.find('/a/') != -1:
-			image_divs = etree.findall('.//div[@class=\'left main\']/div[@class=\'panel\']'
-							'/div[@id=\'image-container\']//div[@class=\'image\']')
-		else:
-			image_divs = etree.findall('.//div[@class=\'left main-image\']/div[@class=\'panel\']'
-							'/div[@id=\'image\']//div[@class=\'image textbox\']')
+		image_divs = etree.findall('.//div[@class=\'left main-image\']/div[@class=\'panel\']'
+						'/div[@id=\'image\']//div[@class=\'image textbox\']')
 
 		if len(image_divs) == 0:
 			log.error('can\'t find main div on imgur page')
 			raise ServiceException()
 
-		#import pdb; pdb.set_trace()
 		if len(image_divs) == 1:
 			log.debug('imgur: 1 image on page')
 			img = image_divs[0].find('.//img')
@@ -63,36 +70,32 @@ class Imgur(Service):
 			else:
 				raise ServiceException()
 		else:
-			urls = []
+			url = None
 			trunc_div = etree.find('.//div[@id=\'album-truncated\']')
 			if trunc_div == None or get_full_album == False:
+				urls = []
 				for div in image_divs:
 					img = div.find('.//img')
 					if img is not None:
 						urls.append(img.attrib['src'])
+
+				log.debug('imgur: %d urls found'%len(urls))
+				log.testresult(len(urls))
+				if len(urls) == 0:
+					raise ServiceException()
+
+				url = urls[randint(0, len(urls) - 1)]
 			else:
 				page_id = page_url[page_url.rfind('/')+1:]
 				full_album_url = 'http://imgur.com/a/%s?gallery'%page_id
 
 				log.debug('imgur: getting full album, %s'%full_album_url)
-				urls = self.get_urls_from_full_album(full_album_url)
-
-			log.debug('imgur: %d urls found'%len(urls))
-			log.testresult(len(urls))
-			if len(urls) == 0:
-				raise ServiceException()
-
-			url = urls[randint(0, len(urls) - 1)]
-				
-		log.debug('imgur: selected url = %s'%url)
-
-		if not url.startswith('http'):
-			url = 'http:' + url
+				url = self.get_url_from_full_album(full_album_url)
 
 		return url
+	
 
-
-	def get_urls_from_full_album(self, full_album_url):
+	def get_url_from_full_album(self, full_album_url):
 		html = web.download(full_album_url)
 
 		really_big_album = False
@@ -125,8 +128,11 @@ class Imgur(Service):
 				images_data = json.loads(matches[0])
 				for item in images_data['items']:
 					urls.append('//i.imgur.com/%s%s'%(item['hash'], item['ext']))
-				
-		return urls	
+		
+		log.debug('imgur: %d urls found'%len(urls))
+		log.testresult(len(urls))
+		url = urls[randint(0, len(urls) - 1)]		
+		return url	
 
 	
 	def search(self, query=None):
@@ -153,9 +159,8 @@ class Imgur(Service):
 
 		link_urls = []
 		if matches:
-			print 'found links'
 			for m in matches:
-				print m
+				#print m
 				link_urls.append(m)
 
 		return link_urls

@@ -5,14 +5,23 @@ from wallp.logger import log
 from wallp.imgur import Imgur
 
 
+page = None, 0
+
+
 class TestImgur(TestCase):
 	def __init__(self, *args, **kwargs):
 		self._imgur_pages = [	('http://imgur.com/gallery/moboUHY', 1),
 					('http://imgur.com/gallery/QKz1d', 3),
-				#	('http://imgur.com/a/SAjtQ', 6),
+					('http://imgur.com/a/SAjtQ', 6),
 					('http://imgur.com/gallery/THfdT', 18),
 					('http://imgur.com/gallery/K3bYZ', 67),
-					('http://imgur.com/gallery/wCBYO', 2163)]
+					('http://imgur.com/gallery/wCBYO', 2163),
+					('http://imgur.com/gallery/hfHhb', 625),
+					('http://imgur.com/gallery/D3vya', 976)]
+					#('http://imgur.com/gallery/5vKwE', 20000)] fix: no truncated div, js load
+
+		if page[0] is not None:
+			self._imgur_pages = [page]
 
 		super(TestImgur, self).__init__(*args, **kwargs)
 
@@ -35,5 +44,7 @@ class TestImgur(TestCase):
 
 
 if __name__ == '__main__':
-	print 'sys args:', len(sys.argv)
+	if len(sys.argv) > 3:
+		page = sys.argv[2], int(sys.argv[3])
+		del sys.argv[2:]
 	ut_main()

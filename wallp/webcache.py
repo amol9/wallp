@@ -1,8 +1,8 @@
 from os.path import exists, join as joinpath
-from os import mkdir, makedirs
+from os import mkdir, makedirs, remove
 import hashlib
 from glob import glob
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from wallp.globals import Const
 
@@ -11,7 +11,7 @@ class WebCache():
 	def __init__(self):
 		if not exists(Const.cache_dir):
 			makedirs(Const.cache_dir)
-			open(joinpath(Const.cache_dir, datetime.today().strftime('expiry%d%b%Y')), 'w').close()
+			open(joinpath(Const.cache_dir, (datetime.today() + timedelta(days=1)).strftime('expiry%d%b%Y')), 'w').close()
 		else:
 			expiry_file = glob(joinpath(Const.cache_dir, 'expiry*'))
 			expiry = datetime.strptime(expiry_file[0][-9:], '%d%b%Y') if len(expiry_file) > 0 else datetime(1970, 1, 1)
@@ -42,6 +42,6 @@ class WebCache():
 		
 
 	def clear_cache(self):
-		for filepath in glob(joinpath(Const.cache_dir, '*.*')):
+		for filepath in glob(joinpath(Const.cache_dir, '*')):
 			remove(filepath)
-		open(joinpath(Const.cache_dir, datetime.today().strftime('expiry%d%b%Y')), 'w').close()
+		open(joinpath(Const.cache_dir, (datetime.today() + timedelta(days=1)).strftime('expiry%d%b%Y')), 'w').close()
