@@ -18,7 +18,9 @@ class Bing(Service):
 	name = 'bing'
 
 	def get_image(self, pictures_dir, basename, choice=None):
-		res = web.download(image_list_url)
+		res = None
+		with web.download(image_list_url, eh=True) as d:
+			res = d.start()
 		jsfile = res
 
 		data_regex = re.compile(".*browseData=({.*});.*")
@@ -60,7 +62,9 @@ class Bing(Service):
 
 
 	def get_bing_image_server(self):
-		res = web.download(app_js_url)
+		res = None
+		with web.download(app_js_url, eh=True) as d:
+			res = d.start()
 		js = res
 
 		server_url_regex = re.compile(".*(\/\/.*?\.vo\.msecnd\.net\/files\/).*", re.M | re.S)

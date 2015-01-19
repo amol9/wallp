@@ -26,11 +26,10 @@ class Imgur(Service):
 		
 		image_url = self.get_image_url_from_page(page_url)
 		ext = image_url[image_url.rfind('.')+1:]
-		try:
-			save_path = joinpath(pictures_dir, basename + '.' + ext)
-			web.download(image_url, save_path)
-		except HTTPError:
-			raise ServiceException
+		save_path = joinpath(pictures_dir, basename + '.' + ext)
+
+		with web.download(image_url, save_path, eh=True) as d:
+			d.start()
 
 		return basename + '.' + ext
 

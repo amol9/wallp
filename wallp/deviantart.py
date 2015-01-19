@@ -27,11 +27,10 @@ class DeviantArt(Service):
 		url = rss_url_base + urlencode(params)
 		log.info('da rss url: ' + url)
 
-		try:
-			res = web.download(url)
-		except HTTPError:
-			raise ServiceException()
-		
+		res = None 
+		with web.download(url, eh=True) as d:
+			res = d.start()
+	
 		rss = ET.fromstring(res)
 
 		image_urls = []
@@ -56,10 +55,8 @@ class DeviantArt(Service):
 		ext = download_url[download_url.rfind('.')+1:]
 		save_filepath = joinpath(pictures_dir, basename) + '.' + ext
 
-		try:
-			web.download(download_url, save_filepath)
-		except HTTPError:
-			raise ServiceException()
+		with web.download(download_url, save_filepath, eh=True) as d:
+			d.start()
 
 		return basename + '.' + ext
 

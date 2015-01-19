@@ -55,10 +55,8 @@ class Reddit(Service):
 
 		save_filepath = joinpath(pictures_dir, basename) + '.' + ext
 
-		try:
-			web.download(url, save_filepath)
-		except HTTPError:
-			raise ServiceException()
+		with web.download(url, save_filepath, eh=True) as d:
+			d.start()
 
 		return basename + '.' + ext
 
