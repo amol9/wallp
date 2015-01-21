@@ -1,11 +1,11 @@
 import platform
 from abc import ABCMeta, abstractmethod
 import ctypes
-from subprocess import call, check_output
 import re
 
 from wallp.system import *
 from wallp.logger import log
+from wallp.command import command
 
 
 if is_windows():
@@ -30,8 +30,21 @@ class Desktop():
 
 
 class LinuxDesktop(Desktop):
+	wp_styles = {
+		'none': 'none',
+		'tiled': 'wallpaper',
+		'centered': 'centered',
+		'scaled': 'scaled',
+		'stretched': 'strecthed',
+		'zoom': 'zoom'
+	}
+
+
 	def get_size(self):
-		xinfo = check_output(['xdpyinfo'])
+		xinfo = None
+		with command('xdpyinfo') as c:
+			xinfo = c.execute()
+
 		dim_regex = re.compile(".*dimensions:\s+(\d+)x(\d+).*", re.M | re.S)
 		m = dim_regex.match(xinfo)
 
@@ -44,11 +57,19 @@ class LinuxDesktop(Desktop):
 
 	
 	def set_wallpaper(self, filepath):
-		call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file://' + imagepath])
+		cmd = 'gsettings set org.gnome.desktop.background picture-uri file://%s'%filepath
+		with command(cmd) as c:
+			c.execute()
 
 
 	def set_wallpaper_style(self, style):
-		call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-options', 'zoom'])
+		style = self.wp_styles.get(style)
+		if style is None:
+			style = self.wp_styles['none']
+
+		cmd = 'gsettings set org.gnome.desktop.background picture-options %s'%style
+		with command(cmd) as c:
+			c.execute()
 
 
 

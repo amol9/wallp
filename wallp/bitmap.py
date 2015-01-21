@@ -4,6 +4,7 @@ from os.path import join as joinpath
 from wallp.service import Service, ServiceException, service_factory
 from wallp.desktop import get_desktop
 from wallp.config import config
+from wallp.logger import log
 
 #color palette
 #test with odd sizes: 9x9, etc.
@@ -15,9 +16,9 @@ class Bitmap(Service):
 		self._use_color_table = use_color_table
 
 
-	def get_image(self, pictures_dir, basename, color=None):
-		width, height = get_desktop().get_size()
-		#width, height = 2, 2
+	def get_image(self, pictures_dir, basename, choice=None, color=None):
+		#width, height = get_desktop().get_size()
+		width, height = 2, 2
 
 		save_path = joinpath(pictures_dir, basename + '.bmp')
 
@@ -72,7 +73,7 @@ class Bitmap(Service):
 
 	def get_pixel_array_size(self, width, height):
 		row_size = int((width * 24 + 31) / 32) * 4
-		print 'row size:', row_size
+		log.debug('row size: %d'%row_size)
 		pa_size = row_size * height
 		return pa_size, row_size
 

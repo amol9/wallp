@@ -4,7 +4,7 @@ from os.path import join as joinpath, expanduser
 class Const():
 	app_name = 'wallpaper_app'
 	config_filename = 'wallp.config'
-	debug = True
+	debug = False
 	wallpaper_basename = 'wallp' + ('_debug' if debug else '')
 	data_dir = expanduser('~/.wallp')
 	cache_dir = expanduser(joinpath(data_dir, 'cache'))

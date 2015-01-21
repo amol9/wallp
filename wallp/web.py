@@ -39,7 +39,12 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 		if data is not None:
 			print_progress_ast()
 			print('')
-			return data
+			if save_filepath is None:
+				return data
+			else:
+				with open(save_filepath, 'wb') as f:
+					f.write(data)
+				return
 	
 	chunksize = 40000
 	res = None

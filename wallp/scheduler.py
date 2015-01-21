@@ -6,26 +6,11 @@ import os
 from wallp.system import *
 from wallp.globals import Const
 from wallp.logger import log
+from wallp.command import command
 
 
 help = 	'm: minute, h: hour, d: day, w: week, M: month' + os.linesep +\
 	'e.g. 1h: every 1 hour, 10m: every 10 minutes, etc.'
-
-class command():
-	def __init__(self, cmd):
-		self._cmd = cmd + ' >/dev/null 2>&1'
-
-	def __enter__(self):
-		return self
-
-	def execute(self):
-		try:
-			check_output(self._cmd, shell=True)
-		except CalledProcessError as e:
-			log.error('error while scheduling..')
-
-	def __exit__(self, exc_typ, exc_val, exc_tb):
-		pass
 
 
 class Scheduler():
