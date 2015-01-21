@@ -35,6 +35,13 @@ class ServiceFactory():
 		return service()
 
 
+	def get_services(self):
+		return self._services.values()
+
+
+	services = property(get_services)
+
+
 service_factory = ServiceFactory()
 		
 

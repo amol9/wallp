@@ -61,4 +61,5 @@ class Reddit(Service):
 		return basename + '.' + ext
 
 
-service_factory.add('reddit', Reddit)
+if config.get(Reddit.name, 'enabled', default=True, type=bool):
+	service_factory.add(Reddit.name, Reddit)

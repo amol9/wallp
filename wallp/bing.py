@@ -8,6 +8,7 @@ from wallp.service import Service, service_factory, ServiceException
 import wallp.web as web
 from wallp.desktop import get_desktop
 from wallp.logger import log
+from wallp.config import config
 
 
 image_list_url = 'http://www.bing.com/gallery/home/browsedata'
@@ -76,4 +77,5 @@ class Bing(Service):
 		return None
 
 
-service_factory.add(Bing.name, Bing)
+if config.get(Bing.name, 'enabled', default=True, type=bool):
+	service_factory.add(Bing.name, Bing)

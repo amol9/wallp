@@ -8,6 +8,7 @@ from service import Service, service_factory, ServiceException
 import wallp.web as web
 from wallp.desktop import get_desktop
 from wallp.logger import log
+from wallp.config import config
 
 
 rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&'
@@ -61,4 +62,5 @@ class DeviantArt(Service):
 		return basename + '.' + ext
 
 
-service_factory.add(DeviantArt.name, DeviantArt)
+if config.get(DeviantArt.name, 'enabled', default=True, type=bool):
+	service_factory.add(DeviantArt.name, DeviantArt)

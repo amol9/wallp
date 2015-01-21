@@ -57,6 +57,7 @@ class Google(Service):
 			
 		return choice(urls)
 
+if config.get(Google.name, 'enabled', default=True, type=bool):
+	service_factory.add(Google.name, Google)
 
-service_factory.add(Google.name, Google)
 

@@ -3,6 +3,7 @@ from os.path import join as joinpath
 
 from wallp.service import Service, ServiceException, service_factory
 from wallp.desktop import get_desktop
+from wallp.config import config
 
 #color palette
 #test with odd sizes: 9x9, etc.
@@ -76,4 +77,5 @@ class Bitmap(Service):
 		return pa_size, row_size
 
 
-service_factory.add(Bitmap.name, Bitmap)
+if config.get(Bitmap.name, 'enabled', default=True, type=bool):
+	service_factory.add(Bitmap.name, Bitmap)

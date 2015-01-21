@@ -13,10 +13,11 @@ class Config():
 			self._config.read(Const.config_filepath)
 
 
-	def get(self, section, option, default=None):
+	def get(self, section, option, default=None, type=None):
+		ret = default
 		if self._config.has_section(section):
 			if self._config.has_option(section, option):
-				return self._config.get(section, option)
+				ret = self._config.get(section, option)
 			else:
 				if default is not None:
 					self._config.set(section, option, self.csv_if_list(default))
@@ -25,7 +26,19 @@ class Config():
 				self._config.add_section(section)
 				self._config.set(section, option, self.csv_if_list(default))
 
-		return default
+		return self.typecast(ret, type)
+
+
+	def typecast(self, value, type):
+		if type is None:
+			return value
+
+		if type == bool:
+			if value in ['False', 'false', 'No', 'no', 'N', 'n', '0']:
+				return False
+			else:
+				return True
+		return value
 
 
 	def csv_if_list(self, value):

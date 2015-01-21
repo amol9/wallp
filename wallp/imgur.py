@@ -9,6 +9,7 @@ from wallp.service import Service, ServiceException, service_factory
 import wallp.web as web
 from wallp.logger import log
 from wallp.htmlparser import HtmlParser
+from wallp.config import config
 
 search_url = "http://imgur.com/search?"
 search_result_link_prefix = "http://imgur.com"
@@ -165,7 +166,8 @@ class Imgur(Service):
 		return link_urls
 
 
-service_factory.add('imgur', Imgur)
+if config.get(Imgur.name, 'enabled', default=True, type=bool):
+	service_factory.add('imgur', Imgur)
 
 '''
 imgur mega dumps: 

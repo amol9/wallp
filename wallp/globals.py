@@ -11,3 +11,4 @@ class Const():
 	config_filepath = expanduser(joinpath(data_dir, config_filename))
 	cache_enabled = True
 	image_extensions = ['jpg', 'png', 'bmp', 'jpeg']
+	script_name = 'wallp'
