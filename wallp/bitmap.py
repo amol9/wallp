@@ -16,7 +16,7 @@ class Bitmap(Service):
 		self._use_color_table = use_color_table
 
 
-	def get_image(self, pictures_dir, basename, choice=None, color=None):
+	def get_image(self, pictures_dir, basename, query=None, color=None):
 		#width, height = get_desktop().get_size()
 		width, height = 2, 2
 
@@ -32,7 +32,7 @@ class Bitmap(Service):
 
 
 	def write_bmp_header(self, bmpfile, pa_size):
-		bmpfile.write('BM')			#ID
+		bmpfile.write(b'BM')			#ID
 		bmpfile.write(pack('i', 54 + pa_size))	#size
 		bmpfile.write(pack('i', 0))		#unused
 		bmpfile.write(pack('i', 54))		#offset for pixel array
@@ -55,7 +55,7 @@ class Bitmap(Service):
 	
 	def write_pixel_array(self, bmpfile, width, height, color):
 		_, row_size = self.get_pixel_array_size(width, height)
-		pixels_per_row = row_size / 3
+		pixels_per_row = int(row_size / 3)
 		pad_bytes = row_size - (pixels_per_row * 3)
 
 		hex_color = int(color, 16)

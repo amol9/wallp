@@ -1,6 +1,10 @@
+from wallp.system import *
+if is_py3():
+	from urllib.error import HTTPError
+	from urllib.request import urlopen
+else:
+	from urllib2 import HTTPError, urlopen
 from io import StringIO, BytesIO
-import urllib2
-from urllib2 import HTTPError
 import sys
 from functools import partial
 
@@ -49,7 +53,7 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 	chunksize = 40000
 	res = None
 	try:
-		res = urllib2.urlopen(url)
+		res = urlopen(url)
 	except HTTPError as e:
 		raise e
 
@@ -57,7 +61,7 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 	if save_filepath == None:
 		out = BytesIO()
 	else:
-		out = open(save_filepath, 'w+')
+		out = open(save_filepath, 'wb+')
 
 	chunk = res.read(chunksize)
 	while chunk:
@@ -77,6 +81,8 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 		out.seek(0)
 		buf = out.read()
 		out.close()
+		if is_py3():
+			buf = buf.decode(encoding='utf-8')
 		return buf
 	else:
 		out.close()
@@ -84,8 +90,10 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 
 
 def print_progress_dot():
-	print('.'),; sys.stdout.flush()
+	#print(('.'), end=' '); sys.stdout.flush()
+	prints('.')
 
 
 def print_progress_ast():
-	print('*'),; sys.stdout.flush()
+	#print(('*'), end=' '); sys.stdout.flush()
+	prints('*')

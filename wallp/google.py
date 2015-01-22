@@ -1,5 +1,11 @@
+from wallp.system import *
+if is_py3():
+	from urllib.parse import urlencode
+	from urllib.error import HTTPError
+else:
+	from urllib import urlencode
+	from urllib2 import HTTPError
 import json
-from urllib import urlencode
 from os.path import join as joinpath
 from random import choice
 
@@ -15,7 +21,7 @@ search_base_url = "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&
 class Google(Service):
 	name = 'google'
 
-	def get_image(self, pictures_dir, basename, query=None):
+	def get_image(self, pictures_dir, basename, query=None, color=None):
 		url = self.get_image_url(query)
 		ext = url[url.rfind('.')+1:]
 
@@ -52,7 +58,7 @@ class Google(Service):
 			for r in results:
 				urls.append(r['url'])
 			#print i['width'], 'x', i['height']
-		except HTTPError, ValueError:
+		except (HTTPError, ValueError):
 			raise ServiceException()
 			
 		return choice(urls)

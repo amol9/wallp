@@ -1,9 +1,12 @@
-import system
-if system.is_py3(): from configparser import ConfigParser
-else: from ConfigParser import ConfigParser
+from wallp.system import *
+if is_py3():
+	from configparser import ConfigParser
+else:
+	from ConfigParser import ConfigParser
 from os.path import exists
 
 from wallp.globals import Const
+
 
 class Config():
 	def __init__(self):
@@ -21,10 +24,12 @@ class Config():
 			else:
 				if default is not None:
 					self._config.set(section, option, self.csv_if_list(default))
+					self.write()
 		else:
 			if default is not None:
 				self._config.add_section(section)
 				self._config.set(section, option, self.csv_if_list(default))
+				self.write()
 
 		return self.typecast(ret, type)
 
@@ -55,7 +60,7 @@ class Config():
 		return value
 
 
-	def __del__(self):
+	def write(self):
 		with open(self._config_filepath, 'w') as f:
 			self._config.write(f)
 

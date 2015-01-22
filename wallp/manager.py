@@ -89,7 +89,7 @@ class Manager():
 				temp_basename = 'wallp_temp'
 				dirpath = get_pictures_dir() if not Const.debug else '.'
 				
-				tempname = service.get_image(dirpath, temp_basename, choice=query, color=color)
+				tempname = service.get_image(dirpath, temp_basename, query=query, color=color)
 				self._wp_path = joinpath(dirpath, Const.wallpaper_basename + tempname[tempname.rfind('.'):])
 				os.rename(joinpath(dirpath, tempname), self._wp_path)
 

@@ -1,12 +1,20 @@
 from abc import ABCMeta, abstractmethod
 from random import choice
 
+from wallp.system import *
 
+'''if is_py3():
+	class Service(metaclass=ABCMeta):
+		@abstractmethod
+		def get_image(pictures_dir, basename, query=None, color=None):
+			pass
+
+else:'''
 class Service():
 	__metaclass__ = ABCMeta
 
 	@abstractmethod
-	def get_image(pictures_dir, basename, choice=None):
+	def get_image(pictures_dir, basename, query=None, color=None):
 		pass
 
 
@@ -31,12 +39,12 @@ class ServiceFactory():
 
 
 	def get_random(self):
-		service = choice(self._services.values())
+		service = choice(list(self._services.values()))
 		return service()
 
 
 	def get_services(self):
-		return self._services.values()
+		return list(self._services.values())
 
 
 	services = property(get_services)

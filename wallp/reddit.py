@@ -4,7 +4,7 @@ from random import randint
 
 from wallp.service import Service, service_factory, ServiceException
 from wallp.imgur import Imgur
-import web
+import wallp.web as web
 from wallp.config import config
 from wallp.globals import Const
 from wallp.logger import log
@@ -24,7 +24,8 @@ class Reddit(Service):
 		self._subreddit_list = config.get_list('reddit', 'subreddit_list', default=subreddit_list)
 
 
-	def get_image(self, pictures_dir, basename, subreddit=None):
+	def get_image(self, pictures_dir, basename, query=None, color=None):
+		subreddit = query
 		if subreddit == None:
 			subreddit = self._subreddit_list[randint(0, len(self._subreddit_list)-1)].strip()
 		log.info('chosen subreddit: %s'%subreddit)

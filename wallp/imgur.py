@@ -1,7 +1,10 @@
+from wallp.system import *
+if is_py3():
+	from urllib.parse import urlencode
+else:
+	from urllib import urlencode
 from os.path import join as joinpath
 import re
-from urllib import urlencode
-from urllib2 import HTTPError
 from random import randint
 import json
 
@@ -19,7 +22,7 @@ get_full_album = True
 class Imgur(Service):
 	name = 'imgur'
 
-	def get_image(self, pictures_dir, basename, query=None):
+	def get_image(self, pictures_dir, basename, query=None, color=None):
 		results = self.search(query)
 		page_url = search_result_link_prefix + results[randint(0, len(results) - 1)]
 
@@ -149,10 +152,10 @@ class Imgur(Service):
 			}
 
 		url = search_url + urlencode(qs)
-		#res = web.download(url)
+		res = web.download(url)
 
-		res = None
-		with open('imgur.html', 'r') as f: res = f.read()
+		#res = None
+		#with open('imgur.html', 'r') as f: res = f.read()
 
 		link_regex = re.compile("<a.*?class=\"image-list-link\".*?href=\"(.*?)\"")
 		matches = link_regex.findall(res)
@@ -182,6 +185,6 @@ if __name__ == '__main__':
 	import sys
 	i = Imgur()
 	url = i.get_image_url_from_page(sys.argv[1])
-	print url
+	print(url)
 	#i.search(sys.argv[1])
 

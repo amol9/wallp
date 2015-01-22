@@ -1,8 +1,12 @@
+from wallp.system import *
+if is_py3():
+	from urllib.error import HTTPError
+else:
+	from urllib2 import HTTPError
 import json
 import re
 from os.path import join as joinpath
 from random import randint
-from urllib2 import HTTPError
 
 from wallp.service import Service, service_factory, ServiceException
 import wallp.web as web
@@ -18,7 +22,7 @@ app_js_url = 'http://az615200.vo.msecnd.net/site/scripts/app.f21eb9ba.js'
 class Bing(Service):
 	name = 'bing'
 
-	def get_image(self, pictures_dir, basename, choice=None):
+	def get_image(self, pictures_dir, basename, query=None, color=None):
 		res = None
 		with web.download(image_list_url, eh=True) as d:
 			res = d.start()

@@ -1,10 +1,13 @@
-from urllib import urlencode
-from urllib2 import HTTPError
+from wallp.system import *
+if is_py3():
+	from urllib.parse import urlencode
+else:
+	from urllib import urlencode
 from os.path import join as joinpath
 import xml.etree.ElementTree as ET
 from random import randint
 
-from service import Service, service_factory, ServiceException
+from wallp.service import Service, service_factory, ServiceException
 import wallp.web as web
 from wallp.desktop import get_desktop
 from wallp.logger import log
@@ -18,7 +21,7 @@ xmlns = {'media': 'http://search.yahoo.com/mrss/'}
 class DeviantArt(Service):
 	name = 'deviantart'
 
-	def get_image(self, pictures_dir, basename, query=None):
+	def get_image(self, pictures_dir, basename, query=None, color=None):
 		params = {}
 		params['q'] = query if query else 'wallpapers'
 

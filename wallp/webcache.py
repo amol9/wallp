@@ -22,15 +22,15 @@ class WebCache():
 
 	def add(self, url, data):
 		md5h = hashlib.md5()
-		md5h.update(url)
+		md5h.update(url.encode('utf-8'))
 		
-		with open(joinpath(Const.cache_dir, md5h.hexdigest()), 'w') as f:
+		with open(joinpath(Const.cache_dir, md5h.hexdigest()), 'wb') as f:
 			f.write(data)
 
 
 	def get(self, url):
 		md5h = hashlib.md5()
-		md5h.update(url)
+		md5h.update(url.encode('utf-8'))
 
 		data = None
 		path = joinpath(Const.cache_dir, md5h.hexdigest())

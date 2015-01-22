@@ -1,5 +1,6 @@
 import platform
 from os.path import expanduser, join as joinpath, exists
+import sys
 
 
 def is_linux():
@@ -20,3 +21,13 @@ def get_pictures_dir():
 	if not exists(path):
 		mkdir(path)
 	return path
+
+
+def prints(msg):
+	if is_py3():
+		#print(msg, end=' ', flush=True)
+		sys.stdout.write(msg)
+	else:
+		print(msg),
+		sys.stdout.flush()
+	

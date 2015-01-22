@@ -1,7 +1,11 @@
+from wallp.system import *
+if is_py3():
+	from html.parser import HTMLParser
+else:	
+	from HTMLParser import HTMLParser
 from xml.etree.ElementTree import XMLParser, Element, SubElement, ElementTree
 import re
 import sys
-from HTMLParser import HTMLParser
 
 
 class DebugDump():
@@ -31,8 +35,8 @@ class DebugDump():
 				attr_string = ''
 				for (k, v) in attrs:
 					attr_string += ' ' + str(k) + '=\"' + str(v) + '\"'
-			print('%s<%s%s%s>%s'%(spaces, ('/' if end else ''), tag, (attr_string if attr_string else ''),
-						(' ' + msg if msg else '')))
+			print(('%s<%s%s%s>%s'%(spaces, ('/' if end else ''), tag, (attr_string if attr_string else ''),
+						(' ' + msg if msg else ''))))
 		
 
 class HtmlParser(HTMLParser):
@@ -75,7 +79,7 @@ class HtmlParser(HTMLParser):
 		else:
 			if self._ddump:
 				m = self._stack[-1]
-				attrs = [(k, v) for (k, v) in m.attrib.iteritems()]
+				attrs = [(k, v) for (k, v) in list(m.attrib.items())]
 				self._ddump.dump_tag(m.tag, attrs=attrs, level=len(self._stack), msg='mismatch')
 
 		if self._ddump: self._ddump.dump_tag(tag, end=True, level=len(self._stack))
@@ -113,7 +117,7 @@ if __name__ == '__main__':
 			parser.feed(f.read())
 
 	etree = parser.etree
-	print etree.tag
+	print((etree.tag))
 
 	if arg.find('/a/') != -1:
 		image_divs = etree.findall('.//div[@class=\'left main\']/div[@class=\'panel\']'
@@ -123,4 +127,4 @@ if __name__ == '__main__':
 						'/div[@id=\'image\']//div[@class=\'image textbox\']')
 
 	#import pdb; pdb.set_trace()
-	print 'image_divs:', len(image_divs)
+	print(('image_divs:', len(image_divs)))
