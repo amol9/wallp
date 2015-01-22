@@ -91,7 +91,7 @@ class Manager():
 				
 				tempname = service.get_image(dirpath, temp_basename, query=query, color=color)
 				self._wp_path = joinpath(dirpath, Const.wallpaper_basename + tempname[tempname.rfind('.'):])
-				os.rename(joinpath(dirpath, tempname), self._wp_path)
+				os.replace(joinpath(dirpath, tempname), self._wp_path)
 
 
 				retry = 0

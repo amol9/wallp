@@ -27,6 +27,7 @@ def prints(msg):
 	if is_py3():
 		#print(msg, end=' ', flush=True)
 		sys.stdout.write(msg)
+		sys.stdout.flush()
 	else:
 		print(msg),
 		sys.stdout.flush()

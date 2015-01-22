@@ -50,7 +50,7 @@ class Config():
 		if isinstance(value, list):
 			value = ''.join([v + ', ' for v in value[0:-1]]) + value[-1]
 			return value
-		return value
+		return str(value)
 
 
 	def get_list(self, section, option, default=None, sep=','):

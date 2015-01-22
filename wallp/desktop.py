@@ -91,7 +91,7 @@ class WindowsDesktop(Desktop):
 
 		SPI_SETDESKWALLPAPER = 0x0014
 
-		ret = user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 1, "c:\\Users\\amol\\Desktop\\SnowyStoat.jpg", SPIF_UPDATEINIFILE | SPIF_SENDCHANGE)
+		ret = user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 1, filepath, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE)
 		
 
 	def set_wallpaper_style(self, style):
