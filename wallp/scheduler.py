@@ -73,7 +73,8 @@ class WindowsScheduler(Scheduler):
 	
 	def scehdule(self, freq):
 		num, period = self.parse(freq)
-		schtasks_cmd = 'schtasks /create /tn %s /sc %s /mo %d'%(Const.script_name, period_map[period], num)
+		schtasks_cmd = 'schtasks /create /tn %s /tr %s/sc %s /mo %d'%\
+				(Const.script_name, Const.script_name, period_map[period], num)
 		with command(schtasks_cmd) as c:
 			c.execute()
 
