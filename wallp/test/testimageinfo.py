@@ -15,7 +15,8 @@ class TestImageInfo(TestCase):
 
 if __name__ == '__main__':
 	if len(sys.argv) > 1:
-		with open(sys.argv[1], 'r') as f:
+		#import pdb; pdb.set_trace()
+		with open(sys.argv[1], 'rb') as f:
 			ct, w, h = get_image_info(f.read(10000))
 			print(('type:', ct, 'width:', w, 'height:', h))
 		sys.exit(0)

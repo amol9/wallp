@@ -63,14 +63,13 @@ class LinuxDesktop(Desktop):
 
 
 	def set_wallpaper_style(self, style):
-		style = self.wp_styles.get(style)
-		if style is None:
-			style = self.wp_styles['none']
+		wp_style = self.wp_styles.get(style)
+		if wp_style is None:
+			wp_style = self.wp_styles['none']
 
-		cmd = 'gsettings set org.gnome.desktop.background picture-options %s'%style
+		cmd = 'gsettings set org.gnome.desktop.background picture-options %s'%wp_style
 		with command(cmd) as c:
 			c.execute()
-
 
 
 class WindowsDesktop(Desktop):
@@ -88,7 +87,7 @@ class WindowsDesktop(Desktop):
 		width = user32.GetSystemMetrics(0)
 		height = user32.GetSystemMetrics(1)		
 
-		log.debug('[desktop] width: ' + str(width) + ' height: ' + str(height))
+		#log.debug('[desktop] width: ' + str(width) + ' height: ' + str(height))
 		return width, height
 
 
@@ -104,14 +103,15 @@ class WindowsDesktop(Desktop):
 		
 
 	def set_wallpaper_style(self, style):
-		style = self.wp_styles.get(style)
-		if style is None:
-			style = self.wp_styles['none']
+		wp_style = self.wp_styles.get(style)
+		if wp_style is None:
+			wp_style = self.wp_styles['none']
 
 		key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Control Panel\\Desktop', 0, winreg.KEY_SET_VALUE)
-		winreg.SetValueEx(key, 'WallpaperStyle', 0, winreg.REG_SZ, style)
+		winreg.SetValueEx(key, 'WallpaperStyle', 0, winreg.REG_SZ, wp_style)
 
 		if style == 'tiled':
+			print('setting to tiled')
 			winreg.SetValueEx(key, 'TileWallpaper', 0, winreg.REG_SZ, '1')
 		else:
 			winreg.SetValueEx(key, 'TileWallpaper', 0, winreg.REG_SZ, '0')

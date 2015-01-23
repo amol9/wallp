@@ -102,14 +102,13 @@ class Manager():
 			return
 
 		dt = get_desktop()
-		dt.set_wallpaper(self._wp_path)
-
+		
 		dt_width, dt_height = dt.get_size()
 		log.debug('desktop: width=%d, height=%d'%(dt_width, dt_height))
 
 		style = None
 		buf = None
-		with open(self._wp_path, 'r') as f:
+		with open(self._wp_path, 'rb') as f:
 			buf = f.read(10000)
 
 		_, wp_width, wp_height = get_image_info(buf)
@@ -138,7 +137,7 @@ class Manager():
 
 		log.debug('style: %s'%style)
 		dt.set_wallpaper_style(style)
-
+		dt.set_wallpaper(self._wp_path)
 
 	#def set_image_as_desktop_back(self):
 		'''
