@@ -2,10 +2,13 @@
 
 import StringIO
 import struct
+import re
 
 
-def get_image_info(data):
-	data = str(data)
+def get_image_info(data, filepath=None):
+	if data is None and filepath is not None:
+		with open(filepath, 'rb') as f:
+			data = f.read(10000)
 	size = len(data)
 	height = -1
 	width = -1
@@ -37,12 +40,13 @@ def get_image_info(data):
 		height = int(h)
 
 	# handle JPEGs
-	elif (size >= 2) and data.startswith('\377\330'):
+	elif (size >= 2) and data.startswith(b'\377\330'):
 		content_type = 'image/jpeg'
 		jpeg = StringIO.StringIO(data)
 		jpeg.read(2)
 		b = jpeg.read(1)
 		try:
+			h = w = None
 			while (b and ord(b) != 0xDA):
 				while (ord(b) != 0xFF): b = jpeg.read(1)
 				while (ord(b) == 0xFF): b = jpeg.read(1)
@@ -53,6 +57,19 @@ def get_image_info(data):
 				else:
 					jpeg.read(int(struct.unpack(">H", jpeg.read(2))[0])-2)
 				b = jpeg.read(1)
+
+			if h is None or w is None:
+				if filepath is not None:
+					size_regex = re.compile(b'.*\xff\xc0\x00\x11\x08([\x00-\xff]{4})', re.M | re.S | re.I)
+					match = None
+					with open(filepath, 'rb') as f:
+						match = size_regex.match(f.read())
+						if match is None:
+							raise ValueError
+						else:
+							h, w = struct.unpack('>HH', match.group(1))
+				else:
+					raise ValueError
 			width = int(w)
 			height = int(h)
 		except struct.error:

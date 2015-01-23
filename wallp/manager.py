@@ -112,7 +112,7 @@ class Manager():
 		with open(self._wp_path, 'r') as f:
 			buf = f.read(10000)
 
-		_, wp_width, wp_height = get_image_info(buf)
+		_, wp_width, wp_height = get_image_info(buf, filepath=self._wp_path)
 		log.debug('iamge: width=%d, height=%d'%(wp_width, wp_height))
 
 		if wp_width < 5 and wp_height < 5:
