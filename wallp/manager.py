@@ -2,6 +2,7 @@ from os.path import join as joinpath
 import sys
 from argparse import ArgumentParser, HelpFormatter
 import os
+from shutil import move
 
 from wallp.reddit import Reddit
 from wallp.deviantart import DeviantArt
@@ -15,6 +16,7 @@ from wallp.logger import log
 from wallp.system import *
 from wallp.scheduler import get_scheduler, help as scheduler_help_text
 from wallp.desktop import get_desktop
+from wallp.imageinfo import get_image_info
 
 
 class MultilineFormatter(HelpFormatter):
@@ -65,7 +67,6 @@ class Manager():
 		service = None
 
 		service_name = self._args.service
-		query = self._args.query
 
 		retry = 3
 		while(retry > 0):
@@ -79,19 +80,15 @@ class Manager():
 			log.info('using %s'%service.name)
 			
 			try:
-				color = None
-				if service.name == 'bitmap':
-					self._style = 'tiled'
-					color = self._args.color
-				else:
-					self._style = 'zoom'
+				color = self._args.color
+				query = self._args.query
 
 				temp_basename = 'wallp_temp'
 				dirpath = get_pictures_dir() if not Const.debug else '.'
 				
 				tempname = service.get_image(dirpath, temp_basename, query=query, color=color)
 				self._wp_path = joinpath(dirpath, Const.wallpaper_basename + tempname[tempname.rfind('.'):])
-				os.replace(joinpath(dirpath, tempname), self._wp_path)
+				move(joinpath(dirpath, tempname), self._wp_path)
 
 
 				retry = 0
@@ -106,7 +103,41 @@ class Manager():
 
 		dt = get_desktop()
 		dt.set_wallpaper(self._wp_path)
-		dt.set_wallpaper_style(self._style)
+
+		dt_width, dt_height = dt.get_size()
+		log.debug('desktop: width=%d, height=%d'%(dt_width, dt_height))
+
+		style = None
+		buf = None
+		with open(self._wp_path, 'r') as f:
+			buf = f.read(10000)
+
+		_, wp_width, wp_height = get_image_info(buf)
+		log.debug('iamge: width=%d, height=%d'%(wp_width, wp_height))
+
+		if wp_width < 5 and wp_height < 5:
+			style = 'tiled'
+		else:
+			same_ar = False
+			dt_ar = float(dt_width) / dt_height
+			wp_ar = float(wp_width) / wp_height
+			
+			if abs(dt_ar - wp_ar) < 0.01:
+				same_ar = True	
+	
+			#import pdb; pdb.set_trace()		
+			wr = float(wp_width) / dt_width
+			hr = float(wp_height) / dt_height
+
+			if (wr >= 0.9) and (hr >= 0.9):
+				style = 'scaled' if same_ar else 'zoom'
+			elif (wr < 0.9) or (hr < 0.9):
+				style = 'centered'
+			else:
+				style = 'scaled' if same_ar else 'zoom' 
+
+		log.debug('style: %s'%style)
+		dt.set_wallpaper_style(style)
 
 
 	#def set_image_as_desktop_back(self):
