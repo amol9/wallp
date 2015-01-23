@@ -35,7 +35,7 @@ class WebCache():
 		data = None
 		path = joinpath(Const.cache_dir, md5h.hexdigest())
 		if exists(path):
-			with open(path, 'r') as f:
+			with open(path, 'rb') as f:
 				data = f.read()
 
 		return data

@@ -47,7 +47,10 @@ class HtmlParser(HTMLParser):
 		self._skip = False, None
 		self._ddump = ddump
 
-		HTMLParser.__init__(self, convert_charrefs=True)
+		if is_py3():
+			HTMLParser.__init__(self, convert_charrefs=True)
+		else:
+			HTMLParser.__init__(self)
 
 	
 	def handle_starttag(self, tag, attrs):

@@ -1,10 +1,6 @@
 #source: https://code.google.com/p/bfg-pages/source/browse/trunk/pages/getimageinfo.py
 
-from wallp.system import *
-if is_py3():
-	from io import BytesIO
-else:
-	import BytesIO
+from io import BytesIO
 import struct
 import re
 
