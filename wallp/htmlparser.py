@@ -129,5 +129,4 @@ if __name__ == '__main__':
 		image_divs = etree.findall('.//div[@class=\'left main-image\']/div[@class=\'panel\']'
 						'/div[@id=\'image\']//div[@class=\'image textbox\']')
 
-	#import pdb; pdb.set_trace()
 	print(('image_divs:', len(image_divs)))

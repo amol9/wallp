@@ -17,11 +17,11 @@ class Scheduler():
 	__metaclass__ = ABCMeta
 
 	@abstractmethod
-	def schedule(self, freq):
+	def schedule(self, freq, cmd, taskname):
 		pass
 
 	@abstractmethod
-	def delete(self):
+	def delete(self, taskname):
 		pass
 
 	def parse(self, freq):
@@ -47,17 +47,17 @@ class LinuxScheduler(Scheduler):
 	}
 
 
-	def schedule(self, freq):
+	def schedule(self, freq, cmd, taskname):
 		num, period = self.parse(freq)
 		cronstr = self.cron_strings[period]%num
-		cmd = '(crontab -l ; echo \"%s\" %s) | crontab'%(cronstr, Const.script_name)
-		with command(cmd) as c:
+		sh_cmd = '(crontab -l ; echo \"%s\" %s \\#%s) | crontab'%(cronstr, cmd, taskname)
+		with command(sh_cmd) as c:
 			c.execute()
 
 
-	def delete(self):
-		cmd = 'crontab -l | grep -v %s$ | crontab'%Const.script_name
-		with command(cmd) as c:
+	def delete(self, taskname):
+		sh_cmd = 'crontab -l | grep -v %s$ | crontab'%taskname
+		with command(sh_cmd) as c:
 			c.execute()
 
 
@@ -71,16 +71,16 @@ class WindowsScheduler(Scheduler):
 	}
 
 	
-	def scehdule(self, freq):
+	def scehdule(self, freq, cmd, taskname):
 		num, period = self.parse(freq)
 		schtasks_cmd = 'schtasks /create /tn %s /tr %s/sc %s /mo %d'%\
-				(Const.script_name, Const.script_name, period_map[period], num)
+				(taskname, cmd, period_map[period], num)
 		with command(schtasks_cmd) as c:
 			c.execute()
 
 
-	def delete(self):
-		schtasks_cmd = 'schtasks /delete /tn %s'%Const.script_name
+	def delete(self, taskname):
+		schtasks_cmd = 'schtasks /delete /tn %s'%taskname
 		with command(schtasks_cmd) as c:
 			c.execute()
 

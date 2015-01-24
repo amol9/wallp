@@ -11,6 +11,8 @@ from functools import partial
 from wallp.globals import Const
 from wallp.webcache import WebCache
 from wallp.service import ServiceException
+from wallp.logger import log
+
 
 cache = None
 if Const.cache_enabled:
@@ -42,8 +44,10 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 		data = cache.get(url)
 		if data is not None:
 			print_progress_ast()
-			print('')
+			if log.to_stdout(): print('')
 			if save_filepath is None:
+				if is_py3():
+					data = data.decode(encoding='utf-8')	
 				return data
 			else:
 				with open(save_filepath, 'wb') as f:
@@ -70,7 +74,7 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 		out.write(buf)
 		chunk = res.read(chunksize)
 
-	print('')
+	if log.to_stdout(): print('')
 	res.close()
 
 	if not nocache and Const.cache_enabled:

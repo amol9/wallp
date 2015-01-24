@@ -12,3 +12,4 @@ class Const():
 	cache_enabled = True
 	image_extensions = ['jpg', 'png', 'bmp', 'jpeg']
 	script_name = 'wallp'
+	scheduler_task_name = 'wallp_scheduled_task'	

@@ -3,6 +3,8 @@ import sys
 from argparse import ArgumentParser, HelpFormatter
 import os
 from shutil import move
+import logging
+from itertools import chain
 
 from wallp.reddit import Reddit
 from wallp.deviantart import DeviantArt
@@ -35,25 +37,57 @@ class Manager():
 
 
 	def parse_args(self):
+		logging_levels = None
+		if is_py3():
+			logging_levels = dict(chain(logging._nameToLevel.items(), logging._levelToName.items()))
+		else:
+			logging_levels = logging._levelNames
+	
 		argparser = ArgumentParser(formatter_class=MultilineFormatter)
 		argparser.add_argument('-s', '--service', help='service to be used (' +
 				''.join([s.name + ', ' for s in service_factory.services[0:-1]]) + service_factory.services[-1].name + ')')
 		argparser.add_argument('-q', '--query', help='search term for wallpapers')
 		argparser.add_argument('-c', '--color', help='color')
+		argparser.add_argument('-l', '--log', help='logfile name / stdout')
+		argparser.add_argument('-ll', '--loglevel',
+			choices=[v.lower() for (k, v) in list(logging_levels.items()) if type(k) == int and k > 0], help='log level')
 		argparser.add_argument('-f', '--frequency', help='R|set the frequency for update' + os.linesep + scheduler_help_text)
 
 		self._args = argparser.parse_args()
 
+		if self._args.log:
+			if self._args.loglevel:
+				log.start(self._args.log, loglevel=logging_levels[self._args.loglevel.upper()])
+			else:
+				log.start(self._args.log)
+
 
 	def set_frequency(self):
 		freq = self._args.frequency
-		if freq is not None:
-			if freq == '0':
-				get_scheduler().delete()
-			else:
-				get_scheduler().delete()
-				get_scheduler().schedule(freq)
-			sys.exit(0)
+		if freq is None:
+			return
+
+		def find_arg(val):
+			try:
+				return sys.argv.index(val)
+			except ValueError:
+				return -1
+
+		fpos = find_arg('-f')
+		fpos = find_arg('--frequency') if fpos == -1 else fpos
+
+		del sys.argv[fpos]
+		del sys.argv[fpos]
+
+		cmd = ''.join([arg + ' ' for arg in sys.argv])
+
+		if freq == '0':
+			get_scheduler().delete(Const.scheduler_task_name)
+		else:
+			get_scheduler().delete(Const.scheduler_task_name)
+			get_scheduler().schedule(freq, cmd, Const.scheduler_task_name)
+
+		sys.exit(0)
 
 
 	def change_wallpaper(self):
@@ -61,6 +95,7 @@ class Manager():
 		self._style = None
 		self.get_image()
 		self.set_as_wallpaper()
+		if is_py3(): print('')
 			
 
 	def get_image(self):
@@ -77,7 +112,8 @@ class Manager():
 				if service is None:
 					log.info('unknown service or service is disabled')
 					return
-			log.info('using %s'%service.name)
+			prints(service.name)
+			if log.to_stdout(): print('')
 			
 			try:
 				color = self._args.color

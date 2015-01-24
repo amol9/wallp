@@ -3,26 +3,31 @@ import sys
 
 
 class Logger():
-	def __init__(self, stdout=False, logfile=None, log_testresults=False):
+	def __init__(self, log_testresults=False):
 		self._log = logging.getLogger('wallp')
 		self._log.propagate = False
+		self._log_testresults = log_testresults
+		self._to_stdout = False
 
-		if stdout:
+
+	def start(self, logfile, loglevel=logging.ERROR):
+		if logfile == 'stdout':
 			logst = logging.StreamHandler(sys.stdout)
-			logst.setLevel(logging.DEBUG)
+			logst.setLevel(loglevel)
 			self._log.addHandler(logst)
-		
-		if logfile:
+			self._to_stdout = True
+		else:
 			logfh = logging.FileHandler(logfile)
 			logfh.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-			logfh.setLevel(logging.INFO)
+			logfh.setLevel(loglevel)
 			self._log.addHandler(logfh)
+			self._to_stdout = False
+			
+		self._log.setLevel(loglevel)
+
 	
-		self._log.setLevel(logging.DEBUG)
-
-		self._log_testresults = log_testresults
-
-		return
+	def to_stdout(self):
+		return self._to_stdout
 
 
 	def debug(self, msg):
@@ -57,4 +62,4 @@ class Logger():
 		self._testresult = []
 
 
-log = Logger(stdout=True)
+log = Logger()
