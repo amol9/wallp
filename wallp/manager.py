@@ -81,12 +81,19 @@ class Manager():
 
 		cmd = ''.join([arg + ' ' for arg in sys.argv])
 
+		taskname = Const.scheduler_task_name
+		sch = get_scheduler()
 		if freq == '0':
-			get_scheduler().delete(Const.scheduler_task_name)
+			if sch.query(taskname):
+				r = sch.delete(taskname)
+				print('schedule deletion %s..'%('succeeded' if r else 'failed'))
+			else:
+				print('no schedule exists..')
 		else:
-			get_scheduler().delete(Const.scheduler_task_name)
-			get_scheduler().schedule(freq, cmd, Const.scheduler_task_name)
-
+			if sch.query(taskname):
+				sch.delete(taskname)
+			r = sch.schedule(freq, cmd, taskname)
+			print('schedule creation %s..'%('succeeded' if r else 'failed'))
 		sys.exit(0)
 
 
@@ -148,7 +155,7 @@ class Manager():
 			buf = f.read(10000)
 
 		_, wp_width, wp_height = get_image_info(buf, filepath=self._wp_path)
-		log.debug('iamge: width=%d, height=%d'%(wp_width, wp_height))
+		log.debug('image: width=%d, height=%d'%(wp_width, wp_height))
 
 		if wp_width < 5 and wp_height < 5:
 			style = 'tiled'

@@ -71,18 +71,37 @@ class WindowsScheduler(Scheduler):
 	}
 
 	
-	def scehdule(self, freq, cmd, taskname):
+	def schedule(self, freq, cmd, taskname):
 		num, period = self.parse(freq)
-		schtasks_cmd = 'schtasks /create /tn %s /tr %s/sc %s /mo %d'%\
-				(taskname, cmd, period_map[period], num)
+		schtasks_cmd = 'schtasks /create /tn %s /tr \"%s\" /sc %s /mo %d'%\
+				(taskname, cmd, self.period_map[period], num)
+		log.debug('schedule command: %s'%schtasks_cmd)
 		with command(schtasks_cmd) as c:
-			c.execute()
+			out = c.execute()
+			if out is not None:
+				return True
+		return False
 
 
 	def delete(self, taskname):
-		schtasks_cmd = 'schtasks /delete /tn %s'%taskname
+		out = None	
+		schtasks_cmd = 'schtasks /delete /tn %s /f'%taskname
 		with command(schtasks_cmd) as c:
-			c.execute()
+			out = c.execute()
+			if out is not None:
+				return True
+		return False
+				
+				
+	def query(self, taskname):
+		out = None
+		query_cmd = 'schtasks /query /tn %s'%taskname
+		with command(query_cmd) as c:
+			out = c.execute(supress_output=True)
+		if out is None:
+			log.debug('schtasks query: %s not found'%taskname)
+			return False
+		return True
 
 
 def get_scheduler():

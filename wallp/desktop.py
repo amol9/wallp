@@ -111,7 +111,6 @@ class WindowsDesktop(Desktop):
 		winreg.SetValueEx(key, 'WallpaperStyle', 0, winreg.REG_SZ, wp_style)
 
 		if style == 'tiled':
-			print('setting to tiled')
 			winreg.SetValueEx(key, 'TileWallpaper', 0, winreg.REG_SZ, '1')
 		else:
 			winreg.SetValueEx(key, 'TileWallpaper', 0, winreg.REG_SZ, '0')
