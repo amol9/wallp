@@ -1,5 +1,7 @@
 from os.path import join as joinpath, expanduser
 
+from wallp.system import *
+
 
 class Const():
 	app_name = 'wallpaper_app'
@@ -12,4 +14,5 @@ class Const():
 	cache_enabled = True
 	image_extensions = ['jpg', 'png', 'bmp', 'jpeg']
 	script_name = 'wallp'
-	scheduler_task_name = 'wallp_scheduled_task'	
+	scheduler_task_name = 'wallp_scheduled_task'
+	scheduler_cmd = 'wallps' if is_windows() else script_name 

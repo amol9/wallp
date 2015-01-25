@@ -43,7 +43,7 @@ class LinuxDesktop(Desktop):
 	def get_size(self):
 		xinfo = None
 		with command('xdpyinfo') as c:
-			xinfo = c.execute()
+			xinfo, _ = c.execute()
 
 		dim_regex = re.compile(".*dimensions:\s+(\d+)x(\d+).*", re.M | re.S)
 		m = dim_regex.match(xinfo)

@@ -79,18 +79,18 @@ class Manager():
 		del sys.argv[fpos]
 		del sys.argv[fpos]
 
-		cmd = ''.join([arg + ' ' for arg in sys.argv])
+		cmd = Const.scheduler_cmd + ' ' + ' '.join([arg for arg in sys.argv[1:]])
 
 		taskname = Const.scheduler_task_name
 		sch = get_scheduler()
 		if freq == '0':
-			if sch.query(taskname):
+			if sch.exists(taskname):
 				r = sch.delete(taskname)
 				print('schedule deletion %s..'%('succeeded' if r else 'failed'))
 			else:
 				print('no schedule exists..')
 		else:
-			if sch.query(taskname):
+			if sch.exists(taskname):
 				sch.delete(taskname)
 			r = sch.schedule(freq, cmd, taskname)
 			print('schedule creation %s..'%('succeeded' if r else 'failed'))

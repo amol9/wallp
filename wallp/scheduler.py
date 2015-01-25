@@ -24,6 +24,10 @@ class Scheduler():
 	def delete(self, taskname):
 		pass
 
+	@abstractmethod
+	def exists(self, taskname):
+		pass
+
 	def parse(self, freq):
 		freq_regex = re.compile("(\d{1,3})((m|h|d|w|M))")
 		match = freq_regex.match(freq)
@@ -52,13 +56,29 @@ class LinuxScheduler(Scheduler):
 		cronstr = self.cron_strings[period]%num
 		sh_cmd = '(crontab -l ; echo \"%s\" %s \\#%s) | crontab'%(cronstr, cmd, taskname)
 		with command(sh_cmd) as c:
-			c.execute()
+			_, rc = c.execute(supress_output=True)
+			if rc == 0:
+				return True
+		return False
 
 
 	def delete(self, taskname):
 		sh_cmd = 'crontab -l | grep -v %s$ | crontab'%taskname
 		with command(sh_cmd) as c:
-			c.execute()
+			_, rc = c.execute(supress_output=True)
+			if rc == 0:
+				return True
+		return False
+
+	
+	def exists(self, taskname):
+		sh_cmd = 'crontab -l | grep -v %s$'%taskname
+		with command(sh_cmd) as c:
+			_, rc = c.execute(supress_output=True)
+			if rc == 0:
+				return True
+		return False
+	
 
 
 class WindowsScheduler(Scheduler):
@@ -77,8 +97,8 @@ class WindowsScheduler(Scheduler):
 				(taskname, cmd, self.period_map[period], num)
 		log.debug('schedule command: %s'%schtasks_cmd)
 		with command(schtasks_cmd) as c:
-			out = c.execute()
-			if out is not None:
+			_, rc = c.execute(supress_output=True)
+			if rc == 0:
 				return True
 		return False
 
@@ -87,21 +107,20 @@ class WindowsScheduler(Scheduler):
 		out = None	
 		schtasks_cmd = 'schtasks /delete /tn %s /f'%taskname
 		with command(schtasks_cmd) as c:
-			out = c.execute()
-			if out is not None:
+			_, rc = c.execute(supress_output=True)
+			if rc == 0:
 				return True
 		return False
 				
 				
-	def query(self, taskname):
+	def exists(self, taskname):
 		out = None
 		query_cmd = 'schtasks /query /tn %s'%taskname
 		with command(query_cmd) as c:
-			out = c.execute(supress_output=True)
-		if out is None:
-			log.debug('schtasks query: %s not found'%taskname)
-			return False
-		return True
+			_, rc = c.execute(supress_output=True)
+			if rc == 0:
+				return True
+		return False
 
 
 def get_scheduler():

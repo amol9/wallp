@@ -1,7 +1,13 @@
-from subprocess import check_output, CalledProcessError, DEVNULL
+from subprocess import check_output, CalledProcessError
+import os
 
 from wallp.logger import log
 from wallp.system import *
+
+if is_py3():
+	from subprocess import DEVNULL
+else:
+	DEVNULL = open(os.devnull, 'wb')
 
 
 class command():
@@ -13,17 +19,19 @@ class command():
 
 	def execute(self, supress_output=False):
 		try:
-			out = None
+			output = None
 			if supress_output:
-				out = check_output(self._cmd, shell=True, stderr=DEVNULL)
+				check_output(self._cmd, shell=True, stderr=DEVNULL)
 			else:
-				out = check_output(self._cmd, shell=True)
+				output = check_output(self._cmd, shell=True)
 			if is_py3():
-				out = out.decode(encoding='utf-8')
-			return out
+				output = output.decode(encoding='utf-8')
+
+			return output, 0
 		except CalledProcessError as e:
 			#log.error('error while executing system command, return code: %d'%e.returncode)
-			return None
+			print 'failed'
+			return e.output, e.returncode
 
 	def __exit__(self, exc_typ, exc_val, exc_tb):
 		pass
