@@ -1,1 +1,3 @@
-import wallp.main
+from wallp.main import main
+
+main()

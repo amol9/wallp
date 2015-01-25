@@ -7,5 +7,5 @@ def main():
 	mgr = Manager()
 	mgr.change_wallpaper()
 
-main()
+#main()
 
