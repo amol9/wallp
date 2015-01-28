@@ -25,10 +25,11 @@ def get_pictures_dir():
 
 def prints(msg):
 	if is_py3():
-		#print(msg, end=' ', flush=True)
-		sys.stdout.write(msg + ' ')
-		sys.stdout.flush()
+		if sys.stdout is not None:
+			sys.stdout.write(msg + ' ')
+			sys.stdout.flush()
 	else:
-		print(msg),
-		sys.stdout.flush()
+		if sys.stdout is not None:
+			print(msg),
+			sys.stdout.flush()
 	

@@ -43,11 +43,11 @@ class Scheduler():
 
 class LinuxScheduler(Scheduler):
 	cron_strings = {
-		'm': '0/%d * * * *',
-		'h': '0 0/%d * * *',
-		'd': '0 0 1/%d * *',
-		'w': '0 0 * * 0/%d',
-		'M': '0 0 1 1/%d *'
+		'm': '*/%d * * * *',
+		'h': '0 */%d * * *',
+		'd': '0 0 */%d * *',
+		'w': '0 0 * * */%d',
+		'M': '0 0 1 */%d *'
 	}
 
 

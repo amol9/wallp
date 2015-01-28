@@ -24,13 +24,12 @@ class command():
 				check_output(self._cmd, shell=True, stderr=DEVNULL)
 			else:
 				output = check_output(self._cmd, shell=True)
-			if is_py3():
+			if is_py3() and not supress_output:
 				output = output.decode(encoding='utf-8')
 
 			return output, 0
 		except CalledProcessError as e:
 			#log.error('error while executing system command, return code: %d'%e.returncode)
-			print 'failed'
 			return e.output, e.returncode
 
 	def __exit__(self, exc_typ, exc_val, exc_tb):

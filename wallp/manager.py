@@ -30,6 +30,7 @@ class MultilineFormatter(HelpFormatter):
 
 class Manager():
 	def __init__(self):
+		log.debug('[start]')
 		if not exists(Const.data_dir):
 			mkdir(Const.data_dir)
 		self.parse_args()
