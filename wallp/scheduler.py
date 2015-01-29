@@ -54,7 +54,21 @@ class LinuxScheduler(Scheduler):
 	def schedule(self, freq, cmd, taskname):
 		num, period = self.parse(freq)
 		cronstr = self.cron_strings[period]%num
-		sh_cmd = '(crontab -l ; echo \"%s\" %s \\#%s) | crontab'%(cronstr, cmd, taskname)
+
+		cmd_parts = cmd.split()
+		cmd_name = cmd_parts[0]
+
+		cmd_full_path = None
+		with command('which %s'%cmd_name) as c:
+			cmd_full_path, rc = c.execute()
+			if rc != 0:
+				cmd_full_path = cmd_name
+			else:
+				cmd_full_path = cmd_full_path.strip()
+
+		cmd = cmd_full_path + ' ' + ' '.join(cmd_parts[1:])
+		sh_cmd = '(crontab -l ; echo \"%s\" %s \\#%s) | crontab'%(cronstr, cmd, taskname + '\n')
+
 		with command(sh_cmd) as c:
 			_, rc = c.execute(supress_output=True)
 			if rc == 0:

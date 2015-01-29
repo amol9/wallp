@@ -34,6 +34,14 @@ class Config():
 		return self.typecast(ret, type)
 
 
+	def set(self, section, option, value):
+		if not self._config.has_section(section):
+			self._config.add_section(section)
+
+		self._config.set(section, option, value)
+		self.write()
+
+
 	def typecast(self, value, type):
 		if type is None:
 			return value
