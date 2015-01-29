@@ -1,10 +1,13 @@
 from struct import pack
 from os.path import join as joinpath
+from random import choice
 
 from wallp.service import Service, ServiceException, service_factory
 from wallp.desktop import get_desktop
 from wallp.config import config
 from wallp.logger import log
+from wallp.colors import colors
+
 
 #color palette
 #test with odd sizes: 9x9, etc.
@@ -20,13 +23,25 @@ class Bitmap(Service):
 		#width, height = get_desktop().get_size()
 		width, height = 2, 2
 
+		if color is not None:
+			if color.startswith('0x'):
+				pass
+			else:
+				c = colors.get(color)
+				if c is None:
+					print('no such color')
+					raise ServiceException()
+				color = c
+		else:
+			color = choice(colors.values())
+
 		save_path = joinpath(pictures_dir, basename + '.bmp')
 
 		with open(save_path, 'wb') as f:
 			pa_size, _ = self.get_pixel_array_size(width, height)
 			self.write_bmp_header(f, pa_size)
 			self.write_dib_header(f, width, height)
-			self.write_pixel_array(f, width, height, color if color else '0x0000F0')
+			self.write_pixel_array(f, width, height, color)
 
 		return basename + '.bmp'
 

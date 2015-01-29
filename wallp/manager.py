@@ -49,7 +49,7 @@ class Manager():
 				''.join([s.name + ', ' for s in service_factory.services[0:-1]]) + service_factory.services[-1].name + ')')
 		argparser.add_argument('-q', '--query', help='search term for wallpapers')
 		argparser.add_argument('-c', '--color', help='color')
-		argparser.add_argument('-l', '--log', help='logfile name / stdout')
+		argparser.add_argument('-l', '--log', default='stdout', help='logfile name / stdout')
 		argparser.add_argument('-ll', '--loglevel',
 			choices=[v.lower() for (k, v) in list(logging_levels.items()) if type(k) == int and k > 0], help='log level')
 		argparser.add_argument('-f', '--frequency', help='R|set the frequency for update' + os.linesep + scheduler_help_text)
@@ -120,8 +120,8 @@ class Manager():
 				if service is None:
 					log.info('unknown service or service is disabled')
 					return
-			prints(service.name)
-			if log.to_stdout(): print('')
+			prints('[%s]'%service.name)
+			#if log.to_stdout(): print('')
 			
 			try:
 				color = self._args.color
@@ -137,7 +137,7 @@ class Manager():
 
 				retry = 0
 			except ServiceException:
-				log.error('error accessing %s'%service.name)
+				log.error('unable to change wallpaper')
 				retry = 0 if service_name else retry - 1
 	
 

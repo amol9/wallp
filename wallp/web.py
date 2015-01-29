@@ -44,7 +44,7 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 		data = cache.get(url)
 		if data is not None:
 			print_progress_ast()
-			if log.to_stdout(): print('')
+			#if log.to_stdout(): print('')
 			if save_filepath is None:
 				if is_py3():
 					data = data.decode(encoding='utf-8')	
@@ -74,7 +74,7 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 		out.write(buf)
 		chunk = res.read(chunksize)
 
-	if log.to_stdout(): print('')
+	#if log.to_stdout(): print('')
 	res.close()
 
 	if not nocache and Const.cache_enabled:
@@ -94,10 +94,8 @@ def download(url, save_filepath=None, progress=True, nocache=False, eh=False):
 
 
 def print_progress_dot():
-	#print(('.'), end=' '); sys.stdout.flush()
 	prints('.')
 
 
 def print_progress_ast():
-	#print(('*'), end=' '); sys.stdout.flush()
 	prints('*')

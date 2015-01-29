@@ -182,10 +182,3 @@ http://imgur.com/gallery/5vKwE
 http://imgur.com/gallery/JAyva
 '''
 
-if __name__ == '__main__':
-	import sys
-	i = Imgur()
-	url = i.get_image_url_from_page(sys.argv[1])
-	print(url)
-	#i.search(sys.argv[1])
-

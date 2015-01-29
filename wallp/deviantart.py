@@ -23,7 +23,7 @@ class DeviantArt(Service):
 
 	def get_image(self, pictures_dir, basename, query=None, color=None):
 		params = {}
-		params['q'] = query if query else 'wallpapers'
+		params['q'] = query if query else 'deviant'
 
 		width, height = get_desktop().get_size()		
 		params['q'] += ' width:' + str(width) + ' height:' + str(height)
