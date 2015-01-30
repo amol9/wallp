@@ -33,7 +33,7 @@ class Bitmap(Service):
 					raise ServiceException()
 				color = c
 		else:
-			color = choice(colors.values())
+			color = choice(list(colors.values()))
 
 		save_path = joinpath(pictures_dir, basename + '.bmp')
 

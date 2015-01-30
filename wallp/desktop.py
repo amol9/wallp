@@ -74,8 +74,8 @@ class LinuxDesktop(Desktop):
 			width = int(m.group(1))
 			height = int(m.group(2))
 
-		config.set('desktop', 'width', width)
-		config.set('desktop', 'height', height)
+		config.set('desktop', 'width', str(width))
+		config.set('desktop', 'height', str(height))
 
 		return width, height
 
