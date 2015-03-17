@@ -1,16 +1,13 @@
 from struct import pack
-from os.path import join as joinpath
 from random import choice
+from os.path import join as joinpath
 
-from wallp.service import Service, ServiceException, service_factory
-from wallp.desktop import get_desktop
-from wallp.config import config
 from wallp.logger import log
+from wallp.config import config
 from wallp.colors import colors
+from wallp.desktop import get_desktop
+from wallp.service import Service, ServiceException, service_factory
 
-
-#color palette
-#test with odd sizes: 9x9, etc.
 
 class Bitmap(Service):
 	name = 'bitmap'
@@ -95,3 +92,4 @@ class Bitmap(Service):
 
 if config.get(Bitmap.name, 'enabled', default=True, type=bool):
 	service_factory.add(Bitmap.name, Bitmap)
+

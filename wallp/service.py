@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from random import choice
 
-from wallp.system import *
+from mangoutils.system import *
 
 '''if is_py3():
 	class Service(metaclass=ABCMeta):

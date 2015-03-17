@@ -1,4 +1,4 @@
-from wallp.system import *
+from mangoutils.system import *
 if is_py3():
 	from urllib.error import HTTPError
 	from urllib.request import urlopen

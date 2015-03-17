@@ -3,7 +3,7 @@ from subprocess import check_output, CalledProcessError
 import re
 import os
 
-from wallp.system import *
+from mangoutils.system import *
 from wallp.globals import Const
 from wallp.logger import log
 from wallp.command import command

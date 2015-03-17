@@ -5,7 +5,7 @@ import re
 import os
 import sys
 
-from wallp.system import *
+from mangoutils.system import *
 from wallp.logger import log
 from wallp.command import command
 from wallp.config import config

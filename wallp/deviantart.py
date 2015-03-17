@@ -1,29 +1,35 @@
-from wallp.system import *
+from mangoutils.system import *
 if is_py3():
 	from urllib.parse import urlencode
 else:
 	from urllib import urlencode
-from os.path import join as joinpath
-import xml.etree.ElementTree as ET
-from random import randint
 
-from wallp.service import Service, service_factory, ServiceException
+from random import choice
+import xml.etree.ElementTree as ET
+from os.path import join as joinpath
+
 import wallp.web as web
-from wallp.desktop import get_desktop
 from wallp.logger import log
 from wallp.config import config
+from wallp.desktop import get_desktop
+from wallp.service import Service, service_factory, ServiceException
 
 
-rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&'
+rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&boost:popular&'
 xmlns = {'media': 'http://search.yahoo.com/mrss/'}
+search_terms = ['tower', 'anime', 'art', 'flower', 'movie', 'nature', 'space', 'lego']
 
 
 class DeviantArt(Service):
 	name = 'deviantart'
 
 	def get_image(self, pictures_dir, basename, query=None, color=None):
+		if query is None:
+			slist = config.get_list('deviantart', 'search_terms', default=search_terms)
+			query = choice(slist)
+	
 		params = {}
-		params['q'] = query if query else 'deviant'
+		params['q'] = query
 
 		width, height = get_desktop().get_size()		
 		params['q'] += ' width:' + str(width) + ' height:' + str(height)
@@ -53,7 +59,7 @@ class DeviantArt(Service):
 				if (image_width >= width * 0.9) and (image_height >= height * 0.9):
 					image_urls.append(mc.get('url'))
 
-		download_url = image_urls[randint(0, len(image_urls) - 1)]
+		download_url = choice(image_urls)
 		log.info('da selected url: ' + download_url)
 
 		ext = download_url[download_url.rfind('.')+1:]

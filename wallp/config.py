@@ -1,4 +1,4 @@
-from wallp.system import *
+from mangoutils.system import *
 if is_py3():
 	from configparser import ConfigParser
 else:

@@ -1,13 +1,13 @@
 import praw
-from os.path import join as joinpath
 from random import randint
+from os.path import join as joinpath
 
-from wallp.service import Service, service_factory, ServiceException
-from wallp.imgur import Imgur
 import wallp.web as web
+from wallp.logger import log
+from wallp.imgur import Imgur
 from wallp.config import config
 from wallp.globals import Const
-from wallp.logger import log
+from wallp.service import Service, service_factory, ServiceException
 
 
 subreddit_list =	['earthporn', 'wallpapers', 'wallpaperdump', 'specart', 'quotesporn', 'offensive_wallpapers',
@@ -64,3 +64,4 @@ class Reddit(Service):
 
 if config.get(Reddit.name, 'enabled', default=True, type=bool):
 	service_factory.add(Reddit.name, Reddit)
+

@@ -1,24 +1,26 @@
 from os.path import join as joinpath
-import sys
-from argparse import ArgumentParser, HelpFormatter
 import os
-from shutil import move
+import sys
 import logging
+from shutil import move
 from itertools import chain
+from argparse import ArgumentParser, HelpFormatter
 
-from wallp.reddit import Reddit
-from wallp.deviantart import DeviantArt
+from mangoutils.system import *
+
 from wallp.bing import Bing
+from wallp.logger import log
 from wallp.imgur import Imgur
 from wallp.google import Google
+from wallp.reddit import Reddit
 from wallp.bitmap import Bitmap
 from wallp.globals import Const
-from wallp.service import service_factory, ServiceException
-from wallp.logger import log
-from wallp.system import *
-from wallp.scheduler import get_scheduler, help as scheduler_help_text
+from wallp.version import __version__
 from wallp.desktop import get_desktop
+from wallp.deviantart import DeviantArt
 from wallp.imageinfo import get_image_info
+from wallp.service import service_factory, ServiceException
+from wallp.scheduler import get_scheduler, help as scheduler_help_text
 
 
 class MultilineFormatter(HelpFormatter):
@@ -45,6 +47,8 @@ class Manager():
 			logging_levels = logging._levelNames
 	
 		argparser = ArgumentParser(formatter_class=MultilineFormatter)
+
+		argparser.add_argument('-v', '--version', action='version', version=__version__, help='print version')
 		argparser.add_argument('-s', '--service', help='service to be used (' +
 				''.join([s.name + ', ' for s in service_factory.services[0:-1]]) + service_factory.services[-1].name + ')')
 		argparser.add_argument('-q', '--query', help='search term for wallpapers')
@@ -121,6 +125,7 @@ class Manager():
 					log.info('unknown service or service is disabled')
 					return
 			prints('[%s]'%service.name)
+			log.debug('[%s]'%service.name)
 			#if log.to_stdout(): print('')
 			
 			try:
@@ -182,26 +187,4 @@ class Manager():
 		log.debug('style: %s'%style)
 		dt.set_wallpaper_style(style)
 		dt.set_wallpaper(self._wp_path)
-
-	#def set_image_as_desktop_back(self):
-		'''
-		iinfo = check_output(['identify', imagepath])
-
-		id_regex = re.compile(".*\s+(\d+)x(\d+)\s+.*")
-		m = id_regex.match(iinfo)
-
-		picture_options = None
-		if m:
-			iwidth = m.group(1)
-			iheight = m.group(2)
-			print 'image w = ', iwidth, ' height = ', iheight
-			
-			if iwidth > self._width or iheight > self._height:
-				picture_options = 'scaled'
-			else:
-				picture_options = 'centered'
-		'''
-
-
-
 

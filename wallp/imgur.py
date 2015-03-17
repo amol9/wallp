@@ -1,18 +1,20 @@
-from wallp.system import *
+from mangoutils.system import *
 if is_py3():
 	from urllib.parse import urlencode
 else:
 	from urllib import urlencode
-from os.path import join as joinpath
-import re
-from random import randint
-import json
 
-from wallp.service import Service, ServiceException, service_factory
+import re
+import json
+from random import randint
+from os.path import join as joinpath
+
 import wallp.web as web
 from wallp.logger import log
-from wallp.htmlparser import HtmlParser
 from wallp.config import config
+from mangoutils.html.parser import HtmlParser
+from wallp.service import Service, ServiceException, service_factory
+
 
 search_url = "http://imgur.com/search?"
 search_result_link_prefix = "http://imgur.com"

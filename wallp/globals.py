@@ -1,6 +1,6 @@
 from os.path import join as joinpath, expanduser
 
-from wallp.system import *
+from mangoutils.system import *
 
 
 class Const():

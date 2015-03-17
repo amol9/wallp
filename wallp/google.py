@@ -1,22 +1,24 @@
-from wallp.system import *
+from mangoutils.system import *
 if is_py3():
 	from urllib.parse import urlencode
 	from urllib.error import HTTPError
 else:
 	from urllib import urlencode
 	from urllib2 import HTTPError
+
 import json
-from os.path import join as joinpath
 from random import choice
+from os.path import join as joinpath
 
-from wallp.service import Service, service_factory
 import wallp.web as web
-from wallp.config import config
 from wallp.logger import log
+from wallp.config import config
+from wallp.service import Service, service_factory
 
 
-default_queries = ['parrot', 'wallpaper', 'flower', 'cheat sheet']
+default_queries = ['flower', 'cheat sheet']
 search_base_url = "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&"
+
 
 class Google(Service):
 	name = 'google'
@@ -29,7 +31,6 @@ class Google(Service):
 		save_path = joinpath(pictures_dir, basename + '.' + ext)
 		with web.download(url, save_path, eh=True) as d:
 			d.start()
-		#web.download(url, save_path)
 
 		return basename + '.' + ext 
 
@@ -66,5 +67,4 @@ class Google(Service):
 
 if config.get(Google.name, 'enabled', default=True, type=bool):
 	service_factory.add(Google.name, Google)
-
 

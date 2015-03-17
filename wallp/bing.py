@@ -1,18 +1,19 @@
-from wallp.system import *
+from mangoutils.system import *
 if is_py3():
 	from urllib.error import HTTPError
 else:
 	from urllib2 import HTTPError
-import json
-import re
-from os.path import join as joinpath
-from random import randint
 
-from wallp.service import Service, service_factory, ServiceException
+import re
+import json
+from random import randint
+from os.path import join as joinpath
+
 import wallp.web as web
-from wallp.desktop import get_desktop
 from wallp.logger import log
 from wallp.config import config
+from wallp.desktop import get_desktop
+from wallp.service import Service, service_factory, ServiceException
 
 
 image_list_url = 'http://www.bing.com/gallery/home/browsedata'
@@ -83,3 +84,4 @@ class Bing(Service):
 
 if config.get(Bing.name, 'enabled', default=True, type=bool):
 	service_factory.add(Bing.name, Bing)
+
