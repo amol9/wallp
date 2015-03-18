@@ -2,16 +2,28 @@
 wallp
 =====
 
-A command line utility to download and set wallpapers from various sources. 
+This utility selects an online / offline source at random, gets a random image and sets it as a wallpaper.
 
 
 Features
 ========
-* Works on Linux / Windows.
-* Downloads images from various sources. Currently supported sources: reddit, imgur, bing (gallery), google images, deviantart.
-* Can set plain bitmap as wallpaper.
+* Supported platforms: Linux / Windows / Python 2.7 / Python 3.x.
+* Downloads images from various sources.
+
+  Online:
+
+	* reddit
+	* imgur
+	* bing (gallery)
+	* google images
+	* deviantart
+
+  Offline:
+
+	* bitmap (a single color bitmap is generated)
+
 * Allows scheduling of change of wallpaper, viz., every 5 minutes, every 1 hour, etc.
-* Can download images based on a query.  
+* Can download image based on a query.  
 
 Usage
 =====
@@ -19,9 +31,10 @@ Usage
 
 	wallp
 
-#. Query google images for "linux wallpapers" and set a random image as wallpaper from results::
+#. Query for "linux wallpapers" and set a random image as wallpaper from results::
 
 	wallp -s google -q "linux wallpapers"
+	wallp -s imgur -q "linux wallpapers"
 
 #. Set a plain blue colored bitmap as wallpaper::
 
@@ -51,5 +64,6 @@ Usage
 
 Download
 ========
-* PyPI: http://pypi.python.org/pypi/wallp/
+* PyPI: http://pypi.python.org/pypi/wallp
+* Source: https://github.com/amol9/wallp
 

@@ -4,18 +4,17 @@ ez_setup.use_setuptools()
 import platform
 from setuptools import setup, find_packages
 
-from wallp.globals import Const
 from wallp.version import __version__
 
 
 entry_points = {}
 entry_points['console_scripts'] = ['wallp=wallp.main:main']
 if platform.system() == 'Windows':
-	entry_points['gui_scripts'] = ['%s=wallp.main:main'%Const.scheduler_cmd]
+	entry_points['gui_scripts'] = ['wallps=wallp.main:main']
 
 setup(	name='wallp',
 	version=__version__,
-	description='Utility to download and set desktop wallpapers from various online / offline sources.',
+	description='A command line utility to download and set wallpapers from various sources.',
 	author='Amol Umrale',
 	author_email='babaiscool@gmail.com',
 	url='http://pypi.python.org/pypi/wallp/',
