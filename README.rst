@@ -11,16 +11,14 @@ Features
 * Downloads images from various sources.
 
   Online:
-
-	* reddit
-	* imgur
-	* bing (gallery)
-	* google images
-	* deviantart
+    * reddit
+    * imgur
+    * bing (gallery)
+    * google images
+    * deviantart
 
   Offline:
-
-	* bitmap (a single color bitmap is generated)
+    * bitmap (a single color bitmap is generated)
 
 * Allows scheduling of change of wallpaper, viz., every 5 minutes, every 1 hour, etc.
 * Can download image based on a query.  
