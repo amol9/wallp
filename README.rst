@@ -40,21 +40,21 @@ Usage
 
 #. Schedule change of wallpaper:
 
-	every 5 minutes::
+   every 5 minutes::
 
-		wallp -f 5m
+	wallp -f 5m
 
-	every 1 hour::
+   every 1 hour::
 
-		wallp -f 1h
+	wallp -f 1h
 
-	every 2 days::
+   every 2 days::
 
-		wallp -f 2d
+	wallp -f 2d
 
-	remove schedule::
+   remove schedule::
 
-		wallp -f 0
+	wallp -f 0
 
 #. For more options, get help::
 
