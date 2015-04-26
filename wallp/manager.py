@@ -16,7 +16,7 @@ from wallp.reddit import Reddit
 from wallp.bitmap import Bitmap
 from wallp.globals import Const
 from wallp.version import __version__
-from wallp.desktop import get_desktop
+from wallp.desktop_factory import get_desktop
 from wallp.deviantart import DeviantArt
 from wallp.imageinfo import get_image_info
 from wallp.service import service_factory, ServiceException
@@ -185,6 +185,6 @@ class Manager():
 				style = 'scaled' if same_ar else 'zoom' 
 
 		log.debug('style: %s'%style)
-		dt.set_wallpaper_style(style)
-		dt.set_wallpaper(self._wp_path)
+		#dt.set_wallpaper_style(style)
+		dt.set_wallpaper(self._wp_path, style=style)
 

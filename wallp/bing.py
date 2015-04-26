@@ -12,7 +12,7 @@ from os.path import join as joinpath
 import wallp.web as web
 from wallp.logger import log
 from wallp.config import config
-from wallp.desktop import get_desktop
+from wallp.desktop_factory import get_desktop
 from wallp.service import Service, service_factory, ServiceException
 
 

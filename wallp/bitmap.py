@@ -5,7 +5,7 @@ from os.path import join as joinpath
 from wallp.logger import log
 from wallp.config import config
 from wallp.colors import colors
-from wallp.desktop import get_desktop
+from wallp.desktop_factory import get_desktop
 from wallp.service import Service, ServiceException, service_factory
 
 
