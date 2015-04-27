@@ -16,7 +16,7 @@ from wallp.reddit import Reddit
 from wallp.bitmap import Bitmap
 from wallp.globals import Const
 from wallp.version import __version__
-from wallp.desktop_factory import get_desktop
+from wallp.desktop_factory import get_desktop, DesktopException
 from wallp.deviantart import DeviantArt
 from wallp.imageinfo import get_image_info
 from wallp.service import service_factory, ServiceException
@@ -106,7 +106,11 @@ class Manager():
 		self._wp_path = None
 		self._style = None
 		self.get_image()
-		self.set_as_wallpaper()
+		try:
+			self.set_as_wallpaper()
+		except DesktopException:
+			log.error('cannot change wallpaper')
+
 		if is_py3(): print('')
 			
 

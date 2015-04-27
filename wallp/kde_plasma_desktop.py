@@ -5,8 +5,8 @@ from tempfile import NamedTemporaryFile
 
 from wallp.desktop import Desktop
 from wallp.command import command
-import wallp.linux_desktop_helper as ldh
-
+from wallp.linux_desktop_helper import get_desktop_size, uses_dbus
+from wallp.logger import log
 
 '''
 wallpaperposition values:
@@ -29,8 +29,9 @@ class KdePlasmaDesktop(Desktop):
 	}
 
 
+	@uses_dbus
 	def get_size(self):
-		return ldh.get_desktop_size()
+		return get_desktop_size()
 
 
 	def make_js(self, path=None, style=None):
@@ -80,13 +81,15 @@ class KdePlasmaDesktop(Desktop):
 
 		return style_code
 
-
+	
+	@uses_dbus
 	def set_wallpaper(self, filepath, style=None):
 		style_code = self.get_style_code(style)	
 		js = self.make_js(filepath, style_code)
 		self.execute_js(js)
 		
 	
+	@uses_dbus
 	def set_wallpaper_style(self, style):
 		style_code = self.get_style_code(style)	
 		js = self.make_js(None, style_code)
