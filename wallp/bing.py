@@ -14,6 +14,7 @@ from wallp.logger import log
 from wallp.config import config
 from wallp.desktop_factory import get_desktop
 from wallp.service import Service, service_factory, ServiceException
+from wallp.standard_desktop_sizes import get_standard_desktop_size
 
 
 image_list_url = 'http://www.bing.com/gallery/home/browsedata'
@@ -45,7 +46,8 @@ class Bing(Service):
 
 		ext = 'jpg'
 		width, height = get_desktop().get_size()
-		try_image = True
+		width, height = get_standard_desktop_size(width, height)
+		try_image = 3
 
 		while (try_image):		
 			image_name = image_names[randint(0, len(image_names) - 1)]
@@ -55,10 +57,10 @@ class Bing(Service):
 			save_filepath = joinpath(pictures_dir, basename) + '.' + ext
 			try:
 				web.download(image_url, save_filepath)
-				try_image = False
+				try_image = 0
 			except HTTPError as e:
 				if e.code == 404:
-					try_image = True
+					try_image -= 1
 				else:
 					try_image = False
 					raise ServiceException()

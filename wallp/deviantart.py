@@ -13,6 +13,7 @@ from wallp.logger import log
 from wallp.config import config
 from wallp.desktop_factory import get_desktop
 from wallp.service import Service, service_factory, ServiceException
+from wallp.standard_desktop_sizes import get_standard_desktop_size
 
 
 rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&boost:popular&'
@@ -31,7 +32,9 @@ class DeviantArt(Service):
 		params = {}
 		params['q'] = query
 
-		width, height = get_desktop().get_size()		
+		width, height = get_desktop().get_size()
+		width, height = get_standard_desktop_size(width, height)
+
 		params['q'] += ' width:' + str(width) + ' height:' + str(height)
 
 		url = rss_url_base + urlencode(params)

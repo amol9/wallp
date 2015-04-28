@@ -86,7 +86,7 @@ class LinuxScheduler(Scheduler):
 
 	
 	def exists(self, taskname):
-		sh_cmd = 'crontab -l | grep -v %s$'%taskname
+		sh_cmd = 'crontab -l | grep %s$'%taskname
 		with command(sh_cmd) as c:
 			_, rc = c.execute(supress_output=True)
 			if rc == 0:
