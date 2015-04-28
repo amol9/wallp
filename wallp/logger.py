@@ -61,5 +61,10 @@ class Logger():
 	def clear_testresult(self):
 		self._testresult = []
 
+	
+	def enable_testresults(self):
+		self._log_testresults = True
+		self._testresult = []
+
 
 log = Logger()
