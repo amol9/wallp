@@ -51,6 +51,7 @@ class KdePlasmaDesktop(Desktop):
 		return js
 
 
+	@uses_dbus
 	def execute_js(self, js):
 		plasma_app = dbus.SessionBus().get_object('org.kde.plasma-desktop', '/App')
 		plasma_app_iface = dbus.Interface(plasma_app, 'local.PlasmaApp')
@@ -82,14 +83,12 @@ class KdePlasmaDesktop(Desktop):
 		return style_code
 
 	
-	@uses_dbus
 	def set_wallpaper(self, filepath, style=None):
 		style_code = self.get_style_code(style)	
 		js = self.make_js(filepath, style_code)
 		self.execute_js(js)
 		
 	
-	@uses_dbus
 	def set_wallpaper_style(self, style):
 		style_code = self.get_style_code(style)	
 		js = self.make_js(None, style_code)
