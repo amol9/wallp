@@ -50,9 +50,7 @@ def set_dbus_session_vars_if_cron():
 			if len(matches) == 0:
 				continue
 
-			start = matches[0].index('=') + 1
-			length = matches[0].index(',')
-			dbus_session_bus_addr = matches[0][start:length]
+			dbus_session_bus_addr = matches[0][matches[0].index('=') + 1:-1]
 
 			log.debug('DBUS_SESSION_BUS_ADDRESS = %s'%dbus_session_bus_addr)
 			os.environ['DBUS_SESSION_BUS_ADDRESS'] = dbus_session_bus_addr
