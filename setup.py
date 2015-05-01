@@ -21,7 +21,7 @@ setup(	name='wallp',
 	packages=['wallp'],
 	scripts=['ez_setup.py'],
 	entry_points = entry_points,
-	install_requires=['praw', 'mangoutils'],
+	install_requires=['praw', 'mutils'],
 	classifiers=[
 		'Development Status :: 4 - Beta',
 		'Environment :: Console',
