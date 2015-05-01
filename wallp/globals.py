@@ -1,6 +1,6 @@
 from os.path import join as joinpath, expanduser
 
-from mangoutils.system import *
+from mutils.system import *
 
 
 class Const():

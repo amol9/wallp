@@ -1,4 +1,4 @@
-from mangoutils.system import *
+from mutils.system import *
 if is_py3():
 	from urllib.parse import urlencode
 	from urllib.error import HTTPError

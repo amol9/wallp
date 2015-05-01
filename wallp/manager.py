@@ -6,7 +6,7 @@ from shutil import move
 from itertools import chain
 from argparse import ArgumentParser, HelpFormatter
 
-from mangoutils.system import *
+from mutils.system import *
 
 from wallp.bing import Bing
 from wallp.logger import log

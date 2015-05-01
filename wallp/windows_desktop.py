@@ -1,7 +1,7 @@
 import ctypes
 
 from wallp.desktop import Desktop
-from mangoutils.system import *
+from mutils.system import *
 
 if is_windows():
 	if is_py3(): import winreg

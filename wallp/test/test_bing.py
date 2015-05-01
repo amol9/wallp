@@ -1,6 +1,6 @@
 from unittest import TestCase, main as ut_main
 
-from mangoutils.system import *
+from mutils.system import *
 if is_py3():
 	from urllib.error import HTTPError
 	from urllib.request import urlopen

@@ -1,4 +1,4 @@
-from mangoutils.system import *
+from mutils.system import *
 if is_py3():
 	from urllib.parse import urlencode
 else:
@@ -12,7 +12,7 @@ from os.path import join as joinpath
 import wallp.web as web
 from wallp.logger import log
 from wallp.config import config
-from mangoutils.html.parser import HtmlParser
+from mutils.html.parser import HtmlParser
 from wallp.service import Service, ServiceException, service_factory
 
 
@@ -182,5 +182,6 @@ http://imgur.com/gallery/D3vya - 976
 dump of dumps: http://imgur.com/a/GV71l?gallery - 52000
 http://imgur.com/gallery/5vKwE
 http://imgur.com/gallery/JAyva
+http://imgur.com/gallery/1qukj
 '''
 

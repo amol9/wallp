@@ -3,10 +3,13 @@ import dbus
 from time import sleep
 from tempfile import NamedTemporaryFile
 
+from wallp.logger import log
 from wallp.desktop import Desktop
 from wallp.command import command
 from wallp.linux_desktop_helper import get_desktop_size, uses_dbus
-from wallp.logger import log
+
+
+#js execution + xdotool approach used from: http://blog.zx2c4.com/699 (Jason A. Donenfeld)
 
 '''
 wallpaperposition values:

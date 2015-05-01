@@ -1,6 +1,6 @@
 import os
 
-from mangoutils.system import *
+from mutils.system import *
 
 from wallp.logger import log
 from wallp.gnome_desktop import GnomeDesktop

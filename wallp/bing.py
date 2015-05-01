@@ -1,4 +1,4 @@
-from mangoutils.system import *
+from mutils.system import *
 if is_py3():
 	from urllib.error import HTTPError
 else:
@@ -32,7 +32,7 @@ class Bing(Service):
 	def get_image(self, pictures_dir, basename, query=None, color=None):
 		image_names = self.get_image_names()
 
-		if image_names is None or len(imagenames) == 0:
+		if image_names is None or len(image_names) == 0:
 			log.error('bing: no images found at %s'%image_list_url)
 			raise ServiceException()
 

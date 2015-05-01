@@ -2,7 +2,7 @@ from subprocess import check_output, CalledProcessError
 import os
 
 from wallp.logger import log
-from mangoutils.system import *
+from mutils.system import *
 
 if is_py3():
 	from subprocess import DEVNULL
