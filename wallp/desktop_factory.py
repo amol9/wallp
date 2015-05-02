@@ -13,6 +13,7 @@ class DesktopException(Exception):
 	pass
 
 
+@uses_dbus
 def get_desktop():
 	if is_linux():
 		gdmsession = os.environ.get('GDMSESSION', None)
