@@ -15,4 +15,6 @@ class Const():
 	image_extensions = ['jpg', 'png', 'bmp', 'jpeg']
 	script_name = 'wallp'
 	scheduler_task_name = 'wallp_scheduled_task'
-	scheduler_cmd = 'wallps' if is_windows() else script_name 
+	scheduler_cmd = 'wallps' if is_windows() else script_name
+	db_name = 'wallp.db'
+	db_path = joinpath(data_dir, db_name)
