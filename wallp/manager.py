@@ -8,18 +8,13 @@ from argparse import ArgumentParser, HelpFormatter
 
 from mutils.system import *
 
-from wallp.bing import Bing
 from wallp.logger import log
-from wallp.imgur import Imgur
-from wallp.google import Google
-from wallp.reddit import Reddit
-from wallp.bitmap import Bitmap
 from wallp.globals import Const
 from wallp.version import __version__
 from wallp.desktop_factory import get_desktop, DesktopException
-from wallp.deviantart import DeviantArt
 from wallp.imageinfo import get_image_info
-from wallp.service import service_factory, ServiceException
+from wallp.service import ServiceException
+from wallp.service_factory import service_factory
 from wallp.scheduler import get_scheduler, help as scheduler_help_text
 
 

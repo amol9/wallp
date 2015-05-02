@@ -13,7 +13,7 @@ from os.path import join as joinpath
 import wallp.web as web
 from wallp.logger import log
 from wallp.config import config
-from wallp.service import Service, service_factory
+from wallp.service import Service
 
 
 default_queries = ['flower', 'cheat sheet']
@@ -63,8 +63,4 @@ class Google(Service):
 			raise ServiceException()
 			
 		return choice(urls)
-
-
-if config.get(Google.name, 'enabled', default=True, type=bool):
-	service_factory.add(Google.name, Google)
 

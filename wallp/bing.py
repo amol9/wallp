@@ -13,7 +13,7 @@ import wallp.web as web
 from wallp.logger import log
 from wallp.config import config
 from wallp.desktop_factory import get_desktop
-from wallp.service import Service, service_factory, ServiceException
+from wallp.service import Service, ServiceException
 from wallp.standard_desktop_sizes import get_standard_desktop_size
 
 
@@ -109,8 +109,4 @@ class Bing(Service):
 			url = m.group(1)
 			return url
 		return None
-
-
-if config.get(Bing.name, 'enabled', default=True, type=bool):
-	service_factory.add(Bing.name, Bing)
 

@@ -6,6 +6,7 @@ from os.path import dirname, abspath, join as joinpath
 
 from . import *
 from ..globals import Const
+from ..service_factory import service_factory
 
 
 class CreateOp():
@@ -30,7 +31,23 @@ class CreateOp():
 
 	
 	def insert_default_config(self):
-		pass
+		self.insert_service_status()
+		self.insert_config_defaults()
+		self._session.commit()
+
+
+	def insert_service_status(self):
+		for service in service_factory.get_all():
+			self._session.add(Config(group=service.name, name='enabled', value='true'))
+
+
+	def insert_config_defaults(self):
+		with open(joinpath(self._data_dir_abspath, 'config.csv'), 'r') as config_csv:
+			config_reader = reader(config_csv)
+			for row in config_reader:
+				group, name = row[0].split('.')
+				self._session.add(Config(group=group, name=name, value=row[1]))
+
 
 
 	def insert_imgur_data(self):
