@@ -42,7 +42,11 @@ class CreateOp():
 
 
 	def insert_reddit_data(self):
-		pass
+		with open(joinpath(self._data_dir_abspath, 'reddit.csv'), 'r') as reddit_csv:
+			reddit_reader = reader(reddit_csv)
+			for row in reddit_reader:
+				self._session.add(Reddit(sub=row[0]))
+		self._session.commit()
 
 
 def create_db(db_path):

@@ -8,5 +8,6 @@ class Imgur(Base):
 
 	id =		Column(Integer, primary_key=True)
 	album = 	Column(String(512))
+	image_count =	Column(Integer)
 	enabled =	Column(Boolean, default=True)
 
