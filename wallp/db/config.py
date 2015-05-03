@@ -9,4 +9,5 @@ class Config(Base):
 	group =	Column(String(20), primary_key=True)
 	name =	Column(String(40), primary_key=True)
 	value =	Column(String(512))
+	type = 	Column(String(15))
 
