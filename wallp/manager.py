@@ -7,12 +7,6 @@ from argparse import ArgumentParser, HelpFormatter
 
 from mutils.system import *
 
-from .bing import Bing
-from .logger import log
-from .imgur import Imgur
-from .google import Google
-from .reddit import Reddit
-from .bitmap import Bitmap
 from .globals import Const
 from .version import __version__
 from .desktop_factory import get_desktop, DesktopException

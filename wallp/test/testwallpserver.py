@@ -7,7 +7,7 @@ class TestWallpServer(TestCase):
 	def test_server(self):
 		port = 40001
 		server = WallpServer(port)
-		server.start_select()
+		server.start()
 
 
 if __name__ == '__main__':

@@ -2,8 +2,32 @@ import socket
 import select
 import os
 from multiprocessing import Process, Pipe
+from os.path import exists
 
 from .scheduler import Scheduler
+from ..helper import get_image, compute_style
+from ..desktop_factory import get_desktop, DesktopException
+
+
+def change_wallpaper(outpipe):
+	print 'changing wallpaper'
+	try:
+		wp_path = get_image(service_name='bitmap', query=None, color=None)
+		print 'wp_path:', wp_path
+
+		style = compute_style(wp_path)
+
+		dt = get_desktop()
+		dt.set_wallpaper(wp_path, style=style)
+
+		outpipe.send(wp_path)
+		return
+	
+	except DesktopException:
+		#log.error('cannot change wallpaper')
+		pass
+
+	outpipe.send('error')
 
 
 class WallpServer():
@@ -17,6 +41,9 @@ class WallpServer():
 		server.bind(('', self._port))
 		server.listen(5)
 
+		if exists('.wpff'):
+			os.remove('.wpff')
+
 		os.mkfifo('.wpff')
 		fifo = os.open('.wpff', os.O_RDONLY | os.O_NONBLOCK)
 		print 'fifo open'
@@ -27,7 +54,7 @@ class WallpServer():
 		scheduler = Scheduler()
 
 		while ilist:
-			rlist, wlist, elist = select.select(ilist, olist, ilist)
+			rlist, wlist, elist = select.select(ilist, olist, ilist, 0.1)
 
 			for r in rlist:
 				if r is server:
@@ -50,11 +77,22 @@ class WallpServer():
 						data += d
 					if data != '':
 						print data
+				elif r is inpipe:
+					#import pdb; pdb.set_trace()
+					d = inpipe.recv()
+					print "inpipe: ", d
+					ilist.remove(inpipe)
+
 				else:
 					print 'bad readable from select'
 
 			if scheduler.is_ready():
+				print 'scheduler ready'
+				outpipe, inpipe = Pipe()
+				p = Process(target=change_wallpaper, args=(outpipe,))
+				p.start()
 
+				ilist.append(inpipe)
 
 
 	def handle_request(self, command):

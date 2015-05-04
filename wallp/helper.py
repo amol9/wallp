@@ -1,6 +1,12 @@
 import shutil
 from mutils.system import *
 
+from .bing import Bing
+from .logger import log
+from .imgur import Imgur
+from .google import Google
+from .reddit import Reddit
+from .bitmap import Bitmap
 from .service import service_factory, ServiceException
 from .logger import log
 from .desktop_factory import get_desktop
