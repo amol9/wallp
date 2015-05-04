@@ -1,6 +1,9 @@
 import socket
 import select
 import os
+from multiprocessing import Process, Pipe
+
+from .scheduler import Scheduler
 
 
 class WallpServer():
@@ -20,6 +23,8 @@ class WallpServer():
 
 		ilist = [server, fifo]
 		olist = []
+
+		scheduler = Scheduler()
 
 		while ilist:
 			rlist, wlist, elist = select.select(ilist, olist, ilist)
@@ -47,6 +52,9 @@ class WallpServer():
 						print data
 				else:
 					print 'bad readable from select'
+
+			if scheduler.is_ready():
+
 
 
 	def handle_request(self, command):
