@@ -3,6 +3,7 @@ import select
 import os
 from multiprocessing import Process, Pipe
 from os.path import exists
+from time import time
 
 from .scheduler import Scheduler
 from ..helper import get_image, compute_style
@@ -33,6 +34,17 @@ def change_wallpaper(outpipe):
 class WallpServer():
 	def __init__(self, port):
 		self._port = port
+		self._state = 'ready'
+
+		self._ilist = []
+		self._olist = []
+
+		self._last_change = None
+		self._chunks = {}
+
+		self._clients = []
+		self._image_len = None
+		self._image_ext = None
 
 
 	def start(self):
@@ -41,6 +53,8 @@ class WallpServer():
 		server.bind(('', self._port))
 		server.listen(5)
 
+		self._ilist.append(server)
+
 		if exists('.wpff'):
 			os.remove('.wpff')
 
@@ -48,57 +62,138 @@ class WallpServer():
 		fifo = os.open('.wpff', os.O_RDONLY | os.O_NONBLOCK)
 		print 'fifo open'
 
-		ilist = [server, fifo]
-		olist = []
+		self._ilist.append(fifo)
 
 		scheduler = Scheduler()
+		image_path = None
+		image_buffer = None
+		chunk_count = None
+		chunk_size = 100000
 
-		while ilist:
-			rlist, wlist, elist = select.select(ilist, olist, ilist, 0.1)
+		while self._ilist:
+			try:
+				rlist, wlist, elist = select.select(self._ilist + self._clients, self._olist,
+							self._ilist + self._clients, 0.1)
 
-			for r in rlist:
-				if r is server:
-					print 'incoming conn'
-					conn, client = r.accept()
-					data = ''
-					while True:
-						d = conn.recv(1024)
-						if not d:
-							break
-						data += d
-					conn.sendall(self.handle_request(data.strip()))
-					conn.close()
-				elif r is fifo:
-					data = ''
-					while True:
-						d = os.read(r, 1024)
-						if d == '':
-							break
-						data += d
-					if data != '':
-						print data
-				elif r is inpipe:
-					#import pdb; pdb.set_trace()
-					d = inpipe.recv()
-					print "inpipe: ", d
-					ilist.remove(inpipe)
+				for r in rlist:
+					if r is server:
+						print 'incoming conn'
+						conn, client = r.accept()
+						self._clients.append(conn)
 
-				else:
-					print 'bad readable from select'
+					elif r in self._clients:
+						data = ''
+						#import pdb; pdb.set_trace()
+						while not data.endswith('\n\r'):
+							ch = r.recv(1024)
+							if not ch:
+								break
+							data += ch
+							print 'reading...'
+						self.handle_request(data.strip(), r)
+						
+					elif r is fifo:
+						data = ''
+						while True:
+							d = os.read(r, 1024)
+							if d == '':
+								break
+							data += d
+						if data != '':
+							print data
+					elif r is inpipe:
+						#import pdb; pdb.set_trace()
+						image_path = inpipe.recv()
+						print "inpipe: ", image_path
 
-			if scheduler.is_ready():
-				print 'scheduler ready'
-				outpipe, inpipe = Pipe()
-				p = Process(target=change_wallpaper, args=(outpipe,))
-				p.start()
+						self._ilist.remove(inpipe)
+						self._last_change = int(time())
+						self._state = 'ready'
+						self._image_ext = image_path[image_path.rfind('.') + 1:]
+						self._image_len = os.stat(image_path).st_size	#exc
 
-				ilist.append(inpipe)
+					else:
+						print 'bad readable from select'
+
+				for w in wlist:
+					if not w in self._chunks.keys():
+						continue
+
+					chunk = self._chunks.get(w, None)
+
+					if chunk is None:
+						print 'bad writable from select'
+
+					if image_buffer is None:
+						with open(image_path, 'rb') as f:
+							image_buffer = f.read()
+							chunk_count = int(self._image_len / chunk_size)
+							if self._image_len > (chunk_count * chunk_size):
+								chunk_count += 1
+
+					print 'sending image chunk to client..'
+					w.send(image_buffer[chunk * chunk_size : chunk_size])
+					if chunk + 1 == chunk_count:
+						w.close()
+						del self._chunks[w]
+						self._olist.remove(w)
+
+						if len(self._chunks) == 0:
+							del image_buffer
+					else:
+						self._chunks[w] += 1
+
+				if scheduler.is_ready():
+					print 'scheduler ready'
+					outpipe, inpipe = Pipe()
+					try:
+						p = Process(target=change_wallpaper, args=(outpipe,))
+						p.start()
+						self._state = 'in_progress'
+					except Exception as e:		#refine exception
+						pass
+
+					self._ilist.append(inpipe)
+			except socket.error as e:
+				print e.strerror
+				print e.errno
+				import traceback; traceback.print_exc()
+				return
 
 
-	def handle_request(self, command):
+	def handle_request(self, command, connection):
+		response = None
+		conn_close = True
+		print 'received command: ', command
+
 		if command == 'frequency':
-			return '1h'
+			response = '1h'
+
+		elif command == 'last_change':
+			response = self._last_change
+
 		elif command == 'wallp':
-			return 'wallpaper-data'
+			if self._state == 'ready':
+				self._olist.append(connection)
+				self._chunks[connection] = 0
+				response = 'image-ext: ' + self._image_ext + '\n\r' +\
+						'image-len: ' + str(self._image_len) + '\n\r'
+
+			elif self._state == 'in_progress':
+				response = 'in-progress'
+
+			conn_close = False
+			self._clients.remove(connection)
+
 		else:
-			return 'bad command'
+			response = 'bad-command'
+
+		print 'sending response: ', response
+		if response is not None:
+			connection.send(response)
+
+		if conn_close:
+			self._clients.remove(connection)
+			connection.close()
+
+
