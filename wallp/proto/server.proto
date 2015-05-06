@@ -1,0 +1,38 @@
+import "client.proto";
+
+message Frequency {
+	required string value = 1;
+}
+
+
+message LastChange {
+	required int32 timestamp = 2;
+}
+
+
+message ImageInfo {
+	required string extension = 1;
+	required int32 length = 2;
+	required int32 chunks = 3;
+}
+
+message ImageChunk {
+	required bytes data = 1;
+}
+
+
+message InProgress {
+}
+
+
+message Response {
+	required Request.Type type = 1;
+	oneof value {
+		Frequency frequency = 2;
+		LastChange last_change = 3;
+		ImageInfo image_info = 4;
+		ImageChunk image_chunk = 5;
+		InProgress in_progress = 6;		
+	}
+}
+

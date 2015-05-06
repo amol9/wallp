@@ -8,6 +8,8 @@ from time import time
 from .scheduler import Scheduler
 from ..helper import get_image, compute_style
 from ..desktop_factory import get_desktop, DesktopException
+from ..proto.server_pb2 import Response, ImageInfo, ImageChunk
+from ..proto.client_pb2 import Request
 
 
 def change_wallpaper(outpipe):
@@ -84,9 +86,9 @@ class WallpServer():
 					elif r in self._clients:
 						data = ''
 						#import pdb; pdb.set_trace()
-						while not data.endswith('\n\r'):
+						while True:
 							ch = r.recv(1024)
-							if not ch:
+							if not ch or len(ch) == 0:
 								break
 							data += ch
 							print 'reading...'
@@ -132,7 +134,12 @@ class WallpServer():
 								chunk_count += 1
 
 					print 'sending image chunk to client..'
-					w.send(image_buffer[chunk * chunk_size : chunk_size])
+					response = Response()
+					respose.type = Request.IMAGE
+					response.image_chunk = ImageChunk()
+					response.image_chunk.data = image_buffer[chunk * chunk_size : chunk_size]
+
+					w.send(respose.SerializeToString())
 					if chunk + 1 == chunk_count:
 						w.close()
 						del self._chunks[w]
@@ -161,10 +168,15 @@ class WallpServer():
 				return
 
 
-	def handle_request(self, command, connection):
+	def handle_request(self, request_string, connection):
 		response = None
 		conn_close = True
-		print 'received command: ', command
+		print 'received request'
+		command = None
+		request = Request()
+		request.ParseFromString(request_string)
+
+		print 'request type: ', request.type
 
 		if command == 'frequency':
 			response = '1h'
@@ -172,12 +184,17 @@ class WallpServer():
 		elif command == 'last_change':
 			response = self._last_change
 
-		elif command == 'wallp':
+		elif request.type == Request.IMAGE:
 			if self._state == 'ready':
 				self._olist.append(connection)
 				self._chunks[connection] = 0
-				response = 'image-ext: ' + self._image_ext + '\n\r' +\
-						'image-len: ' + str(self._image_len) + '\n\r'
+				'''response = 'image-ext: ' + self._image_ext + '\n\r' +\
+						'image-len: ' + str(self._image_len) + '\n\r'''
+				response = Response()
+				response.type = Request.IMAGE
+				response.image_info = ImageInfo()
+				response.image_info.extension = self._image_ext
+				response.image_info.length = self._image_len
 
 			elif self._state == 'in_progress':
 				response = 'in-progress'
@@ -190,7 +207,7 @@ class WallpServer():
 
 		print 'sending response: ', response
 		if response is not None:
-			connection.send(response)
+			connection.send(response.SerializeToString())
 
 		if conn_close:
 			self._clients.remove(connection)

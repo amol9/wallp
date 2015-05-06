@@ -18,6 +18,8 @@ from .scheduler import get_scheduler, help as scheduler_help_text
 from .helper import get_image, compute_style
 from .logger import log
 
+from .proto.client_pb2 import Request
+
 
 class MultilineFormatter(HelpFormatter):
     def _split_lines(self, text, width):
@@ -120,7 +122,10 @@ class Manager():
 		conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		conn.connect((host, port))
 
-		conn.send('wallp\n\r')
+		request = Request()
+
+		request.type = Request.IMAGE
+		conn.send(request.SerializeToString())
 
 		def read_response(length=None):
 			data = ''
@@ -136,30 +141,40 @@ class Manager():
 				print 'client recvd chunk: ', chunk
 				data += chunk
 
-			return data
+			response = Response()
+			response.ParseFromString(data)
+			return response
 
 		#import pdb; pdb.set_trace()
-		data = read_response()
+		response = read_response()
 
 		retries = 3
+		image = ''
 		while retries > 0:
-			if data.startswith('in-progress'):
+			if response.WhichOneOf('value') is 'in_progress':
 				print 'try again'
 				retries -= 1
 				sleep(10)
 
-			elif data.startswith('image-ext'):
+			elif response.WhichOneOf('value') is 'image_info':
+				image_info = response.image_info
+
+				print 'ext: ', image_info.extension
+				print 'len: ', image_info.length
+
+			elif response.WhichOneOf('value') is 'image_chunk':
 				retries = 0
-				#print data
-				#image_len = int(read_response().strip().splot(':').strip())
-				#image = read_response(length=image_len)
-				image_ext_end = data.find('\n\r')
+				image_chunk = response.image_chunk
+				image += image_chunk.data
+				print 'chunk len: ', len(image_chunk.data)
+
+				'''image_ext_end = data.find('\n\r')
 				print 'ext: ' , data[0 : image_ext_end]
 
 				image_len_end = data.find('\n\r', image_ext_end + 2)
 				print 'len: ', data[image_ext_end + 2 : image_len_end]
 
 				image = data[image_len_end + 2 : ]
-				print 'image size: ', len(image)
+				print 'image size: ', len(image)'''
 
 		
