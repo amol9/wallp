@@ -19,12 +19,46 @@ import client_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='server.proto',
   package='',
-  serialized_pb=_b('\n\x0cserver.proto\x1a\x0c\x63lient.proto\"\x1a\n\tFrequency\x12\r\n\x05value\x18\x01 \x02(\t\"\x1f\n\nLastChange\x12\x11\n\ttimestamp\x18\x02 \x02(\x05\">\n\tImageInfo\x12\x11\n\textension\x18\x01 \x02(\t\x12\x0e\n\x06length\x18\x02 \x02(\x05\x12\x0e\n\x06\x63hunks\x18\x03 \x02(\x05\"\x1a\n\nImageChunk\x12\x0c\n\x04\x64\x61ta\x18\x01 \x02(\x0c\"\x0c\n\nInProgress\"\xdf\x01\n\x08Response\x12\x1b\n\x04type\x18\x01 \x02(\x0e\x32\r.Request.Type\x12\x1f\n\tfrequency\x18\x02 \x01(\x0b\x32\n.FrequencyH\x00\x12\"\n\x0blast_change\x18\x03 \x01(\x0b\x32\x0b.LastChangeH\x00\x12 \n\nimage_info\x18\x04 \x01(\x0b\x32\n.ImageInfoH\x00\x12\"\n\x0bimage_chunk\x18\x05 \x01(\x0b\x32\x0b.ImageChunkH\x00\x12\"\n\x0bin_progress\x18\x06 \x01(\x0b\x32\x0b.InProgressH\x00\x42\x07\n\x05value')
+  serialized_pb=_b('\n\x0cserver.proto\x1a\x0c\x63lient.proto\"\x1a\n\tFrequency\x12\r\n\x05value\x18\x01 \x02(\t\"\x1f\n\nLastChange\x12\x11\n\ttimestamp\x18\x02 \x02(\x05\">\n\tImageInfo\x12\x11\n\textension\x18\x01 \x02(\t\x12\x0e\n\x06length\x18\x02 \x02(\x05\x12\x0e\n\x06\x63hunks\x18\x03 \x02(\x05\"\x1a\n\nImageChunk\x12\x0c\n\x04\x64\x61ta\x18\x01 \x02(\x0c\"\x0c\n\nInProgress\"\xba\x02\n\x08Response\x12\x1c\n\x04type\x18\x01 \x02(\x0e\x32\x0e.Response.Type\x12\x1f\n\tfrequency\x18\x02 \x01(\x0b\x32\n.FrequencyH\x00\x12\"\n\x0blast_change\x18\x03 \x01(\x0b\x32\x0b.LastChangeH\x00\x12 \n\nimage_info\x18\x04 \x01(\x0b\x32\n.ImageInfoH\x00\x12\"\n\x0bimage_chunk\x18\x05 \x01(\x0b\x32\x0b.ImageChunkH\x00\x12\"\n\x0bin_progress\x18\x06 \x01(\x0b\x32\x0b.InProgressH\x00\"X\n\x04Type\x12\r\n\tFREQUENCY\x10\x01\x12\x0f\n\x0bLAST_CHANGE\x10\x02\x12\x0e\n\nIMAGE_INFO\x10\x03\x12\x0f\n\x0bIMAGE_CHUNK\x10\x04\x12\x0f\n\x0bIN_PROGRESS\x10\x05\x42\x07\n\x05value')
   ,
   dependencies=[client_pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
+
+_RESPONSE_TYPE = _descriptor.EnumDescriptor(
+  name='Type',
+  full_name='Response.Type',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='FREQUENCY', index=0, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='LAST_CHANGE', index=1, number=2,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='IMAGE_INFO', index=2, number=3,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='IMAGE_CHUNK', index=3, number=4,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='IN_PROGRESS', index=4, number=5,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=415,
+  serialized_end=503,
+)
+_sym_db.RegisterEnumDescriptor(_RESPONSE_TYPE)
 
 
 _FREQUENCY = _descriptor.Descriptor(
@@ -238,6 +272,7 @@ _RESPONSE = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
+    _RESPONSE_TYPE,
   ],
   options=None,
   is_extendable=False,
@@ -248,15 +283,16 @@ _RESPONSE = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=198,
-  serialized_end=421,
+  serialized_end=512,
 )
 
-_RESPONSE.fields_by_name['type'].enum_type = client_pb2._REQUEST_TYPE
+_RESPONSE.fields_by_name['type'].enum_type = _RESPONSE_TYPE
 _RESPONSE.fields_by_name['frequency'].message_type = _FREQUENCY
 _RESPONSE.fields_by_name['last_change'].message_type = _LASTCHANGE
 _RESPONSE.fields_by_name['image_info'].message_type = _IMAGEINFO
 _RESPONSE.fields_by_name['image_chunk'].message_type = _IMAGECHUNK
 _RESPONSE.fields_by_name['in_progress'].message_type = _INPROGRESS
+_RESPONSE_TYPE.containing_type = _RESPONSE
 _RESPONSE.oneofs_by_name['value'].fields.append(
   _RESPONSE.fields_by_name['frequency'])
 _RESPONSE.fields_by_name['frequency'].containing_oneof = _RESPONSE.oneofs_by_name['value']

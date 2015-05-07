@@ -19,6 +19,7 @@ from .helper import get_image, compute_style
 from .logger import log
 
 from .proto.client_pb2 import Request
+from .proto.server_pb2 import Response
 
 
 class MultilineFormatter(HelpFormatter):
@@ -125,7 +126,8 @@ class Manager():
 		request = Request()
 
 		request.type = Request.IMAGE
-		conn.send(request.SerializeToString())
+		#import pdb; pdb.set_trace()
+		conn.send(request.SerializeToString() + '\n\r')
 
 		def read_response(length=None):
 			data = ''
@@ -150,24 +152,34 @@ class Manager():
 
 		retries = 3
 		image = ''
+		chunks = 0
 		while retries > 0:
-			if response.WhichOneOf('value') is 'in_progress':
+			if response.type == Response.IN_PROGRESS:
 				print 'try again'
 				retries -= 1
 				sleep(10)
 
-			elif response.WhichOneOf('value') is 'image_info':
+			elif response.type == Response.IMAGE_INFO:
+				retries = 0
 				image_info = response.image_info
 
 				print 'ext: ', image_info.extension
 				print 'len: ', image_info.length
+				chunks = image_info.chunks
 
-			elif response.WhichOneOf('value') is 'image_chunk':
+				response = read_response()
+
+			elif response.type == Response.IMAGE_CHUNK:
 				retries = 0
 				image_chunk = response.image_chunk
 				image += image_chunk.data
 				print 'chunk len: ', len(image_chunk.data)
 
+				chunks -= 1
+				if chunks == 0:
+					return
+				else:
+					response = read_response()
 				'''image_ext_end = data.find('\n\r')
 				print 'ext: ' , data[0 : image_ext_end]
 

@@ -46,7 +46,9 @@ class WallpServer():
 
 		self._clients = []
 		self._image_len = None
+		self._chunk_size = 100000
 		self._image_ext = None
+		self._chunk_count = None
 
 
 	def start(self):
@@ -70,7 +72,6 @@ class WallpServer():
 		image_path = None
 		image_buffer = None
 		chunk_count = None
-		chunk_size = 100000
 
 		while self._ilist:
 			try:
@@ -86,13 +87,13 @@ class WallpServer():
 					elif r in self._clients:
 						data = ''
 						#import pdb; pdb.set_trace()
-						while True:
+						while not data.endswith('\n\r'):
 							ch = r.recv(1024)
 							if not ch or len(ch) == 0:
 								break
 							data += ch
 							print 'reading...'
-						self.handle_request(data.strip(), r)
+						self.handle_request(data[0:-2], r)
 						
 					elif r is fifo:
 						data = ''
@@ -114,6 +115,9 @@ class WallpServer():
 						self._image_ext = image_path[image_path.rfind('.') + 1:]
 						self._image_len = os.stat(image_path).st_size	#exc
 
+						self._chunk_count = int(self._image_len / self._chunk_size)
+						if self._image_len > (self._chunk_count * self._chunk_size):
+							self._chunk_count += 1
 					else:
 						print 'bad readable from select'
 
@@ -129,18 +133,14 @@ class WallpServer():
 					if image_buffer is None:
 						with open(image_path, 'rb') as f:
 							image_buffer = f.read()
-							chunk_count = int(self._image_len / chunk_size)
-							if self._image_len > (chunk_count * chunk_size):
-								chunk_count += 1
 
 					print 'sending image chunk to client..'
 					response = Response()
-					respose.type = Request.IMAGE
-					response.image_chunk = ImageChunk()
-					response.image_chunk.data = image_buffer[chunk * chunk_size : chunk_size]
+					response.type = Response.IMAGE_CHUNK
+					response.image_chunk.data = image_buffer[chunk * self._chunk_size : self._chunk_size]
 
-					w.send(respose.SerializeToString())
-					if chunk + 1 == chunk_count:
+					w.send(response.SerializeToString())
+					if chunk + 1 == self._chunk_count:
 						w.close()
 						del self._chunks[w]
 						self._olist.remove(w)
@@ -192,9 +192,10 @@ class WallpServer():
 						'image-len: ' + str(self._image_len) + '\n\r'''
 				response = Response()
 				response.type = Request.IMAGE
-				response.image_info = ImageInfo()
+				#response.image_info = ImageInfo()
 				response.image_info.extension = self._image_ext
 				response.image_info.length = self._image_len
+				response.image_info.chunks = 0
 
 			elif self._state == 'in_progress':
 				response = 'in-progress'
