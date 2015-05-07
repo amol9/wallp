@@ -7,6 +7,7 @@ class WallpaperImage():
 		self._path = None
 		self._chunk_size = 1000
 		self._length = None
+		self._extension = None
 
 
 	def chunk(self, chunk_no):
@@ -28,9 +29,12 @@ class WallpaperImage():
 
 	def set_path(self, filepath):
 		self._length = os.stat(self._path).st_size
+
 		self._chunk_count = int(length / self._chunk_size)
 		if self._chunk_count * self._chunk_size < self._length:
 			self._chunk_count += 1
+
+		self._extension = self._path[self._path.rfind('.') + 1:]
 
 		del self._buffer
 		self._buffer = None
@@ -54,7 +58,11 @@ class WallpaperImage():
 		return self._length
 
 
+	def get_extension(self):
+		return self._extension
+
+
 	path = property(get_path, set_path)
 	chunk_count = property(get_chunk_count)
 	length = property(get_length)
-	
+	extension = property(get_extension)

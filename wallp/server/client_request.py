@@ -1,7 +1,7 @@
 
 
 class ClientRequest():
-	def __init__(self, request_string):
+	def __init__(self, request_string, server_shared_data):
 		try:
 			self._request = Request()
 			self._request.ParseFromString(request_string)
@@ -10,10 +10,13 @@ class ClientRequest():
 			#log
 			raise Exception()
 
+		self._server_shared_data = server_shared_data
+
 
 	def process(self):
 		close_connection = True
 		response = None
+		is_image_response = False
 
 		print 'processing request..'
 		print 'request type: ', self._request.type
@@ -26,9 +29,6 @@ class ClientRequest():
 
 		elif request.type == Request.IMAGE:
 			if self._state == 'ready':
-				#self._olist.append(connection)
-				#self._chunks[connection] = 0
-
 				response = Response()
 				response.type = Response.IMAGE_INFO
 				response.image_info.extension = self._image_ext
@@ -38,12 +38,11 @@ class ClientRequest():
 			elif self._state == 'in_progress':
 				response = 'in-progress'
 
-			conn_close = False
-			self._clients.remove(connection)
+			is_image_response = True
 
 		else:
 			response = 'bad-command'
 
 
 
-		return response, close_connection
+		return response.SerializeToString(), is_image_response
