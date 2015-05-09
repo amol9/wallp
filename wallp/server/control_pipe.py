@@ -1,4 +1,6 @@
 import os
+from os.path import exists
+
 
 class ControlPipe():
 	def __init__(self, server):
@@ -8,7 +10,7 @@ class ControlPipe():
 			os.remove('.wpff')
 
 		os.mkfifo('.wpff')
-		fifo = os.open('.wpff', os.O_RDONLY | os.O_NONBLOCK)
+		self._pipe = os.open('.wpff', os.O_RDONLY | os.O_NONBLOCK)
 		print 'fifo open'
 
 
@@ -23,5 +25,12 @@ class ControlPipe():
 			print data
 
 		return data
+
+
+	def get_pipe(self):
+		return self._pipe
+
+
+	pipe = property(get_pipe)
 
 

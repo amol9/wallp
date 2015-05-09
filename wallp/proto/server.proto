@@ -31,10 +31,10 @@ message Response {
 		LAST_CHANGE = 2;
 		IMAGE_INFO = 3;
 		IMAGE_CHUNK = 4;
-		IN_PROGRESS = 5;
+		IMAGE_CHANGING = 5;
+		BAD_REQUEST = 6;
 	}
 		
-	
 	required Type type = 1;
 	oneof value {
 		Frequency frequency = 2;

@@ -21,7 +21,7 @@ class Scheduler():
 
 	def __init__(self):
 		self._next_run = time() + 5
-		self._apscheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults)
+		self._apscheduler = BackgroundScheduler(jobstores=self.jobstores, executors=self.executors, job_defaults=self.job_defaults)
 
 
 	def is_ready(self):
@@ -32,6 +32,10 @@ class Scheduler():
 
 
 	def add_job(self, func):
+		pass
+
+
+	def set_task(self, func):
 		pass
 
 

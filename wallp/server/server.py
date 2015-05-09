@@ -6,61 +6,28 @@ from os.path import exists
 from time import time
 
 from .scheduler import Scheduler
-from ..helper import get_image, compute_style
-from ..desktop_factory import get_desktop, DesktopException
 from ..proto.server_pb2 import Response, ImageInfo, ImageChunk
 from ..proto.client_pb2 import Request
-
-
-def change_wallpaper(outpipe):
-	print 'changing wallpaper'
-	try:
-		wp_path = get_image(service_name='bitmap', query=None, color=None)
-		print 'wp_path:', wp_path
-
-		style = compute_style(wp_path)
-
-		dt = get_desktop()
-		dt.set_wallpaper(wp_path, style=style)
-
-		outpipe.send(wp_path)
-		return
-	
-	except DesktopException:
-		#log.error('cannot change wallpaper')
-		pass
-
-	outpipe.send('error')
+from .message_length_helper import MessageReceiver, prefix_message_length
+from .change_wallpaper import ChangeWallpaper, WPState
+from .control_pipe import ControlPipe
 
 
 class ServerSharedData():
 	def __init__(self):
-		self.in = []
-		self.out = []
-		self.state = None
+		self.in_list = []
+		self.out_list = []
 		self.image_out = {}
 
-		self.clients = []
+		self.client_list = []
 		self.last_change = None
+		self.wp_image = None
+		self.wp_state = WPState.NONE
 
 
 class Server():
 	def __init__(self, port):
 		self._port = port
-		#self._state = 'ready'
-
-		#self._ilist = []
-		#self._olist = []
-
-		'''self._last_change = None
-		self._chunks = {}
-
-		self._clients = []
-		self._image_len = None
-		self._chunk_size = 100000
-		self._image_ext = None
-		self._chunk_count = None'''
-
 		self._server = None
 		self._shared_data = ServerSharedData()
 
@@ -71,47 +38,74 @@ class Server():
 		self._server.bind(('', self._port))
 		self._server.listen(5)
 
-		self._shared_data.in.append(self._server)
+		self._shared_data.in_list.append(self._server)
 
 
 	def start_scheduler(self):
-		self._scheduer = Scheduler()
+		self._scheduler = Scheduler()
+
+		self._change_wp_pipe, outpipe = Pipe()
+		change_wp = ChangeWallpaper(outpipe)
+
+		self._scheduler.set_task(change_wp.execute)
 		self._scheduler.start()
 
 
 	def start_control_pipe(self):
 		self._control_pipe = ControlPipe(self)
-		self._shared_data.in.append(self._control_pipe.pipe)
+		self._shared_data.in_list.append(self._control_pipe.pipe)
 
 
 	def start(self):
 		self.start_server_socket()
 		self.start_scheduler()
+		self.start_control_pipe()
 
-		while self._ilist:
+		in_list = self._shared_data.in_list
+		out_list = self._shared_data.out_list
+		client_list = self._shared_data.client_list
+		msg_receiver = MessageReceiver()
+
+		print 'len(in_list) = ', len(in_list)
+		while len(in_list) > 0 or len(client_list) > 0:
 			try:
-				readable, writeable, elist = select.select(self._ilist + self._clients, self._olist,
-							self._ilist + self._clients, 0.1)
+				readable, writeable, exceptions = select.select(in_list + client_list, out_list, \
+								in_list + client_list, 0.05)
+
+			except TypeError as e:
+				#log
+				print e.message
+				break
 
 				for r in readable:
-					if r is server:
-						print 'incoming conn'
-						conn, client = r.accept()
-						self._clients.append(conn)
+					print 'something readable..'
+					if r is self._change_wp_pipe:
+						wp_state = self._change_wp_pipe.recv()
+
+						if wp_state == WPState.READY:
+							self._last_change = int(time())
+
+							for image_response in self._shared_data.image_out.values():
+								image_response.abort()
+
+							self._shared_data.wp_state = WPState.READY
+
+						elif wp_state == WPState.CHANGING:
+							self._shared_data.wp_state = WPState.CHANGING
+
+						else:
+							print 'bad wp state'
+
+					elif r is self._server:
+						print 'incoming connection'
+						connection, client_address = r.accept()
+						client_list.append(connection)
 
 					elif r in self._clients:
-						data = ''
-						#import pdb; pdb.set_trace()
-						while not data.endswith('\n\r'):
-							ch = r.recv(1024)
-							if not ch or len(ch) == 0:
-								break
-							data += ch
-							print 'reading...'
-						self.handle_request(data[0:-2], r)
-
+						message = msg_receiver.recv(r)
+						
 						#new:
-						client_request = ClientRequest(data, self._shared_data)
+						client_request = ClientRequest(message, self._shared_data)
 						response, is_image_response = client_request.process()
 
 						if response is not None:
@@ -123,14 +117,6 @@ class Server():
 					elif r is self._control_pipe.pipe:
 						self._control_pipe.read_command()
 
-					elif r is inpipe:
-						#import pdb; pdb.set_trace()
-						image_path = inpipe.recv()
-						print "inpipe: ", image_path
-
-						self._ilist.remove(inpipe)
-						self._last_change = int(time())
-						self._state = 'ready'
 					else:
 						print 'bad readable from select'
 
@@ -143,25 +129,30 @@ class Server():
 							w.close()
 
 					elif w in self._shared_data.image_out.keys():
-					
-					#chunk = self._chunks.get(w, None)
-					image_response = self._shared_data.image_out[w]
+						#chunk = self._chunks.get(w, None)
+						image_response = self._shared_data.image_out[w]
 
 					#if chunk is None:
 						#print 'bad writable from select'
 
 					print 'sending image chunk to client..'
 					chunk, last_chunk = image_response.get_next_chunk()
-					w.send(chunk)
+					w.send(prefix_message_length(chunk))
 
 					if last_chunk:
 						del self._shared_data.image_out[w]
 						w.close()
 						#remove ???
 
-			except socket.error as e:
+				for e in exceptions:
+					pass
+					#do something
+
+
+			'''except socket.error as e:
 				print e.strerror
 				print e.errno
 				import traceback; traceback.print_exc()
-				return
+				return'''
+
 

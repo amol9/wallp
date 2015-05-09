@@ -30,5 +30,7 @@ class ImageResponse():
 
 		return response.SerializeToString(), last_chunk
 
-	
+
+	def abort(self):
+		self._abort = True
 

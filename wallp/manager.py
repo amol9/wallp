@@ -20,6 +20,7 @@ from .logger import log
 
 from .proto.client_pb2 import Request
 from .proto.server_pb2 import Response
+from .server.message_length_helper import MessageReceiver, prefix_message_length
 
 
 class MultilineFormatter(HelpFormatter):
@@ -122,15 +123,16 @@ class Manager():
 
 		conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		conn.connect((host, port))
+		msg_receiver = MessageReceiver(blocking=True)
 
 		request = Request()
 
 		request.type = Request.IMAGE
 		#import pdb; pdb.set_trace()
-		conn.send(request.SerializeToString() + '\n\r')
+		conn.send(prefix_message_length(request.SerializeToString()))
 
 		def read_response(length=None):
-			data = ''
+			'''data = ''
 			if length is not None:
 				condition = lambda d : len(d) < length
 			else:
@@ -142,9 +144,10 @@ class Manager():
 					break
 				print 'client recvd chunk: ', chunk
 				data += chunk
-
+			'''
+			message = msg_receiver.recv(conn)
 			response = Response()
-			response.ParseFromString(data)
+			response.ParseFromString(message)
 			return response
 
 		#import pdb; pdb.set_trace()
@@ -180,13 +183,4 @@ class Manager():
 					return
 				else:
 					response = read_response()
-				'''image_ext_end = data.find('\n\r')
-				print 'ext: ' , data[0 : image_ext_end]
-
-				image_len_end = data.find('\n\r', image_ext_end + 2)
-				print 'len: ', data[image_ext_end + 2 : image_len_end]
-
-				image = data[image_len_end + 2 : ]
-				print 'image size: ', len(image)'''
-
-		
+			

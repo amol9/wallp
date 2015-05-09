@@ -1,13 +1,14 @@
 from unittest import TestCase, main as ut_main
 
-from wallp.server.wallpserver import WallpServer
+from wallp.server.server import Server
 from wallp.manager import Manager
 
 
-class TestWallpServer(TestCase):
-	def test_server(self):
-		port = 40001
-		server = WallpServer(port)
+port = 40001
+
+class TestServer(TestCase):
+	def test_server_start(self):
+		server = Server(port)
 		server.start()
 
 
@@ -16,7 +17,7 @@ class TestWallpServer(TestCase):
 		Manager.set_frequency = lambda x : None
 
 		cl = Manager()
-		cl.get_image_from_wallp_server('localhost,40001')
+		cl.get_image_from_wallp_server('localhost,' + str(port))
 
 
 if __name__ == '__main__':
