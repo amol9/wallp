@@ -22,32 +22,41 @@ class ClientRequest():
 		response = Response()
 		is_image_response = False
 
+		wp_image = self._server_shared_data.wp_image
+		wp_state = self._server_shared_data.wp_state
+
 		print 'processing request..'
 		print 'request type: ', self._request.type
 
-		if self._request.type = Request.FREQUENCY:
+		if self._request.type == Request.FREQUENCY:
 			response.type = Reponse.FREQUENCY
 			response.frequency = '1h'
 
-		elif self._request.type = Request.LAST_CHANGE:
+		elif self._request.type == Request.LAST_CHANGE:
 			response.type = Response.LAST_CHANGE
 			response.last_change = self._server_shared_data.last_change
 
-		elif request.type == Request.IMAGE:
-			if self._server_shared_data.wp_state == WPState.READY:
+		elif self._request.type == Request.IMAGE:
+			if wp_state == WPState.READY:
 				response.type = Response.IMAGE_INFO
-				response.image_info.extension = self._image_ext
-				response.image_info.length = self._image_len
-				response.image_info.chunks = 0
+				response.image_info.extension = wp_image.extension
+				response.image_info.length = wp_image.length
+				response.image_info.chunks = wp_image.chunk_count
 
-			elif self._server_shared_data.wp_state == WPState.CHANGING:
+				is_image_response = True
+
+			elif wp_state == WPState.CHANGING:
 				response.type = Response.IMAGE_CHANGING
 
-			is_image_response = True
+			elif wp_state == WPState.NONE:
+				response.type = Response.IMAGE_NONE
+
+			else:
+				return None, False
+
 
 		else:
 			response.type = Response.BAD_REQUEST
-
 
 
 		return response.SerializeToString(), is_image_response

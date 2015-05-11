@@ -130,6 +130,8 @@ class Manager():
 		request.type = Request.IMAGE
 		#import pdb; pdb.set_trace()
 		conn.send(prefix_message_length(request.SerializeToString()))
+		conn.close()
+		return
 
 		def read_response(length=None):
 			'''data = ''
@@ -157,10 +159,14 @@ class Manager():
 		image = ''
 		chunks = 0
 		while retries > 0:
-			if response.type == Response.IN_PROGRESS:
+			if response.type == Response.IMAGE_CHANGING:
 				print 'try again'
 				retries -= 1
 				sleep(10)
+
+			elif response.type == Response.IMAGE_NONE:
+				print 'image none'
+				retries = 0
 
 			elif response.type == Response.IMAGE_INFO:
 				retries = 0

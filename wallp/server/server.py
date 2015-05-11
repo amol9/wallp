@@ -11,6 +11,8 @@ from ..proto.client_pb2 import Request
 from .message_length_helper import MessageReceiver, prefix_message_length
 from .change_wallpaper import ChangeWallpaper, WPState
 from .control_pipe import ControlPipe
+from .client_request import ClientRequest
+from .image_response import ImageResponse
 
 
 class ServerSharedData():
@@ -18,6 +20,7 @@ class ServerSharedData():
 		self.in_list = []
 		self.out_list = []
 		self.image_out = {}
+		self.out_buffers = {}
 
 		self.client_list = []
 		self.last_change = None
@@ -68,72 +71,77 @@ class Server():
 
 		print 'len(in_list) = ', len(in_list)
 		while len(in_list) > 0 or len(client_list) > 0:
+			readable = writeable = exceptions = None
 			try:
 				readable, writeable, exceptions = select.select(in_list + client_list, out_list, \
-								in_list + client_list, 0.05)
+								in_list + client_list, 0.1)
 
 			except TypeError as e:
 				#log
 				print e.message
 				break
 
-				for r in readable:
-					print 'something readable..'
-					if r is self._change_wp_pipe:
-						wp_state = self._change_wp_pipe.recv()
+			for r in readable:
+				if r is self._change_wp_pipe:
+					wp_state = self._change_wp_pipe.recv()
 
-						if wp_state == WPState.READY:
-							self._last_change = int(time())
+					if wp_state == WPState.READY:
+						self._last_change = int(time())
 
-							for image_response in self._shared_data.image_out.values():
-								image_response.abort()
+						for image_response in self._shared_data.image_out.values():
+							image_response.abort()
 
-							self._shared_data.wp_state = WPState.READY
+						self._shared_data.wp_state = WPState.READY
 
-						elif wp_state == WPState.CHANGING:
-							self._shared_data.wp_state = WPState.CHANGING
+					elif wp_state == WPState.CHANGING:
+						self._shared_data.wp_state = WPState.CHANGING
 
-						else:
-							print 'bad wp state'
+					else:
+						print 'bad wp state'
 
-					elif r is self._server:
-						print 'incoming connection'
-						connection, client_address = r.accept()
-						client_list.append(connection)
+				elif r is self._server:
+					print 'incoming connection'
+					connection, client_address = r.accept()
+					client_list.append(connection)
 
-					elif r in self._clients:
-						message = msg_receiver.recv(r)
-						
-						#new:
+				elif r in client_list:
+					message = msg_receiver.recv(r)
+					if message is not None:
+					#new:
 						client_request = ClientRequest(message, self._shared_data)
 						response, is_image_response = client_request.process()
 
 						if response is not None:
-							self._shared_data.out_buffer[r] = response
+							self._shared_data.out_buffers[r] = response
 
 							if is_image_response:
 								self._shared_data.image_out[r] = ImageResponse(self._shared_data.wp_image)
-						
-					elif r is self._control_pipe.pipe:
-						self._control_pipe.read_command()
 
-					else:
-						print 'bad readable from select'
+							out_list.append(r)
 
-				for w in writeable:
-					if w in self._shared_data.out_buffer.keys():
-						w.send(self._shared_data.out_buffer[w])
-						del self._shared_data.out_buffer[w]
+						client_list.remove(r)	
 
-						if not w in self._shared_data.image_out.keys():
-							w.close()
+				elif r is self._control_pipe.pipe:
+					self._control_pipe.read_command()
 
-					elif w in self._shared_data.image_out.keys():
-						#chunk = self._chunks.get(w, None)
-						image_response = self._shared_data.image_out[w]
+				else:
+					print 'bad readable from select'
+
+			for w in writeable:
+				if w in self._shared_data.out_buffers.keys():
+					w.send(prefix_message_length(self._shared_data.out_buffers[w]))
+					del self._shared_data.out_buffers[w]
+
+					if not w in self._shared_data.image_out.keys():
+						w.close()
+						out_list.remove(w)
+
+				elif w in self._shared_data.image_out.keys():
+					#chunk = self._chunks.get(w, None)
+					image_response = self._shared_data.image_out[w]
 
 					#if chunk is None:
-						#print 'bad writable from select'
+					#print 'bad writable from select'
 
 					print 'sending image chunk to client..'
 					chunk, last_chunk = image_response.get_next_chunk()
@@ -144,9 +152,10 @@ class Server():
 						w.close()
 						#remove ???
 
-				for e in exceptions:
-					pass
-					#do something
+			for e in exceptions:
+				print 'select found exceptions'
+				pass
+				#do something
 
 
 			'''except socket.error as e:

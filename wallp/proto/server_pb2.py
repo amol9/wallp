@@ -13,15 +13,13 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
-import client_pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='server.proto',
   package='',
-  serialized_pb=_b('\n\x0cserver.proto\x1a\x0c\x63lient.proto\"\x1a\n\tFrequency\x12\r\n\x05value\x18\x01 \x02(\t\"\x1f\n\nLastChange\x12\x11\n\ttimestamp\x18\x02 \x02(\x05\">\n\tImageInfo\x12\x11\n\textension\x18\x01 \x02(\t\x12\x0e\n\x06length\x18\x02 \x02(\x05\x12\x0e\n\x06\x63hunks\x18\x03 \x02(\x05\"\x1a\n\nImageChunk\x12\x0c\n\x04\x64\x61ta\x18\x01 \x02(\x0c\"\x0c\n\nInProgress\"\xce\x02\n\x08Response\x12\x1c\n\x04type\x18\x01 \x02(\x0e\x32\x0e.Response.Type\x12\x1f\n\tfrequency\x18\x02 \x01(\x0b\x32\n.FrequencyH\x00\x12\"\n\x0blast_change\x18\x03 \x01(\x0b\x32\x0b.LastChangeH\x00\x12 \n\nimage_info\x18\x04 \x01(\x0b\x32\n.ImageInfoH\x00\x12\"\n\x0bimage_chunk\x18\x05 \x01(\x0b\x32\x0b.ImageChunkH\x00\x12\"\n\x0bin_progress\x18\x06 \x01(\x0b\x32\x0b.InProgressH\x00\"l\n\x04Type\x12\r\n\tFREQUENCY\x10\x01\x12\x0f\n\x0bLAST_CHANGE\x10\x02\x12\x0e\n\nIMAGE_INFO\x10\x03\x12\x0f\n\x0bIMAGE_CHUNK\x10\x04\x12\x12\n\x0eIMAGE_CHANGING\x10\x05\x12\x0f\n\x0b\x42\x41\x44_REQUEST\x10\x06\x42\x07\n\x05value')
-  ,
-  dependencies=[client_pb2.DESCRIPTOR,])
+  serialized_pb=_b('\n\x0cserver.proto\"\x1a\n\tFrequency\x12\r\n\x05value\x18\x01 \x02(\t\"\x1f\n\nLastChange\x12\x11\n\ttimestamp\x18\x02 \x02(\x05\">\n\tImageInfo\x12\x11\n\textension\x18\x01 \x02(\t\x12\x0e\n\x06length\x18\x02 \x02(\x05\x12\x0e\n\x06\x63hunks\x18\x03 \x02(\x05\"\x1a\n\nImageChunk\x12\x0c\n\x04\x64\x61ta\x18\x01 \x02(\x0c\"\x0c\n\nInProgress\"\xde\x02\n\x08Response\x12\x1c\n\x04type\x18\x01 \x02(\x0e\x32\x0e.Response.Type\x12\x1f\n\tfrequency\x18\x02 \x01(\x0b\x32\n.FrequencyH\x00\x12\"\n\x0blast_change\x18\x03 \x01(\x0b\x32\x0b.LastChangeH\x00\x12 \n\nimage_info\x18\x04 \x01(\x0b\x32\n.ImageInfoH\x00\x12\"\n\x0bimage_chunk\x18\x05 \x01(\x0b\x32\x0b.ImageChunkH\x00\x12\"\n\x0bin_progress\x18\x06 \x01(\x0b\x32\x0b.InProgressH\x00\"|\n\x04Type\x12\r\n\tFREQUENCY\x10\x01\x12\x0f\n\x0bLAST_CHANGE\x10\x02\x12\x0e\n\nIMAGE_INFO\x10\x03\x12\x0f\n\x0bIMAGE_CHUNK\x10\x04\x12\x12\n\x0eIMAGE_CHANGING\x10\x05\x12\x0e\n\nIMAGE_NONE\x10\x06\x12\x0f\n\x0b\x42\x41\x44_REQUEST\x10\x07\x42\x07\n\x05value')
+)
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
@@ -53,14 +51,18 @@ _RESPONSE_TYPE = _descriptor.EnumDescriptor(
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='BAD_REQUEST', index=5, number=6,
+      name='IMAGE_NONE', index=5, number=6,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='BAD_REQUEST', index=6, number=7,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=415,
-  serialized_end=523,
+  serialized_start=401,
+  serialized_end=525,
 )
 _sym_db.RegisterEnumDescriptor(_RESPONSE_TYPE)
 
@@ -90,8 +92,8 @@ _FREQUENCY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=30,
-  serialized_end=56,
+  serialized_start=16,
+  serialized_end=42,
 )
 
 
@@ -120,8 +122,8 @@ _LASTCHANGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=58,
-  serialized_end=89,
+  serialized_start=44,
+  serialized_end=75,
 )
 
 
@@ -164,8 +166,8 @@ _IMAGEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=91,
-  serialized_end=153,
+  serialized_start=77,
+  serialized_end=139,
 )
 
 
@@ -194,8 +196,8 @@ _IMAGECHUNK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=155,
-  serialized_end=181,
+  serialized_start=141,
+  serialized_end=167,
 )
 
 
@@ -217,8 +219,8 @@ _INPROGRESS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=183,
-  serialized_end=195,
+  serialized_start=169,
+  serialized_end=181,
 )
 
 
@@ -286,8 +288,8 @@ _RESPONSE = _descriptor.Descriptor(
       name='value', full_name='Response.value',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=198,
-  serialized_end=532,
+  serialized_start=184,
+  serialized_end=534,
 )
 
 _RESPONSE.fields_by_name['type'].enum_type = _RESPONSE_TYPE

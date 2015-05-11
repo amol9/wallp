@@ -1,4 +1,3 @@
-import "client.proto";
 
 message Frequency {
 	required string value = 1;
@@ -32,10 +31,12 @@ message Response {
 		IMAGE_INFO = 3;
 		IMAGE_CHUNK = 4;
 		IMAGE_CHANGING = 5;
-		BAD_REQUEST = 6;
+		IMAGE_NONE = 6;
+		BAD_REQUEST = 7;
 	}
 		
 	required Type type = 1;
+
 	oneof value {
 		Frequency frequency = 2;
 		LastChange last_change = 3;
