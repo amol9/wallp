@@ -1,5 +1,4 @@
 
-
 from ..proto.server_pb2 import Response
 
 
@@ -22,10 +21,10 @@ class ImageResponse():
 			else:
 				self._chunk_no += 1
 
-			response.type = IMAGE_CHUNK
-			response.data = chunk
+			response.type = Response.IMAGE_CHUNK
+			response.image_chunk.data = chunk
 		else:
-			response.type = IMAGE_ABORT
+			response.type = Response.IMAGE_ABORT
 			last_chunk = True
 
 		return response.SerializeToString(), last_chunk

@@ -28,13 +28,15 @@ class WallpaperImage():
 	
 
 	def set_path(self, filepath):
+		self._path = filepath
 		self._length = os.stat(self._path).st_size
 
-		self._chunk_count = int(length / self._chunk_size)
+		self._chunk_count = int(self._length / self._chunk_size)
 		if self._chunk_count * self._chunk_size < self._length:
 			self._chunk_count += 1
 
 		self._extension = self._path[self._path.rfind('.') + 1:]
+		print 'extension = ', self._extension
 
 		del self._buffer
 		self._buffer = None

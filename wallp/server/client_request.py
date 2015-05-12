@@ -18,7 +18,7 @@ class ClientRequest():
 
 
 	def process(self):
-		close_connection = True
+		keep_alive = False
 		response = Response()
 		is_image_response = False
 
@@ -47,6 +47,7 @@ class ClientRequest():
 
 			elif wp_state == WPState.CHANGING:
 				response.type = Response.IMAGE_CHANGING
+				keep_alive = True
 
 			elif wp_state == WPState.NONE:
 				response.type = Response.IMAGE_NONE
@@ -59,4 +60,4 @@ class ClientRequest():
 			response.type = Response.BAD_REQUEST
 
 
-		return response.SerializeToString(), is_image_response
+		return response.SerializeToString(), is_image_response, keep_alive

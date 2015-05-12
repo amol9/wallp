@@ -130,8 +130,6 @@ class Manager():
 		request.type = Request.IMAGE
 		#import pdb; pdb.set_trace()
 		conn.send(prefix_message_length(request.SerializeToString()))
-		conn.close()
-		return
 
 		def read_response(length=None):
 			'''data = ''
@@ -153,40 +151,46 @@ class Manager():
 			return response
 
 		#import pdb; pdb.set_trace()
-		response = read_response()
+		#response = read_response()
 
-		retries = 3
+		done = False
 		image = ''
 		chunks = 0
-		while retries > 0:
+		retries = 3
+		while not done:
+			response = read_response()
+
 			if response.type == Response.IMAGE_CHANGING:
 				print 'try again'
-				retries -= 1
 				sleep(10)
+				retries -= 1
+
+				if retries > 0:
+					conn.send(prefix_message_length(request.SerializeToString()))
+				else:
+					done = True
 
 			elif response.type == Response.IMAGE_NONE:
 				print 'image none'
-				retries = 0
+				done = True
 
 			elif response.type == Response.IMAGE_INFO:
-				retries = 0
 				image_info = response.image_info
 
 				print 'ext: ', image_info.extension
 				print 'len: ', image_info.length
 				chunks = image_info.chunks
-
-				response = read_response()
+				print 'chunks: ', chunks
 
 			elif response.type == Response.IMAGE_CHUNK:
-				retries = 0
 				image_chunk = response.image_chunk
 				image += image_chunk.data
 				print 'chunk len: ', len(image_chunk.data)
-
 				chunks -= 1
+				
 				if chunks == 0:
-					return
-				else:
-					response = read_response()
-			
+					done = True
+
+			else:
+				print 'bad response'
+				done = True

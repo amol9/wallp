@@ -9,7 +9,10 @@ port = 40001
 class TestServer(TestCase):
 	def test_server_start(self):
 		server = Server(port)
-		server.start()
+		try:
+			server.start()
+		except KeyboardInterrupt:
+			server.shutdown()
 
 
 	def test_client(self):
