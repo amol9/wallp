@@ -4,7 +4,6 @@ import sys
 import logging
 from itertools import chain
 from argparse import ArgumentParser, HelpFormatter
-import socket
 from time import sleep
 
 from mutils.system import *
@@ -18,9 +17,6 @@ from .scheduler import get_scheduler, help as scheduler_help_text
 from .helper import get_image, compute_style
 from .logger import log
 
-from .proto.client_pb2 import Request
-from .proto.server_pb2 import Response
-from .server.message_length_helper import MessageReceiver, prefix_message_length
 
 
 class MultilineFormatter(HelpFormatter):
@@ -128,30 +124,14 @@ class Manager():
 		request = Request()
 
 		request.type = Request.IMAGE
-		#import pdb; pdb.set_trace()
 		conn.send(prefix_message_length(request.SerializeToString()))
 
 		def read_response(length=None):
-			'''data = ''
-			if length is not None:
-				condition = lambda d : len(d) < length
-			else:
-				condition = lambda d : not d.endswith('\n\r')
-
-			while True:
-				chunk = conn.recv(1024)
-				if chunk is None or len(chunk) == 0:
-					break
-				print 'client recvd chunk: ', chunk
-				data += chunk
-			'''
 			message = msg_receiver.recv(conn)
 			response = Response()
 			response.ParseFromString(message)
 			return response
 
-		#import pdb; pdb.set_trace()
-		#response = read_response()
 
 		done = False
 		image = ''

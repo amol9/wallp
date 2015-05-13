@@ -56,11 +56,16 @@ class Server():
 		self._shared_data.in_list.append(self._change_wp_pipe)
 		self._change_wp = ChangeWallpaper(outpipe)
 
-		global scheduled_task_placeholder
-		self._scheduler.add_job(scheduled_task_placeholder, '5s', 'change_wallpaper')
-		scheduled_task_placeholder = self._change_wp.execute
+		#global scheduled_task_placeholder
+		#self._scheduler.add_job(scheduled_task_placeholder, '5s', 'change_wallpaper')
+		#scheduled_task_placeholder = self._change_wp.execute
+		self.setup_job()
 
 		self._scheduler.start()
+
+
+	def setup_job(self):
+		pass
 
 
 	def start_control_pipe(self):
