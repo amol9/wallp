@@ -19,7 +19,7 @@ class ChangeWallpaper():
 		print 'changing wallpaper..'
 		try:
 			self.send_to_server(WPState.CHANGING)
-			sleep(120)
+			sleep(60)
 
 			wp_path = get_image(service_name='bitmap', query=None, color=None)
 			print 'wp_path:', wp_path

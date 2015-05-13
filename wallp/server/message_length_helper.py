@@ -38,13 +38,10 @@ class MessageReceiver():
 				raise HangUpException()
 
 			message.buffer += data
-			print 'received data len, %d'%len(data)
-			#import pdb; pdb.set_trace()
-			#raw_input()
 
 			if len(message.buffer) >= 4 and message.length is None:
 				message.length = struct.unpack('>i', message.buffer[:4])[0]
-				print 'message length = %d'%message.length
+				#print 'message length = %d'%message.length
 				message.buffer = message.buffer[4:]
 
 			if message.length is not None and len(message.buffer) > message.length:
@@ -63,7 +60,6 @@ class MessageReceiver():
 
 
 def prefix_message_length(message):
-	print 'prefixing msg len, %d'%len(message)
 	return struct.pack('>i', len(message)) + message
 
 

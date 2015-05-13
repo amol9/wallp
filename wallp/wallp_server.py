@@ -1,8 +1,12 @@
 import socket
+import os
+import tempfile
+from time import sleep
 
 from .proto.client_pb2 import Request
 from .proto.server_pb2 import Response
 from .server.message_length_helper import MessageReceiver, prefix_message_length
+from .service import Service, ServiceException
 
 
 class ServerImageException(Exception):
@@ -21,6 +25,7 @@ class WallpServer(Service):
 	def __init__(self):
 		self._host = ''
 		self._port = 40001
+		self._connection = None
 
 
 	def get_image(self):
@@ -28,11 +33,15 @@ class WallpServer(Service):
 
 		while retries > 0:
 			try:
+				self.start_connection()
+
 				self.update_frequency()
 				if not self.has_image_changed():
 					raise ServerImageNotChanged('server image is unchanged')
 
 				self.get_image_from_server()
+				retries = 0
+				self.close_connection()
 
 			except (ServerImageException, ServerImageNotChanged) as e:
 				print e.message
@@ -67,16 +76,32 @@ class WallpServer(Service):
 
 	
 	def start_connection(self):
-		self._connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self._connection.connect((self._host, self._port))
-		self._msg_receiver = MessageReceiver(blocking=True)
+		if not self.is_connection_open():
+			self._connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self._connection.connect((self._host, self._port))
+			self._msg_receiver = MessageReceiver(blocking=True)
+
+
+	def is_connection_open(self):
+		if self._connection is None:
+			return False
+
+		try:
+			self._connection.fileno()
+		except socket.error as e:
+			return False
+
+		return True
+
+	def close_connection(self):
+		self._connection.close()	#exc
 
 
 	def send_request(self, request):
 		self._connection.send(prefix_message_length(request.SerializeToString()))	#exc
 
 
-	def recv_response(self)
+	def recv_response(self):
 		message = self._msg_receiver.recv(self._connection)
 
 		response = Response()
@@ -95,9 +120,9 @@ class WallpServer(Service):
 
 	def read_image_bytes(self, length, chunk_count):
 		response = self.recv_response()
-		temp_image_path = 'tmp12314'
+		temp_image_file = tempfile.NamedTemporaryFile()
 
-		image_file = open(temp_image_path, 'wb')
+		image_file = temp_image_file.file
 
 		while chunk_count > 0:
 			exception = None
@@ -114,15 +139,15 @@ class WallpServer(Service):
 
 			if exception is not None:
 				image_file.close()
-				os.remove(temp_image_path)
+				os.remove(temp_image_file.name)
 				raise exception
 
 			chunk_count -= 1
 
 		image_file.close()
-		self.check_recvd_image_size(length, temp_image_path)
+		self.check_recvd_image_size(length, temp_image_file.name)
 
-		return temp_image_path
+		return temp_image_file.name
 
 
 	def check_recvd_image_size(self, expected_size, image_path):
@@ -171,8 +196,8 @@ class WallpServer(Service):
 			raise ServerImageException('no image set on server')
 
 		elif response.type == Response.IMAGE_INFO:
-			extension, length, chunk_count = self.get_image_info()
-			temp_image_path = self.read_image_bytes()
+			extension, length, chunk_count = self.get_image_info(response)
+			temp_image_path = self.read_image_bytes(length, chunk_count)
 			return extension, temp_image_path
 			
 		else:

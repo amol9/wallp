@@ -12,7 +12,7 @@ message LastChange {
 message ImageInfo {
 	required string extension = 1;
 	required int32 length = 2;
-	required int32 chunks = 3;
+	required int32 chunk_count = 3;
 }
 
 message ImageChunk {

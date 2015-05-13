@@ -1,4 +1,5 @@
 from unittest import TestCase, main as ut_main
+from datetime import datetime, timedelta
 
 from wallp.server.server import Server, scheduled_task_placeholder
 from wallp.manager import Manager
@@ -28,7 +29,7 @@ class TestServer(TestCase):
 
 	
 	def test_server_start(self):
-		self.setup_job({'seconds': 5})
+		self.setup_job_runonce({'seconds': 15})
 		server = Server(port)
 		self.start_server(server)
 
@@ -41,10 +42,22 @@ class TestServer(TestCase):
 		cl.get_image_from_wallp_server('localhost,' + str(port))
 
 
-	def setup_job(self, int_arg):
+	def setup_job_interval(self, int_arg):
 		def new_setup_job(server_instance):
 			global scheduled_task_placeholder
-			server_instance._scheduler._apscheduler.add_job(server_instance._change_wp.execute, 'interval', seconds=5)
+			server_instance._scheduler._apscheduler.add_job(server_instance._change_wp.execute, 'interval', **int_arg)
+
+			print 'added job for test'
+
+		Server.setup_job = new_setup_job
+
+
+	def setup_job_runonce(self, delta_arg):
+		def new_setup_job(server_instance):
+			d = datetime.now()
+			d += timedelta(**delta_arg)
+			global scheduled_task_placeholder
+			server_instance._scheduler._apscheduler.add_job(server_instance._change_wp.execute, 'date', run_date=d)
 
 			print 'added job for test'
 

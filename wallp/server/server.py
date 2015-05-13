@@ -83,17 +83,38 @@ class Server():
 		client_list = self._shared_data.client_list
 		msg_receiver = MessageReceiver()
 
-		print 'len(in_list) = ', len(in_list)
 		while len(in_list) > 0 or len(client_list) > 0:
 			readable = writeable = exceptions = None
 			try:
 				readable, writeable, exceptions = select.select(in_list + client_list, out_list, \
-								in_list + client_list, 0.1)
+								in_list + client_list + out_list, 0.1)
 
 			except TypeError as e:
 				#log
 				print e.message
 				break
+
+			except socket.error as e:
+				print 'select error'
+
+				for conn in client_list:
+					try:
+						fno = conn.fileno()
+					except socket.error:
+
+						print 'found dead connection'
+						client_list.remove(conn)
+						if conn in out_list:
+							out_list.remove(conn)
+
+				for conn in out_list:
+					try:
+						fno = conn.fileno()
+					except socket.error:
+						print 'found dead connection'
+						out_list.remove(conn)
+
+				continue
 
 			for r in readable:
 				if r is self._change_wp_pipe:
@@ -110,7 +131,7 @@ class Server():
 						print 'wp_path: ', wp_path
 						self._shared_data.wp_image.set_path(wp_path)
 
-						self._scheduler.remove_job('change_wallpaper')
+						#self._scheduler.remove_job('change_wallpaper')
 
 					elif wp_state == WPState.CHANGING:
 						self._shared_data.wp_state = WPState.CHANGING
@@ -142,10 +163,13 @@ class Server():
 							if is_image_response:
 								self._shared_data.image_out[r] = ImageResponse(self._shared_data.wp_image)
 
-							out_list.append(r)
+							if r not in out_list:
+								out_list.append(r)
 
-					if not keep_alive:
-						client_list.remove(r)	
+						if not keep_alive:
+							print 'removing client'
+							client_list.remove(r)	
+							print 'len client_list: %d'%len(client_list)
 
 				elif r is self._control_pipe.pipe:
 					self._control_pipe.read_command()
@@ -159,8 +183,10 @@ class Server():
 
 					if not w in self._shared_data.image_out.keys():
 						if not self._shared_data.out_buffers[w][1]:
+							print 'closing connection'
 							w.close()
 							out_list.remove(w)
+							print 'len out_list: %d'%len(out_list)
 
 					del self._shared_data.out_buffers[w]
 
@@ -188,6 +214,10 @@ class Server():
 				print e.errno
 				import traceback; traceback.print_exc()
 				return'''
+
+	def cleanup_closed_connections(conn_list):
+		pass
+		#issue: can't recv() on open connections, it'll remove data from their buffers
 
 
 	def shutdown(self):

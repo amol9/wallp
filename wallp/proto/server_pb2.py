@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='server.proto',
   package='',
-  serialized_pb=_b('\n\x0cserver.proto\"\x1a\n\tFrequency\x12\r\n\x05value\x18\x01 \x02(\t\"\x1f\n\nLastChange\x12\x11\n\ttimestamp\x18\x02 \x02(\x05\">\n\tImageInfo\x12\x11\n\textension\x18\x01 \x02(\t\x12\x0e\n\x06length\x18\x02 \x02(\x05\x12\x0e\n\x06\x63hunks\x18\x03 \x02(\x05\"\x1a\n\nImageChunk\x12\x0c\n\x04\x64\x61ta\x18\x01 \x02(\x0c\"\x0c\n\nInProgress\"\xde\x02\n\x08Response\x12\x1c\n\x04type\x18\x01 \x02(\x0e\x32\x0e.Response.Type\x12\x1f\n\tfrequency\x18\x02 \x01(\x0b\x32\n.FrequencyH\x00\x12\"\n\x0blast_change\x18\x03 \x01(\x0b\x32\x0b.LastChangeH\x00\x12 \n\nimage_info\x18\x04 \x01(\x0b\x32\n.ImageInfoH\x00\x12\"\n\x0bimage_chunk\x18\x05 \x01(\x0b\x32\x0b.ImageChunkH\x00\x12\"\n\x0bin_progress\x18\x06 \x01(\x0b\x32\x0b.InProgressH\x00\"|\n\x04Type\x12\r\n\tFREQUENCY\x10\x01\x12\x0f\n\x0bLAST_CHANGE\x10\x02\x12\x0e\n\nIMAGE_INFO\x10\x03\x12\x0f\n\x0bIMAGE_CHUNK\x10\x04\x12\x12\n\x0eIMAGE_CHANGING\x10\x05\x12\x0e\n\nIMAGE_NONE\x10\x06\x12\x0f\n\x0b\x42\x41\x44_REQUEST\x10\x07\x42\x07\n\x05value')
+  serialized_pb=_b('\n\x0cserver.proto\"\x1a\n\tFrequency\x12\r\n\x05value\x18\x01 \x02(\t\"\x1f\n\nLastChange\x12\x11\n\ttimestamp\x18\x02 \x02(\x05\"C\n\tImageInfo\x12\x11\n\textension\x18\x01 \x02(\t\x12\x0e\n\x06length\x18\x02 \x02(\x05\x12\x13\n\x0b\x63hunk_count\x18\x03 \x02(\x05\"\x1a\n\nImageChunk\x12\x0c\n\x04\x64\x61ta\x18\x01 \x02(\x0c\"\x0c\n\nInProgress\"\xde\x02\n\x08Response\x12\x1c\n\x04type\x18\x01 \x02(\x0e\x32\x0e.Response.Type\x12\x1f\n\tfrequency\x18\x02 \x01(\x0b\x32\n.FrequencyH\x00\x12\"\n\x0blast_change\x18\x03 \x01(\x0b\x32\x0b.LastChangeH\x00\x12 \n\nimage_info\x18\x04 \x01(\x0b\x32\n.ImageInfoH\x00\x12\"\n\x0bimage_chunk\x18\x05 \x01(\x0b\x32\x0b.ImageChunkH\x00\x12\"\n\x0bin_progress\x18\x06 \x01(\x0b\x32\x0b.InProgressH\x00\"|\n\x04Type\x12\r\n\tFREQUENCY\x10\x01\x12\x0f\n\x0bLAST_CHANGE\x10\x02\x12\x0e\n\nIMAGE_INFO\x10\x03\x12\x0f\n\x0bIMAGE_CHUNK\x10\x04\x12\x12\n\x0eIMAGE_CHANGING\x10\x05\x12\x0e\n\nIMAGE_NONE\x10\x06\x12\x0f\n\x0b\x42\x41\x44_REQUEST\x10\x07\x42\x07\n\x05value')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -61,8 +61,8 @@ _RESPONSE_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=401,
-  serialized_end=525,
+  serialized_start=406,
+  serialized_end=530,
 )
 _sym_db.RegisterEnumDescriptor(_RESPONSE_TYPE)
 
@@ -149,7 +149,7 @@ _IMAGEINFO = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='chunks', full_name='ImageInfo.chunks', index=2,
+      name='chunk_count', full_name='ImageInfo.chunk_count', index=2,
       number=3, type=5, cpp_type=1, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -167,7 +167,7 @@ _IMAGEINFO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=77,
-  serialized_end=139,
+  serialized_end=144,
 )
 
 
@@ -196,8 +196,8 @@ _IMAGECHUNK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=141,
-  serialized_end=167,
+  serialized_start=146,
+  serialized_end=172,
 )
 
 
@@ -219,8 +219,8 @@ _INPROGRESS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=169,
-  serialized_end=181,
+  serialized_start=174,
+  serialized_end=186,
 )
 
 
@@ -288,8 +288,8 @@ _RESPONSE = _descriptor.Descriptor(
       name='value', full_name='Response.value',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=184,
-  serialized_end=534,
+  serialized_start=189,
+  serialized_end=539,
 )
 
 _RESPONSE.fields_by_name['type'].enum_type = _RESPONSE_TYPE
