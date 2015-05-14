@@ -14,6 +14,10 @@ class Message():
 		self.length = None
 		self.buffer = ''
 
+	
+	def complete(self):
+		return self.length == len(self.buffer)
+
 
 class MessageReceiver():
 	def __init__(self, blocking=False):
@@ -22,34 +26,43 @@ class MessageReceiver():
 
 
 	def recv(self, connection):
-		message = None
+		messages = None
+		current_message = None
 
 		if not connection in self._messages.keys():
-			message = Message()
-			self._messages[connection] = message
+			current_message = Message()
+			messages = self._messages[connection] = [current_message]
 		else:
-			message = self._messages[connection]
-			print 'found message'
+			messages = self._messages[connection]
+			current_message = messages[-1]
 
 		while True:
 			data = connection.recv(1024)
 
 			if len(data) == 0:
-				raise HangUpException()
+				if current_message.buffer is None:
+					raise HangUpException()
 
-			message.buffer += data
+			current_message.buffer += data
 
-			if len(message.buffer) >= 4 and message.length is None:
-				message.length = struct.unpack('>i', message.buffer[:4])[0]
-				#print 'message length = %d'%message.length
-				message.buffer = message.buffer[4:]
+			if len(current_message.buffer) >= 4 and current_message.length is None:
+				current_message.length = struct.unpack('>i', current_message.buffer[:4])[0]
+				current_message.buffer = current_message.buffer[4:]
 
-			if message.length is not None and len(message.buffer) > message.length:
-				print 'error, message buffer len = %d, message len = %d'%(len(message.buffer), message.length)
-				raise MessageLengthException()
+			if current_message.length is not None and len(current_message.buffer) > current_message.length:
+				next_message = Message()
+				next_message.buffer = current_message.buffer[current_message.length:]
+				messages.append(next_message)
+				
+				current_message.buffer = current_message.buffer[0 : current_message.length]
 
-			if len(message.buffer) == message.length:
-				buffer = message.buffer
+			if len(messages) > 1:
+				buffer = messages[0].buffer
+				del messages[0]
+				return buffer			
+
+			if len(current_message.buffer) == current_message.length:
+				buffer = current_message.buffer
 				del self._messages[connection]
 				return buffer
 

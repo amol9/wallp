@@ -26,10 +26,11 @@ class ChangeWallpaper():
 
 			style = compute_style(wp_path)
 
-			dt = get_desktop()
-			dt.set_wallpaper(wp_path, style=style)
+			#dt = get_desktop()
+			#dt.set_wallpaper(wp_path, style=style)
 
 			self.send_to_server(WPState.READY)
+			#self.send_to_server('/home/amol/Pictures/wallp.jpg')
 			self.send_to_server(wp_path)
 		
 		except DesktopException:

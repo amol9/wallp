@@ -116,6 +116,9 @@ class Server():
 
 				continue
 
+			except ValueError as e:
+				import pdb; pdb.set_trace()
+
 			for r in readable:
 				if r is self._change_wp_pipe:
 					wp_state = self._change_wp_pipe.recv()
@@ -179,6 +182,7 @@ class Server():
 
 			for w in writeable:
 				if w in self._shared_data.out_buffers.keys():
+					print 'len out list: %d'%len(out_list)
 					w.send(prefix_message_length(self._shared_data.out_buffers[w][0]))
 
 					if not w in self._shared_data.image_out.keys():
