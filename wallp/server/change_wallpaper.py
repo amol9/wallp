@@ -19,7 +19,7 @@ class ChangeWallpaper():
 		print 'changing wallpaper..'
 		try:
 			self.send_to_server(WPState.CHANGING)
-			sleep(60)
+			sleep(6)
 
 			wp_path = get_image(service_name='bitmap', query=None, color=None)
 			print 'wp_path:', wp_path
@@ -30,8 +30,8 @@ class ChangeWallpaper():
 			#dt.set_wallpaper(wp_path, style=style)
 
 			self.send_to_server(WPState.READY)
-			#self.send_to_server('/home/amol/Pictures/wallp.jpg')
-			self.send_to_server(wp_path)
+			self.send_to_server('/home/amol/Pictures/wallp.jpg')
+			#self.send_to_server(wp_path)
 		
 		except DesktopException:
 			#log.error('cannot change wallpaper')

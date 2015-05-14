@@ -123,13 +123,13 @@ class WallpServer(Service):
 
 
 	def read_image_bytes(self, length, chunk_count):
-		response = self.recv_response()
 		temp_image_file = tempfile.NamedTemporaryFile()
 
 		image_file = temp_image_file.file
 
 		while chunk_count > 0:
 			exception = None
+			response = self.recv_response()
 
 			if response.type == Response.IMAGE_CHUNK:
 				chunk = response.image_chunk.data
@@ -157,7 +157,7 @@ class WallpServer(Service):
 	def check_recvd_image_size(self, expected_size, image_path):
 		recvd_size = os.stat(image_path).st_size
 		if recvd_size != expected_size:
-			os.remove(image_path)
+			#os.remove(image_path)
 			raise ServerException('received image size mismatch, expected: %d, received: %d'%(expected_size, recvd_size))
 
 

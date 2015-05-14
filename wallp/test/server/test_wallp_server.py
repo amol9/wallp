@@ -26,10 +26,11 @@ class TestWallpServer(TestCase):
 				wp_server.get_image()
 			except Exception as e:
 				#print 'exception in thread', type(e)
-				#import traceback; traceback.print_exc()
+				import traceback; traceback.print_exc()
+				#raw_input()
 				exceptions[0] += 1
 
-		n = 1000
+		n = 500
 		threads = []
 		for i in range(0, n):
 			t = Thread(target=thread_func, args=(exceptions,))

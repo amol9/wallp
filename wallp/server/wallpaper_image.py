@@ -23,7 +23,13 @@ class WallpaperImage():
 				#log
 				raise Exception
 
-		chunk = self._buffer[chunk_no * self._chunk_size : self._chunk_size]
+		start_pos = chunk_no * self._chunk_size
+		end_pos = start_pos + self._chunk_size
+		end_pos = end_pos if end_pos <= self._length else self._length
+		#print 'chunk: %s, start: %d, end: %d'%(chunk_no, start_pos, end_pos)
+
+		chunk = self._buffer[start_pos : end_pos]
+
 		return chunk
 	
 

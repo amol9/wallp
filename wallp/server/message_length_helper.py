@@ -37,7 +37,7 @@ class MessageReceiver():
 			current_message = messages[-1]
 
 		while True:
-			data = connection.recv(1024)
+			data = connection.recv(1024)	#exc error: 104, connection reset by peer
 
 			if len(data) == 0:
 				if current_message.buffer is None:
