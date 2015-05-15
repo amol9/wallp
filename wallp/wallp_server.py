@@ -163,23 +163,24 @@ class WallpServer(Service):
 
 	def retry_image(self):
 		retries = 3
-		sleep_time = 20
+		delay = 7
 
 		request = Request()
 		request.type = Request.IMAGE
 
 		while retries > 0:
-			sleep(sleep_time)
+			sleep(delay)
 			print 'retrying server..'
 			response = self.send_and_recv(request)
 
-			if response.type != Response.IMAGE_CHANGING:
+			if response.type not in [Response.IMAGE_CHANGING, Response.IMAGE_NONE]:
 				return response
 
 			retries -= 1
-			sleep_time *= 2
+			delay *= 2
 
-		raise ServerException('server image is changing for a long time; giving up')
+		raise ServerException('server image has been %s for a long time; giving up'%\
+					('changing' if response.type == Response.IMAGE_CHANGING else 'none'))
 
 
 	def get_image_from_server(self):
@@ -195,9 +196,10 @@ class WallpServer(Service):
 			response = self.retry_image()
 
 		if response.type == Response.IMAGE_NONE:
-			raise ServerException('no image set on server')
+			#raise ServerException('no image set on server')
+			response = self.retry_image()
 
-		elif response.type == Response.IMAGE_INFO:
+		if response.type == Response.IMAGE_INFO:
 			extension, length, chunk_count = self.get_image_info(response)
 			temp_image_path = self.read_image_bytes(length, chunk_count)
 			print extension, length

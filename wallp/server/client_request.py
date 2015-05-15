@@ -52,7 +52,6 @@ class ClientRequest():
 
 			elif wp_state == WPState.NONE:
 				response.type = Response.IMAGE_NONE
-				keep_alive = False
 
 			else:
 				return None, False

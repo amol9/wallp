@@ -4,6 +4,7 @@ import os
 from multiprocessing import Process, Pipe
 from os.path import exists
 from time import time
+from datetime import timedelta
 
 from .scheduler import Scheduler
 from ..proto.server_pb2 import Response, ImageInfo, ImageChunk
@@ -14,6 +15,36 @@ from .control_pipe import ControlPipe
 from .client_request import ClientRequest
 from .image_response import ImageResponse
 from .wallpaper_image import WallpaperImage
+from .telnet_command_handler import TelnetCommandHandler
+
+
+class ServerStats():
+	def __init__(self):
+		self.peak_clients = 0
+		self.start_time = None
+		self.current_clients = 0
+
+
+	def update_clients(self, count):
+		if self.peak_clients < count:
+			self.peak_clients = count
+		self.current_clients = count
+
+
+	def __repr__(self):
+		repr = ''
+		repr += 'peak clients: %d\n'%self.peak_clients
+		repr += 'live clients: %d\n'%self.current_clients
+		repr += 'uptime: %s'%(str(timedelta(seconds=(int(time() - self.start_time)))))
+
+		return repr
+
+
+
+class LinuxLimits():
+	def __init__(self):
+		self.select = 1024
+		self.clients = 1014
 
 
 class ServerSharedData():
@@ -38,15 +69,29 @@ class Server():
 		self._port = port
 		self._server = None
 		self._shared_data = ServerSharedData()
+		self._limits = LinuxLimits()
+		self._stats = ServerStats()
 
 
 	def start_server_socket(self):
-		self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self._server.setblocking(0)
-		self._server.bind(('', self._port))
-		self._server.listen(5)
-
+		self._server = self.create_socket(self._port)
 		self._shared_data.in_list.append(self._server)
+
+		self._stats.start_time = time()
+
+
+	def start_telnet_server_socket(self):
+		self._telnet_server = self.create_socket(self._port + 1)
+		self._shared_data.in_list.append(self._telnet_server)
+
+
+	def create_socket(self, port):
+		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		server.setblocking(0)
+		server.bind(('', port))
+		server.listen(5)
+
+		return server
 
 
 	def start_scheduler(self):
@@ -75,19 +120,25 @@ class Server():
 
 	def start(self):
 		self.start_server_socket()
+		self.start_telnet_server_socket()
 		self.start_scheduler()
 		self.start_control_pipe()
 
 		in_list = self._shared_data.in_list
 		out_list = self._shared_data.out_list
 		client_list = self._shared_data.client_list
+		telnet_client_list = []
 		msg_receiver = MessageReceiver()
+		telnet_cmd_handler = TelnetCommandHandler(self)
 
 		while len(in_list) > 0 or len(client_list) > 0:
 			readable = writeable = exceptions = None
+			self._stats.update_clients(len(client_list))
+
 			try:
-				readable, writeable, exceptions = select.select(in_list + client_list, out_list, \
-								in_list + client_list + out_list, 0.1)
+				readable, writeable, exceptions = select.select(in_list + client_list + telnet_client_list, \
+									out_list + telnet_client_list, \
+									in_list + client_list + out_list, 0.1)
 
 			except TypeError as e:
 				#log
@@ -143,10 +194,25 @@ class Server():
 						print 'bad wp state'
 				elif r is self._server:
 					print 'incoming connection'
+					if len(set(client_list + out_list)) < self._limits.clients:
+						connection, client_address = r.accept()
+						client_list.append(connection)
+					else:
+						print 'connections full'
+
+				elif r is self._telnet_server:
+					print 'incoming telnet connection'
 					connection, client_address = r.accept()
-					client_list.append(connection)
+					telnet_client_list.append(connection)
+
+				elif r in telnet_client_list:
+					data = r.recv(1024)
+					print 'telnet command: %s'%data
+					res = telnet_cmd_handler.handle(data.strip())
+					r.send(res)
 
 				elif r in client_list:
+					message = None
 					try:
 						message = msg_receiver.recv(r)
 
