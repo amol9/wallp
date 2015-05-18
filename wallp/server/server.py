@@ -16,48 +16,7 @@ from .client_request import ClientRequest
 from .image_response import ImageResponse
 from .wallpaper_image import WallpaperImage
 from .telnet_command_handler import TelnetCommandHandler
-
-
-class ServerStats():
-	def __init__(self):
-		self.peak_clients = 0
-		self.start_time = None
-		self.current_clients = 0
-
-
-	def update_clients(self, count):
-		if self.peak_clients < count:
-			self.peak_clients = count
-		self.current_clients = count
-
-
-	def __repr__(self):
-		repr = ''
-		repr += 'peak clients: %d\n'%self.peak_clients
-		repr += 'live clients: %d\n'%self.current_clients
-		repr += 'uptime: %s'%(str(timedelta(seconds=(int(time() - self.start_time)))))
-
-		return repr
-
-
-
-class LinuxLimits():
-	def __init__(self):
-		self.select = 1024
-		self.clients = 1014
-
-
-class ServerSharedData():
-	def __init__(self):
-		self.in_list = []
-		self.out_list = []
-		self.image_out = {}
-		self.out_buffers = {}
-
-		self.client_list = []
-		self.last_change = None
-		self.wp_image = WallpaperImage()
-		self.wp_state = WPState.NONE
+from .server_helper import ServerStats, ServerSharedData, LinuxLimits
 
 
 def scheduled_task_placeholder():
