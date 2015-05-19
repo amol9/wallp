@@ -4,7 +4,7 @@ from twisted.internet.interfaces import ITCPTransport
 
 
 class Connection():
-	implements(ITCPTransport, IReadWriteDescriptor)
+	implements(ITCPTransport, IReadWriteDescriptor, IConsumer)
 
 	def __init__(self, ...):
 		self._tempDataBuffer = b''
@@ -18,6 +18,8 @@ class Connection():
 	def doWrite(self):
 		if self._tempDataLen > 0:
 			self.writeSomeData(self._tempDataBuffer)
+		elif self._producer:
+			self._producer.resumeProducing()
 
 
 	#ref: twisted.internet.abstract.FileDescriptor
@@ -72,4 +74,16 @@ class Connection():
 
 	def setTcpKeepAlive(self):
 		pass
+
+
+	def registerProducer(self, producer, streaming):
+		if not self._producer:
+			self._producer = producer
+		else:
+			raise Exception('trying to add producer when a producer is already registered')
+
+
+	def unregisterProducer(self):
+		self._producer = None
+
 
