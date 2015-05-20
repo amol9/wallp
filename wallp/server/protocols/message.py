@@ -1,5 +1,5 @@
 
-from twisted.internet.protcols import protocol		#temp import
+from twisted.internet.protcols import Protocol		#temp import
 
 
 class Message(Protocol):

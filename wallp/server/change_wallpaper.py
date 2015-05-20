@@ -11,8 +11,8 @@ class WPState():
 
 
 class ChangeWallpaper():
-	def __init__(self, outpipe):
-		self._outpipe = outpipe
+	def __init__(self, transport):
+		self._transport = transport
 
 
 	def execute(self):
@@ -35,9 +35,9 @@ class ChangeWallpaper():
 		
 		except DesktopException:
 			#log.error('cannot change wallpaper')
-			pass
+			self.send_to_server(WPState.ERROR)
 		
 
-	def send_to_server(self, wp_state):
-		self._outpipe.send(wp_state)
+	def send_to_server(self, message):
+		self._transport.write(message)
 

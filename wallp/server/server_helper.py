@@ -36,15 +36,18 @@ def get_limits():
 	return LinuxLimits()
 
 
-class ServerSharedData():
+class ServerSharedState():
 	def __init__(self):
 		self.in_list = []
-		self.out_list = []
-		self.image_out = {}
-		self.out_buffers = {}
 
 		self.client_list = []
 		self.last_change = None
 		self.wp_image = WallpaperImage()
 		self.wp_state = WPState.NONE
+
+
+	def abort_image_producers(self):
+		for transport in self.client_list:
+			transport.unregisterProducer()
+
 

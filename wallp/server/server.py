@@ -11,9 +11,10 @@ from .proto.client_pb2 import Request
 from .change_wallpaper import ChangeWallpaper, WPState
 from .wallpaper_image import WallpaperImage
 from .server_helper import ServerStats, ServerSharedData, LinuxLimits
-from .transport.connection import Connection
+from .transport.tcp_connection import TCPConnection
 from .transport.address import Address
 from .protocols.wallp_server_factory import WallpServerFactory
+from .transport.pipe_connection import PipeConnection
 
 
 def scheduled_task_placeholder():
@@ -53,9 +54,11 @@ class Server():
 	def start_scheduler(self):
 		self._scheduler = Scheduler()
 
-		self._change_wp_pipe, outpipe = Pipe()
-		self._shared_data.in_list.append(self._change_wp_pipe)
-		self._change_wp = ChangeWallpaper(outpipe)
+		protocol = WPChangeMessage()
+		transport = PipeConnection(protocol)
+
+		self._shared_data.in_list.append(transport)
+		self._change_wp = ChangeWallpaper(transport)
 
 		#global scheduled_task_placeholder
 		#self._scheduler.add_job(scheduled_task_placeholder, '5s', 'change_wallpaper')
@@ -67,11 +70,6 @@ class Server():
 
 	def setup_job(self):
 		pass
-
-
-	def start_control_pipe(self):
-		self._control_pipe = ControlPipe(self)
-		self._shared_data.in_list.append(self._control_pipe.pipe)
 
 
 	def start(self):
@@ -90,9 +88,9 @@ class Server():
 			self._stats.update_clients(len(client_list))
 
 			try:
-				readable, writeable, exceptions = select.select(in_list + client_list + telnet_client_list, \
-									out_list + telnet_client_list, \
-									in_list + client_list + out_list, 0.1)
+				readable, writeable, exceptions = select.select(in_list + client_list, \
+									client_list, \
+									in_list + client_list)
 
 			except TypeError as e:
 				#log
@@ -128,25 +126,7 @@ class Server():
 				if r is self._change_wp_pipe:
 					wp_state = self._change_wp_pipe.recv()
 
-					if wp_state == WPState.READY:
-						self._last_change = int(time())
-
-						self.abort_in_progress_image_producers()
-
-						self._shared_data.wp_state = WPState.READY
-						wp_path = self._change_wp_pipe.recv()
-						print 'wp_path: ', wp_path
-						self._shared_data.wp_image.set_path(wp_path)
-
-						#self._scheduler.remove_job('change_wallpaper')
-
-					elif wp_state == WPState.CHANGING:
-						self._shared_data.wp_state = WPState.CHANGING
-
-					else:
-						print 'bad wp state'
-
-				elif r is self._server:
+								elif r is self._server:
 					print 'incoming connection'
 					self.handle_incoming_connection(client_list, wallp_server_factory)
 				
@@ -185,7 +165,7 @@ class Server():
 
 			addr = Address(client_address)
 			protocol = factory.buildProtocol(addr)
-			transport = Connection(connection, protocol)
+			transport = TCPConnection(connection, protocol)
 			protocol.makeConnection(transport)
 
 			client_list.append(transport)

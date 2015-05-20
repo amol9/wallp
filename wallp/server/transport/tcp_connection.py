@@ -3,7 +3,7 @@ from zope.interface import implements
 from twisted.internet.interfaces import ITCPTransport
 
 
-class Connection():
+class TCPConnection():
 	implements(ITCPTransport, IReadWriteDescriptor, IConsumer)
 
 	def __init__(self, skt, protocol ):
