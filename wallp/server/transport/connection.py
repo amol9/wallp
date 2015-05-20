@@ -6,7 +6,7 @@ from twisted.internet.interfaces import ITCPTransport
 class Connection():
 	implements(ITCPTransport, IReadWriteDescriptor, IConsumer)
 
-	def __init__(self, ...):
+	def __init__(self, skt, protocol ):
 		self._tempDataBuffer = b''
 		self._tempDataLen = 0
 
@@ -84,6 +84,8 @@ class Connection():
 
 
 	def unregisterProducer(self):
-		self._producer = None
+		if self._producer is not None:
+			self._producer.stopProducing()
+			self._producer = None
 
 

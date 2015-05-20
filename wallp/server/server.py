@@ -1,22 +1,19 @@
 import socket
 import select
 import os
-from multiprocessing import Process, Pipe
 from os.path import exists
 from time import time
 from datetime import timedelta
 
 from .scheduler import Scheduler
-from ..proto.server_pb2 import Response, ImageInfo, ImageChunk
-from ..proto.client_pb2 import Request
-from .message_length_helper import MessageReceiver, prefix_message_length, HangUpException
+from .proto.server_pb2 import Response, ImageInfo, ImageChunk
+from .proto.client_pb2 import Request
 from .change_wallpaper import ChangeWallpaper, WPState
-from .control_pipe import ControlPipe
-from .client_request import ClientRequest
-from .image_response import ImageResponse
 from .wallpaper_image import WallpaperImage
-from .telnet_command_handler import TelnetCommandHandler
 from .server_helper import ServerStats, ServerSharedData, LinuxLimits
+from .transport.connection import Connection
+from .transport.address import Address
+from .protocols.wallp_server_factory import WallpServerFactory
 
 
 def scheduled_task_placeholder():
@@ -81,14 +78,12 @@ class Server():
 		self.start_server_socket()
 		self.start_telnet_server_socket()
 		self.start_scheduler()
-		self.start_control_pipe()
 
 		in_list = self._shared_data.in_list
-		out_list = self._shared_data.out_list
 		client_list = self._shared_data.client_list
-		telnet_client_list = []
-		msg_receiver = MessageReceiver()
-		telnet_cmd_handler = TelnetCommandHandler(self)
+
+		wallp_server_factory = WallpServerFactory()
+		telnet_server_factory = TelnetServerFactory()
 
 		while len(in_list) > 0 or len(client_list) > 0:
 			readable = writeable = exceptions = None
@@ -136,8 +131,7 @@ class Server():
 					if wp_state == WPState.READY:
 						self._last_change = int(time())
 
-						for image_response in self._shared_data.image_out.values():
-							image_response.abort()
+						self.abort_in_progress_image_producers()
 
 						self._shared_data.wp_state = WPState.READY
 						wp_path = self._change_wp_pipe.recv()
@@ -151,86 +145,33 @@ class Server():
 
 					else:
 						print 'bad wp state'
+
 				elif r is self._server:
 					print 'incoming connection'
-					if len(set(client_list + out_list)) < self._limits.clients:
-						connection, client_address = r.accept()
-						client_list.append(connection)
-					else:
-						print 'connections full'
-
+					self.handle_incoming_connection(client_list, wallp_server_factory)
+				
 				elif r is self._telnet_server:
 					print 'incoming telnet connection'
-					connection, client_address = r.accept()
-					telnet_client_list.append(connection)
-
-				elif r in telnet_client_list:
-					data = r.recv(1024)
-					print 'telnet command: %s'%data
-					res = telnet_cmd_handler.handle(data.strip())
-					r.send(res)
+					self.handle_incoming_connection(client_list, telnet_server_factory)
 
 				elif r in client_list:
-					message = None
 					try:
-						message = msg_receiver.recv(r)
-
-					except HangUpException as e:
+						r.doRead()
+					except HangUp as e:
 						print 'client hung up'
 						client_list.remove(r)
 						continue
-
-					if message is not None:
-					#new:
-						client_request = ClientRequest(message, self._shared_data)
-						response, is_image_response, keep_alive = client_request.process()
-
-						if response is not None:
-							self._shared_data.out_buffers[r] = (response, keep_alive)
-
-							if is_image_response:
-								self._shared_data.image_out[r] = ImageResponse(self._shared_data.wp_image)
-
-							if r not in out_list:
-								out_list.append(r)
-
-						if not keep_alive:
-							print 'removing client'
-							client_list.remove(r)	
-							print 'len client_list: %d'%len(client_list)
-
-				elif r is self._control_pipe.pipe:
-					self._control_pipe.read_command()
-
+					
 				else:
 					print 'bad readable from select'
 
 			for w in writeable:
-				if w in self._shared_data.out_buffers.keys():
-					print 'len out list: %d'%len(out_list)
-					w.send(prefix_message_length(self._shared_data.out_buffers[w][0]))
-
-					if not w in self._shared_data.image_out.keys():
-						if not self._shared_data.out_buffers[w][1]:
-							print 'closing connection'
-							w.close()
-							out_list.remove(w)
-							print 'len out_list: %d'%len(out_list)
-
-					del self._shared_data.out_buffers[w]
-
-				elif w in self._shared_data.image_out.keys():
-					image_response = self._shared_data.image_out[w]
-
-					print 'sending image chunk to client..'
-					chunk, last_chunk = image_response.get_next_chunk()
-
-					w.send(prefix_message_length(chunk))
-
-					if last_chunk:
-						del self._shared_data.image_out[w]
-						w.close()
-						out_list.remove(w)
+				try:
+					w.doWrite()
+				except HangUp as e:
+					print 'client hung up'
+					client_list.remove(w)
+					continue
 
 			for e in exceptions:
 				print 'select found exceptions'
@@ -238,11 +179,20 @@ class Server():
 				#do something
 
 
-			'''except socket.error as e:
-				print e.strerror
-				print e.errno
-				import traceback; traceback.print_exc()
-				return'''
+	def handle_incoming_connection(self, client_list, factory):
+		if len(client_list) < self._limits.clients:
+			connection, client_address = r.accept()
+
+			addr = Address(client_address)
+			protocol = factory.buildProtocol(addr)
+			transport = Connection(connection, protocol)
+			protocol.makeConnection(transport)
+
+			client_list.append(transport)
+		else:
+			print 'connections full'
+
+
 
 	def cleanup_closed_connections(conn_list):
 		pass
