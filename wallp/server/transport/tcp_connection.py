@@ -1,24 +1,35 @@
 from zope.interface import implements
 
-from twisted.internet.interfaces import ITCPTransport
+from ..imported.twisted.internet_interfaces import ITCPTransport, IReadWriteDescriptor, IConsumer
+
+
+class HangUp(Exception):
+	pass
 
 
 class TCPConnection():
 	implements(ITCPTransport, IReadWriteDescriptor, IConsumer)
 
-	def __init__(self, skt, protocol ):
+	def __init__(self, socket, protocol):
+		self.socket = socket
+		self.protocol = protocol
 		self._tempDataBuffer = b''
 		self._tempDataLen = 0
+		self._producer = None
 
 
 	def doRead(self):
-		pass
+		data = self.socket.recv(1024)
+		if len(data) == 0:
+			raise HangUp()
+
+		self.protocol.dataReceived(data)
 
 	#ref: twisted.internet.abstract.FileDescriptor
 	def doWrite(self):
 		if self._tempDataLen > 0:
 			self.writeSomeData(self._tempDataBuffer)
-		elif self._producer:
+		elif self._producer is not None:
 			self._producer.resumeProducing()
 
 
@@ -87,5 +98,9 @@ class TCPConnection():
 		if self._producer is not None:
 			self._producer.stopProducing()
 			self._producer = None
+
+
+	def fileno(self):
+		return self.socket.fileno()
 
 

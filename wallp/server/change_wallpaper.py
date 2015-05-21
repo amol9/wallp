@@ -4,12 +4,6 @@ from ..helper import get_image, compute_style
 from ..desktop_factory import get_desktop, DesktopException
 
 
-class WPState():
-	NONE = 0
-	READY = 1
-	CHANGING = 2
-
-
 class ChangeWallpaper():
 	def __init__(self, transport):
 		self._transport = transport

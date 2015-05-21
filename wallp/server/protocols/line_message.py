@@ -1,5 +1,5 @@
 
-from twisted.protocols.protocol import Protocol		#temp
+from .message import Message
 from ..server_helper import get_limits
 
 
@@ -20,6 +20,6 @@ class LineMessage(Message):
 			self._message = ''
 
 
-	def connectionLost(self, reason=connectionDone):
+	def connectionLost(self, reason=None):
 		self._message = ''
 

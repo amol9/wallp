@@ -1,8 +1,9 @@
 
 
 from .fixed_length_message import FixedLengthMessage
-from ...proto.server_pb2 import Response
-from ...proto.client_pb2 import Request
+from ..proto.server_pb2 import Response
+from ..proto.client_pb2 import Request
+from .wp_change_message import WPState
 
 
 class WallpServer(FixedLengthMessage):
@@ -13,7 +14,7 @@ class WallpServer(FixedLengthMessage):
 
 	def messageReceived(self, message):
 		request = Request()
-		request = request.ParseFromString(message)
+		request.ParseFromString(message)
 
 		response = Response()
 
@@ -56,5 +57,7 @@ class WallpServer(FixedLengthMessage):
 		else:
 			response.type = Response.BAD_REQUEST
 
-		self.sendMessage(response.SerializetoString())
+		print 'response type: ', response.type
+
+		self.sendMessage(response.SerializeToString())
 

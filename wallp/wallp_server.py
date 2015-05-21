@@ -3,8 +3,8 @@ import os
 import tempfile
 from time import sleep
 
-from .proto.client_pb2 import Request
-from .proto.server_pb2 import Response
+from .server.proto.client_pb2 import Request
+from .server.proto.server_pb2 import Response
 from .server.message_length_helper import MessageReceiver, prefix_message_length, MessageLengthException
 from .service import Service, ServiceException
 

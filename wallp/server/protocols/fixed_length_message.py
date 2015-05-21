@@ -1,11 +1,11 @@
 import struct
 
-from twisted.internet.protcols import protocol		#temp import
+from .message import Message
 
 
 class FixedLengthMessage(Message):
 	def __init__(self):
-		Message.__init__.(self)
+		Message.__init__(self)
 		self._length = None
 
 

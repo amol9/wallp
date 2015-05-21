@@ -1,7 +1,12 @@
 from time import time
 
-from twisted.internet.protcols import Protocol		#temp import
-from ..wallpaper_image import WPState
+from ..imported.twisted.internet_protocol import Protocol
+
+
+class WPState():
+	NONE = 0
+	READY = 1
+	CHANGING = 2
 
 
 class WPChangeMessage(Protocol):

@@ -1,6 +1,6 @@
 from zope.interface import implements
 
-from twisted.internet.interfaces import ITCPTransport
+from ..imported.twisted.internet_interfaces import ITCPTransport
 from ..server_helper import get_limits()
 from ...proto.server_pb2 import Response
 

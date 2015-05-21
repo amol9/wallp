@@ -1,6 +1,16 @@
 from zope.interface import implements
+import os
 
-from twisted.internet.interfaces import ITCPTransport, IReadWriteDescriptor
+from ..imported.twisted.internet_interfaces import ITransport, IReadWriteDescriptor
+
+class Pipe:
+	def __init__(self, pipe, connection):
+		self.pipe = pipe
+		self.connection = connection
+
+
+	def fileno(self):
+		return self.pipe
 
 
 class PipeConnection:
@@ -43,4 +53,12 @@ class PipeConnection:
 
 	def getPeer(self):
 		pass
+
+
+	def getReadPipe(self):
+		return Pipe(self.rpipe, self)
+
+
+	def getWritePipe(self):
+		return Pipe(self.wpipe, self)
 

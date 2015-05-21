@@ -1,4 +1,7 @@
 
+from .wallpaper_image import WallpaperImage
+from .protocols.wp_change_message import WPState
+
 class ServerStats():
 	def __init__(self):
 		self.peak_clients = 0
@@ -38,7 +41,8 @@ def get_limits():
 
 class ServerSharedState():
 	def __init__(self):
-		self.in_list = []
+		self.in_pipes = []
+		self.out_pipes = []
 
 		self.client_list = []
 		self.last_change = None

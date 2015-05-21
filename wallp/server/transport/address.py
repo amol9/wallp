@@ -7,5 +7,5 @@ class Address:
 
 
 	def __repr__(self):
-		return self.host + ':' + self.port
+		return self.host + ':' + str(self.port)
 
