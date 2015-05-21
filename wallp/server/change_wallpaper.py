@@ -2,6 +2,7 @@ from time import sleep
 
 from ..helper import get_image, compute_style
 from ..desktop_factory import get_desktop, DesktopException
+from .protocols.wp_change_message import WPState
 
 
 class ChangeWallpaper():
@@ -30,6 +31,8 @@ class ChangeWallpaper():
 		except DesktopException:
 			#log.error('cannot change wallpaper')
 			self.send_to_server(WPState.ERROR)
+		except Exception as e:
+			print e.message
 		
 
 	def send_to_server(self, message):

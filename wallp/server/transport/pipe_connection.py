@@ -1,5 +1,6 @@
 from zope.interface import implements
 import os
+import multiprocessing
 
 from ..imported.twisted.internet_interfaces import ITransport, IReadWriteDescriptor
 
@@ -10,15 +11,14 @@ class Pipe:
 
 
 	def fileno(self):
-		return self.pipe
+		return self.pipe.fileno()
 
 
 class PipeConnection:
 	implements(ITransport, IReadWriteDescriptor)
 
-
 	def __init__(self, protocol, reactor=None):
-		self.rpipe, self.wpipe = os.pipe() 
+		self.rpipe, self.wpipe = multiprocessing.Pipe()
 		self.protocol = protocol
 
 		self._tempDataBuffer = []
@@ -32,7 +32,7 @@ class PipeConnection:
 	def doWrite(self):
 		for data in self._tempDataBuffer:
 			self.wpipe.send(data)
-			self.remove(data)
+			self._tempDataBuffer.remove(data)
 
 
 	def write(self, data):

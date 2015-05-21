@@ -23,10 +23,12 @@ class FixedLengthMessage(Message):
 				if len(self._message) > self._length:
 					self.messageReceived(self._message[0 : self._length])
 					self._message = self._message[self._length : ]
+					self._length = None
 
 				elif len(self._message) == self._length:
 					self.messageReceived(self._message[0 : self._length])
-					self._message = ''
+					self._message = b''
+					self._length = None
 					next_message_avaialable = False
 
 				else:

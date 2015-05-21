@@ -7,6 +7,7 @@ class WPState():
 	NONE = 0
 	READY = 1
 	CHANGING = 2
+	ERROR = 3
 
 
 class WPChangeMessage(Protocol):
@@ -24,7 +25,6 @@ class WPChangeMessage(Protocol):
 			self._server_shared_state.wp_state = WPState.READY
 
 			self._server_shared_state.abort_image_producers()
-			self._server_shared_state.wp_image.set_path(wp_path)
 
 		elif message == WPState.CHANGING:
 			self._server_shared_state.wp_state = WPState.CHANGING

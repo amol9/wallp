@@ -1,11 +1,12 @@
 from zope.interface import implements
+import struct
 
-from ..imported.twisted.internet_interfaces import ITCPTransport
-from ..server_helper import get_limits()
-from ...proto.server_pb2 import Response
+from ..imported.twisted.internet_interfaces import IPullProducer
+from ..server_helper import get_limits
+from ..proto.server_pb2 import Response
 
 
-class ImageChunksProducer:
+class ImageChunkProducer:
 	implements(IPullProducer)
 
 	def __init__(self, transport, wp_image):
@@ -33,7 +34,7 @@ class ImageChunksProducer:
 			response.type = Response.IMAGE_CHUNK
 			response.image_chunk.data = self._wp_image.chunk(self._chunk_no)
 
-			message = response.SerializetoString()
+			message = response.SerializeToString()
 			message = struct.pack('>i', len(message)) + message
 
 			self._transport.write(message)

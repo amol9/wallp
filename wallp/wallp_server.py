@@ -45,7 +45,7 @@ class WallpServer(Service):
 
 				self.close_connection()
 
-			except (ServerException, ServerException, ServerImageNotChanged) as e:
+			except (ServerException, ServerException, ServerImageNotChanged, Exception) as e:
 				print e.message
 				if e.retry:
 					retries -= 1
@@ -58,6 +58,7 @@ class WallpServer(Service):
 		request = Request()
 		request.type = Request.FREQUENCY
 
+		print 'getting freq'
 		response = self.send_and_recv(request)
 
 		#extract frequency and store it, db
@@ -67,6 +68,7 @@ class WallpServer(Service):
 		request = Request()
 		request.type = Request.LAST_CHANGE
 
+		print 'getting last change'
 		response = self.send_and_recv(request)
 		last_change = response.last_change
 
@@ -99,7 +101,10 @@ class WallpServer(Service):
 
 
 	def send_request(self, request):
-		self._connection.send(prefix_message_length(request.SerializeToString()))	#exc
+		message = prefix_message_length(request.SerializeToString())
+		import binascii
+		print 'sending msg', binascii.hexlify(message)
+		self._connection.send(message)	#exc
 
 
 	def recv_response(self):
@@ -214,6 +219,7 @@ class WallpServer(Service):
 			try:
 				self.send_request(request)
 				response = self.recv_response()
+				print 'snr: got response for req type ', request.type
 				return response
 
 			except MessageLengthException:

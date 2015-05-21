@@ -1,4 +1,5 @@
 from unittest import TestCase, main as ut_main
+
 from datetime import datetime, timedelta
 
 from wallp.server.server import Server, scheduled_task_placeholder
@@ -29,7 +30,7 @@ class TestServer(TestCase):
 
 	
 	def test_server_start(self):
-		self.setup_job_runonce({'seconds': 15})
+		self.setup_job_runonce({'seconds': 5})
 		server = Server(port)
 		self.start_server(server)
 

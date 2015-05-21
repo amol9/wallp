@@ -4,6 +4,7 @@ from .fixed_length_message import FixedLengthMessage
 from ..proto.server_pb2 import Response
 from ..proto.client_pb2 import Request
 from .wp_change_message import WPState
+from .image_chunk_producer import ImageChunkProducer
 
 
 class WallpServer(FixedLengthMessage):
@@ -21,7 +22,8 @@ class WallpServer(FixedLengthMessage):
 		wp_image = self._server_shared_data.wp_image
 		wp_state = self._server_shared_data.wp_state
 
-		print 'processing request..'
+		import binascii
+		print 'processing request..', binascii.hexlify(message), '  ', len(message)
 		print 'request type: ', request.type
 
 		if request.type == Request.FREQUENCY:
@@ -41,7 +43,7 @@ class WallpServer(FixedLengthMessage):
 				image_info.length = wp_image.length
 				image_info.chunk_count = wp_image.chunk_count
 
-				self.transport.registerProducer(ImageChunksProducer(self.transport, wp_image))
+				self.transport.registerProducer(ImageChunkProducer(self.transport, wp_image))
 
 			elif wp_state == WPState.CHANGING:
 				response.type = Response.IMAGE_CHANGING

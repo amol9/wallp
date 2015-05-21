@@ -87,7 +87,7 @@ class TCPConnection():
 		pass
 
 
-	def registerProducer(self, producer, streaming):
+	def registerProducer(self, producer, streaming=False):
 		if not self._producer:
 			self._producer = producer
 		else:
