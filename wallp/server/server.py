@@ -3,7 +3,6 @@ import select
 import os
 from os.path import exists
 from time import time
-from datetime import timedelta
 
 from .scheduler import Scheduler
 from .proto.server_pb2 import Response, ImageInfo, ImageChunk
@@ -12,14 +11,13 @@ from .change_wallpaper import ChangeWallpaper
 from .protocols.wp_change_message import WPChangeMessage, WPState
 from .wallpaper_image import WallpaperImage
 from .server_helper import ServerStats, ServerSharedState, LinuxLimits
-from .transport.tcp_connection import TCPConnection, HangUp
+from .transport.tcp_connection import TCPConnection, HangUp, ConnectionAbort
 from .transport.address import Address
 from .protocols.wallp_server import WallpServer
 from .protocols.telnet_server import TelnetServer
 from .transport.pipe_connection import PipeConnection
 from .protocols.wallp_server_factory import WallpServerFactory
 from .protocols.telnet_server_factory import TelnetServerFactory
-
 
 
 def scheduled_task_placeholder():
@@ -158,10 +156,9 @@ class Server():
 				if w in client_list:
 					try:
 						w.doWrite()
-					except HangUp as e:
-						print 'client hung up'
+					except (HangUp, ConnectionAbort) as e:
+						print str(e)
 						client_list.remove(w)
-						continue
 
 				elif w in out_pipes:
 					w.connection.doWrite()

@@ -24,23 +24,19 @@ class TestWallpServer(TestCase):
 		exceptions = [0]
 		exc_queue = Queue()
 
-		def thread_func(exceptions, exc_queue):
+		def thread_func(exceptions, exc_queue, n):
 			wp_server = WallpServer()
 			try:
 				wp_server.get_image()
 			except Exception as e:
 				exceptions[0] += 1
 
-				'''exc_file.lock('w|')
-				traceback.print_exc(file=exc_file)
-				exc_file.write('\n\n')
-				exc_file.lock('u')'''
-				exc_queue.put(traceback.format_exc())
+				exc_queue.put('thread# %d\n'%n + traceback.format_exc())
 
-		n = 500
+		n = 200
 		threads = []
 		for i in range(0, n):
-			t = Thread(target=thread_func, args=(exceptions, exc_queue))
+			t = Thread(target=thread_func, args=(exceptions, exc_queue, i))
 			t.start()
 			threads.append(t)
 

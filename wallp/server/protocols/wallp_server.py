@@ -43,6 +43,7 @@ class WallpServer(FixedLengthMessage):
 				image_info.chunk_count = wp_image.chunk_count
 
 				self.transport.registerProducer(ImageChunkProducer(self.transport, wp_image))
+				self.transport.closeAfterWriteComplete()
 
 			elif wp_state == WPState.CHANGING:
 				response.type = Response.IMAGE_CHANGING

@@ -61,7 +61,7 @@ class TestWallpServer(TestCase):
 		return response
 
 
-	def testFrequency(self):
+	def test_frequency(self):
 		request = Request()
 		request.type = Request.FREQUENCY
 
@@ -73,7 +73,7 @@ class TestWallpServer(TestCase):
 		self.assertEquals(response.frequency.value, self.frequency)
 
 
-	def testLastChange(self):
+	def test_last_change(self):
 		request = Request()
 		request.type = Request.LAST_CHANGE
 
@@ -92,7 +92,7 @@ class TestWallpServer(TestCase):
 		self.wallp_server.messageReceived(request.SerializeToString())
 
 
-	def testImageNone(self):
+	def test_image_none(self):
 		self.shared_state.wp_state = WPState.NONE
 
 		self.send_image_request()
@@ -102,7 +102,7 @@ class TestWallpServer(TestCase):
 		self.assertEquals(response.WhichOneof('value'), None)
 
 
-	def testImageChanging(self):
+	def test_image_changing(self):
 		self.shared_state.wp_state = WPState.CHANGING
 	
 		self.send_image_request()
@@ -112,7 +112,7 @@ class TestWallpServer(TestCase):
 		self.assertEquals(response.WhichOneof('value'), None)
 
 	
-	def testImageReady(self):
+	def test_image_ready(self):
 		self.shared_state.wp_state = WPState.READY
 
 		self.send_image_request()
@@ -129,7 +129,7 @@ class TestWallpServer(TestCase):
 
 
 	@skip('unable to fix')
-	def testBadRequest(self):
+	def test_bad_request(self):
 		self.wallp_server.messageReceived('\x18\x23\x30\x40\x00\x23')
 		response = self.get_response()
 

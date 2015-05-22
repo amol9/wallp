@@ -1,6 +1,9 @@
+from datetime import timedelta
+from time import time
 
 from .wallpaper_image import WallpaperImage
 from .protocols.wp_change_message import WPState
+
 
 class ServerStats():
 	def __init__(self):

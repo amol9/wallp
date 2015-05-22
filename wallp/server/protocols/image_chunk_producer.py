@@ -13,6 +13,7 @@ class ImageChunkProducer:
 		self._transport = transport
 		self._wp_image = wp_image
 		self._chunk_no = 0
+		self.producing = True
 
 
 	def stopProducing(self):
@@ -25,7 +26,7 @@ class ImageChunkProducer:
 
 			self._transport.write(message)
 
-		self._transport.unregisterProducer()
+		self.producing = False
 
 
 	def resumeProducing(self):

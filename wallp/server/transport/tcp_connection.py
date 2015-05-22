@@ -7,6 +7,10 @@ class HangUp(Exception):
 	pass
 
 
+class ConnectionAbort(Exception):
+	pass
+
+
 class TCPConnection():
 	implements(ITCPTransport, IReadWriteDescriptor, IConsumer)
 
@@ -16,6 +20,7 @@ class TCPConnection():
 		self._tempDataBuffer = b''
 		self._tempDataLen = 0
 		self._producer = None
+		self._close_after_write_complete = False
 
 
 	def doRead(self):
@@ -25,12 +30,20 @@ class TCPConnection():
 
 		self.protocol.dataReceived(data)
 
+
 	#ref: twisted.internet.abstract.FileDescriptor
 	def doWrite(self):
 		if self._tempDataLen > 0:
 			self.writeSomeData(self._tempDataBuffer)
+
 		elif self._producer is not None:
-			self._producer.resumeProducing()
+			if self._producer.producing:
+				self._producer.resumeProducing()
+			else:
+				self._producer = None
+
+		elif self._close_after_write_complete:
+			self.abortConnection()
 
 
 	#ref: twisted.internet.abstract.FileDescriptor
@@ -59,8 +72,12 @@ class TCPConnection():
 		pass
 
 
+	def closeAfterWriteComplete(self):
+		self._close_after_write_complete = True
+
 	def abortConnection(self):
-		pass
+		self.socket.close()
+		raise ConnectionAbort('connection closed')
 
 
 	def getPeer(self):

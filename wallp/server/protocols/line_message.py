@@ -1,3 +1,4 @@
+import os
 
 from .message import Message
 from ..server_helper import get_limits
@@ -10,16 +11,16 @@ class LineMessage(Message):
 
 
 	def dataReceived(self, data):
-		self._message += data
-		if self._message > get_limits().max_line_message_length:
-			self.messageError(self._message)
-			self._message = ''
+		self._buffer += data
+		if len(self._buffer) > get_limits().max_line_buffer_length:
+			self.messageError(self._buffer)
+			self._buffer = ''
 
-		if self._message.endswith(os.linesep):
-			self.messageReceived(self._message[0:-1])
-			self._message = ''
+		if self._buffer.endswith(os.linesep):
+			self.messageReceived(self._buffer.rstrip())
+			self._buffer = ''
 
 
 	def connectionLost(self, reason=None):
-		self._message = ''
+		self._buffer = ''
 

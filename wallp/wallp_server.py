@@ -3,10 +3,9 @@ import os
 import tempfile
 from time import sleep
 
-from .server.proto.client_pb2 import Request
-from .server.proto.server_pb2 import Response
-from .server.message_length_helper import MessageReceiver, prefix_message_length, MessageLengthException
 from .service import Service, ServiceException
+from .server.protocols.wallp_client import WallpClient
+from .server.transport.tcp_connection import TCPConnection
 
 
 class ServerException(Exception):
@@ -45,7 +44,7 @@ class WallpServer(Service):
 
 				self.close_connection()
 
-			except (ServerException, ServerException, ServerImageNotChanged, Exception) as e:
+			except (ServerException, ServerException, ServerImageNotChanged) as e:
 				print e.message
 				if e.retry:
 					retries -= 1
@@ -53,6 +52,10 @@ class WallpServer(Service):
 					delay *= 2
 				else:
 					raise ServiceException()
+			'''except (Exception) as e:
+				print str(e)
+				raise ServiceException()'''
+
 
 	def update_frequency(self):
 		request = Request()
