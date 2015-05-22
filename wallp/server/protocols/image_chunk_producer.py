@@ -17,10 +17,10 @@ class ImageChunkProducer:
 
 	def stopProducing(self):
 		if self._chunk_no < self._wp_image.chunk_count:
-			response - Response()
-			response.type = IMAGE_ABORT
+			response = Response()
+			response.type = Response.IMAGE_ABORT
 
-			message = response.SerializetoString()
+			message = response.SerializeToString()
 			message = struct.pack('>i', len(message)) + message
 
 			self._transport.write(message)

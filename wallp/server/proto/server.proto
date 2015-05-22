@@ -30,9 +30,10 @@ message Response {
 		LAST_CHANGE = 2;
 		IMAGE_INFO = 3;
 		IMAGE_CHUNK = 4;
-		IMAGE_CHANGING = 5;
-		IMAGE_NONE = 6;
-		BAD_REQUEST = 7;
+		IMAGE_ABORT = 5;
+		IMAGE_CHANGING = 6;
+		IMAGE_NONE = 7;
+		BAD_REQUEST = 8;
 	}
 		
 	required Type type = 1;
