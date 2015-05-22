@@ -1,5 +1,6 @@
 from unittest import TestCase, main as ut_main, skip
 from Queue import Queue
+import os
 
 from wallp.server.protocols.image_chunk_producer import ImageChunkProducer
 from wallp.server.wallpaper_image import WallpaperImage
@@ -17,11 +18,12 @@ class MockServerSharedState:
 
 
 class TestWallpServer(TestCase):
-	wallp_server = None
-	frequency = '1h'
-	last_change = 0
-	shared_state = None
+	wallp_server 	= None
+	frequency 	= '1h'
+	last_change 	= 0
+	shared_state 	= None
 	test_image_path = '/home/amol/Pictures/Firefox_wallpaper.png'
+
 
 	@classmethod
 	def setUpClass(cls):
@@ -30,12 +32,22 @@ class TestWallpServer(TestCase):
 		cls.shared_state.wp_image.set_path(cls.test_image_path)
 		cls.shared_state.wp_state = WPState.NONE
 
+		cls.ws_orig_get_frequency = WallpServer.get_frequency
+		cls.ws_orig_get_last_change = WallpServer.get_last_change
+
 		WallpServer.get_frequency = lambda slf : cls.frequency
 		WallpServer.get_last_change = lambda slf : cls.last_change
 		WallpServer.sendMessage = lambda slf, msg : slf.transport.write(msg)
 
 		cls.wallp_server = WallpServer(cls.shared_state)
 		cls.wallp_server.transport = MockTransport()
+
+
+	@classmethod
+	def tearDownClass(cls):
+		WallpServer.get_frequency = cls.ws_orig_get_frequency
+		WallpServer.get_last_change = cls.ws_orig_get_last_change
+		delattr(WallpServer, 'sendMessage')
 
 
 	def get_response(self):
@@ -57,6 +69,7 @@ class TestWallpServer(TestCase):
 		response = self.get_response()
 
 		self.assertEquals(response.type, Response.FREQUENCY)
+		self.assertEquals(response.WhichOneof('value'), 'frequency')
 		self.assertEquals(response.frequency.value, self.frequency)
 
 
@@ -68,6 +81,7 @@ class TestWallpServer(TestCase):
 		response = self.get_response()
 
 		self.assertEquals(response.type, Response.LAST_CHANGE)
+		self.assertEquals(response.WhichOneof('value'), 'last_change')
 		self.assertEquals(response.last_change.timestamp, self.last_change)
 
 
@@ -85,7 +99,7 @@ class TestWallpServer(TestCase):
 		response = self.get_response()
 
 		self.assertEquals(response.type, Response.IMAGE_NONE)
-		#test value
+		self.assertEquals(response.WhichOneof('value'), None)
 
 
 	def testImageChanging(self):
@@ -95,7 +109,7 @@ class TestWallpServer(TestCase):
 		response = self.get_response()
 
 		self.assertEquals(response.type, Response.IMAGE_CHANGING)
-		#test value
+		self.assertEquals(response.WhichOneof('value'), None)
 
 	
 	def testImageReady(self):
@@ -105,9 +119,9 @@ class TestWallpServer(TestCase):
 		response = self.get_response()
 
 		self.assertEquals(response.type, Response.IMAGE_INFO)
-		self.assertIsNotNone(response.image_info)
+		self.assertEquals(response.WhichOneof('value'), 'image_info')
 		self.assertTrue(type(response.image_info.extension) in [str, unicode])
-		self.assertTrue(response.image_info.length > 0)
+		self.assertEquals(response.image_info.length, os.stat(self.test_image_path).st_size)
 		self.assertTrue(response.image_info.chunk_count > 0)
 
 		self.assertIsInstance(self.wallp_server.transport.producer, ImageChunkProducer)
@@ -120,6 +134,7 @@ class TestWallpServer(TestCase):
 		response = self.get_response()
 
 		self.assertEquals(response.type, Response.BAD_REQUEST)
+		self.assertEquals(response.WhichOneof('value'), None)
 
 
 if __name__ == '__main__':
