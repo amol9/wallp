@@ -8,20 +8,6 @@ from wallp.server.wallpaper_image import WallpaperImage
 from wallp.server.proto.server_pb2 import Response
 
 
-class MockTransport:
-	def __init__(self):
-		self.messages = Queue()
-		self.unregistered = False
-	
-
-	def write(self, message):
-		self.messages.put(message)
-
-
-	def unregisterProducer(self):
-		self.unregistered = True
-
-
 class TestImageChunkProducer(TestCase):
 	wp_image = None
 	test_image_path = '/home/amol/Pictures/Firefox_wallpaper.png'

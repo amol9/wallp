@@ -1,5 +1,4 @@
 
-
 from .fixed_length_message import FixedLengthMessage
 from ..proto.server_pb2 import Response
 from ..proto.client_pb2 import Request
@@ -28,11 +27,11 @@ class WallpServer(FixedLengthMessage):
 
 		if request.type == Request.FREQUENCY:
 			response.type = Response.FREQUENCY
-			response.frequency.value = '1h'
+			response.frequency.value = self.get_frequency()
 
 		elif request.type == Request.LAST_CHANGE:
 			response.type = Response.LAST_CHANGE
-			response.last_change.timestamp = 0 #self._server_shared_data.last_change
+			response.last_change.timestamp = self.get_last_change() #self._server_shared_data.last_change
 
 		elif request.type == Request.IMAGE:
 			if wp_state == WPState.READY:
@@ -62,4 +61,13 @@ class WallpServer(FixedLengthMessage):
 		print 'response type: ', response.type
 
 		self.sendMessage(response.SerializeToString())
+
+
+	def get_frequency(self):
+		return '1h'
+
+
+	def get_last_change(self):
+		return 0
+
 
