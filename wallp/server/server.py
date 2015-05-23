@@ -143,6 +143,7 @@ class Server():
 						r.doRead()
 					except HangUp as e:
 						print 'client hung up'
+						r.abortConnection(raiseException=False)
 						client_list.remove(r)
 						continue
 

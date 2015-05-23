@@ -22,10 +22,10 @@ class TestServer(TestCase):
 
 
 	def start_server(self, server):
-		try:
-			server.start()
-		except KeyboardInterrupt:
-			server.shutdown()
+		#try:
+		server.start()
+		#except KeyboardInterrupt:
+		#	server.shutdown()
 
 	
 	def test_server_start(self):

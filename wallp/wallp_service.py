@@ -5,7 +5,7 @@ from time import sleep
 
 from .service import Service, ServiceException
 from .server.protocols.wallp_client import WallpClient, ImageNone, ImageChanging, ImageAbort
-from .server.transport.tcp_connection import TCPConnection
+from .server.transport.tcp_connection import TCPConnection, HangUp
 
 
 class ServerError(Exception):
@@ -51,9 +51,13 @@ class WallpService(Service):
 					delay *= 2
 				else:
 					raise ServiceException()
-			'''except (Exception) as e:
-				print str(e)
-				raise ServiceException()'''
+			except HangUp as e:
+				if retries:
+					retries -= 1
+					sleep(delay)
+					delay *= 2
+				else:
+					raise ServiceException('server hung up')
 
 
 	def update_frequency(self):
@@ -72,15 +76,18 @@ class WallpService(Service):
 		if self._wallp_client is None:
 			self._wallp_client = WallpClient()
 
-		if self._wallp_client.transport is None or not self.is_connection_open(self._wallp_client.transport.socket):
-			try:
-				connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				connection.connect((self._host, self._port))
+		transport = self._wallp_client.transport
+		if transport is not None and not transport.is_closed():
+			return 
 
-				transport = TCPConnection(connection, self._wallp_client)
-				self._wallp_client.makeConnection(transport)
-			except Exception as e:
-				print str(e)				
+		try:
+			connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			connection.connect((self._host, self._port))
+
+			transport = TCPConnection(connection, self._wallp_client)
+			self._wallp_client.makeConnection(transport)
+		except Exception as e:
+			print str(e)				
 
 
 	def is_connection_open(self, connection):
@@ -147,7 +154,7 @@ class WallpService(Service):
 
 				image_file.close()
 				self.check_recvd_image_size(length, temp_image_file.name)
-				print 'received image'
+				#print 'received image'
 
 			except (ImageNone, ImageChanging) as e:
 				image_gen = self.retry_image()

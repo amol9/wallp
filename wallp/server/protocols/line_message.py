@@ -12,7 +12,7 @@ class LineMessage(Message):
 
 	def dataReceived(self, data):
 		self._buffer += data
-		if len(self._buffer) > get_limits().max_line_buffer_length:
+		if len(self._buffer) > get_limits().max_line_message_length:
 			self.messageError(self._buffer)
 			self._buffer = ''
 

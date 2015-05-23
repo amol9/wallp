@@ -1,4 +1,6 @@
 from zope.interface import implements
+import socket
+from threading import Lock
 
 from ..imported.twisted.internet_interfaces import ITCPTransport, IReadWriteDescriptor, IConsumer
 
@@ -9,6 +11,24 @@ class HangUp(Exception):
 
 class ConnectionAbort(Exception):
 	pass
+
+
+plock = Lock()
+
+def socket_call(func, args=()):
+	try:
+		r = func(*args)
+		if func.__name__ == 'recv' and len(r) == 0:
+			raise HangUp()
+
+		return r
+	except socket.error as e:
+		print str(e)
+		with plock:
+			import traceback; traceback.print_exc()
+		if e.errno in [104, 32]:
+			raise HangUp()
+
 
 
 class TCPConnection():
@@ -24,10 +44,7 @@ class TCPConnection():
 
 
 	def doRead(self):
-		data = self.socket.recv(1024)
-		if len(data) == 0:
-			raise HangUp()
-
+		data = socket_call(self.socket.recv, args=(1024,))
 		self.protocol.dataReceived(data)
 
 
@@ -55,13 +72,13 @@ class TCPConnection():
 	#ref: twisted.internet.tcp.Connection
 	#todo: optimize later
 	def writeSomeData(self, data):
-		self.socket.send(self._tempDataBuffer)
-		self._tempDataBuffer = b''
-		self._tempDataLen = 0
+		sent = socket_call(self.socket.send, args=(self._tempDataBuffer,))
+		self._tempDataBuffer = self._tempDataBuffer[sent : ]
+		self._tempDataLen = len(self._tempDataBuffer)
 
 
 	def write_blocking(self, data):
-		self.socket.send(data)
+		socket_call(self.socket.sendall, args=(data,))
 
 
 	def writeSequence(self, data):
@@ -79,11 +96,27 @@ class TCPConnection():
 	def closeAfterWriteComplete(self):
 		self._close_after_write_complete = True
 
+
+	def shutdownConnection(self):
+		socket_call(self.socket.shutdown, args=(socket.SHUT_WR,))
+
+
 	def abortConnection(self, raiseException=True):
-		self.socket.close()
+		socket_call(self.socket.close)
 		self.socket = None
 		if raiseException:
 			raise ConnectionAbort('connection closed')
+
+
+	def is_closed(self):
+		if self.socket is None:
+			return True
+
+		try:
+			self.socket.fileno()
+		except socket.error as e:
+			return True
+		return False
 
 
 	def getPeer(self):
