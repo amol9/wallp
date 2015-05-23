@@ -4,17 +4,17 @@ from time import sleep
 import traceback
 from Queue import Queue
 
-from wallp.wallp_server import WallpServer
+from wallp.wallp_service import WallpService
 from wallp.service import ServiceException
 
 
-class TestWallpServer(TestCase):
+class TestWallpService(TestCase):
 
 	def test_get_image(self):
-		wp_server = WallpServer()
+		wp_service = WallpService()
 	
 		try:
-			wp_server.get_image()
+			wp_service.get_image()
 		except ServiceException:
 			print 'service exception'
 			self.fail()
@@ -25,9 +25,9 @@ class TestWallpServer(TestCase):
 		exc_queue = Queue()
 
 		def thread_func(exceptions, exc_queue, n):
-			wp_server = WallpServer()
+			wp_service = WallpService()
 			try:
-				wp_server.get_image()
+				wp_service.get_image()
 			except Exception as e:
 				exceptions[0] += 1
 

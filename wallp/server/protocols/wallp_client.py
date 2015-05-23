@@ -46,8 +46,10 @@ class WallpClient(BlockingFixedLengthMessage):
 		if response.type == Response.CHANGING:
 			raise ImageChanging()
 
+		yield True
+
 		image_info = response.image_info
-		yield image_info.extension, image_info.length, image_info.chunk_count
+		yield image_info.extension, image_info.length
 
 		chunk_count = image_info.chunk_count
 		while chunk_count > 0:
@@ -75,3 +77,11 @@ class WallpClient(BlockingFixedLengthMessage):
 		response.ParseFromString(message)
 
 		return response
+
+
+	def close_connection(self):
+		try:
+			self.transport.abortConnection()
+		except ConnectionAbort as e:
+			print str(e)
+

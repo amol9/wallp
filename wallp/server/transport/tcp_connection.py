@@ -77,6 +77,7 @@ class TCPConnection():
 
 	def abortConnection(self):
 		self.socket.close()
+		self.socket = None
 		raise ConnectionAbort('connection closed')
 
 
