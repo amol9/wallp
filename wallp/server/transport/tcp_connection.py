@@ -60,6 +60,10 @@ class TCPConnection():
 		self._tempDataLen = 0
 
 
+	def write_blocking(self, data):
+		self.socket.send(data)
+
+
 	def writeSequence(self, data):
 		pass
 
@@ -75,10 +79,11 @@ class TCPConnection():
 	def closeAfterWriteComplete(self):
 		self._close_after_write_complete = True
 
-	def abortConnection(self):
+	def abortConnection(self, raiseException=True):
 		self.socket.close()
 		self.socket = None
-		raise ConnectionAbort('connection closed')
+		if raiseException:
+			raise ConnectionAbort('connection closed')
 
 
 	def getPeer(self):

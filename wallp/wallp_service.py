@@ -19,7 +19,7 @@ class SizeError(ServerError):
 
 
 #a class to talk to wallp server
-class WallpServer(Service):
+class WallpService(Service):
 	def __init__(self):
 		self._host = ''
 		self._port = 40001
@@ -72,7 +72,7 @@ class WallpServer(Service):
 		if self._wallp_client is None:
 			self._wallp_client = WallpClient()
 
-		if not self.is_connection_open(self._wallp_client.transport.socket):
+		if self._wallp_client.transport is None or not self.is_connection_open(self._wallp_client.transport.socket):
 			try:
 				connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				connection.connect((self._host, self._port))
@@ -147,6 +147,7 @@ class WallpServer(Service):
 
 				image_file.close()
 				self.check_recvd_image_size(length, temp_image_file.name)
+				print 'received image'
 
 			except (ImageNone, ImageChanging) as e:
 				image_gen = self.retry_image()

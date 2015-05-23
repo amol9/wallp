@@ -41,9 +41,9 @@ class WallpClient(BlockingFixedLengthMessage):
 		self.send_request(Request.IMAGE)
 		response = self.recv_response()
 
-		if response.type == Response.NONE:
+		if response.type == Response.IMAGE_NONE:
 			raise ImageNone()
-		if response.type == Response.CHANGING:
+		if response.type == Response.IMAGE_CHANGING:
 			raise ImageChanging()
 
 		yield True
@@ -80,8 +80,5 @@ class WallpClient(BlockingFixedLengthMessage):
 
 
 	def close_connection(self):
-		try:
-			self.transport.abortConnection()
-		except ConnectionAbort as e:
-			print str(e)
+		self.transport.abortConnection(raiseException=False)
 

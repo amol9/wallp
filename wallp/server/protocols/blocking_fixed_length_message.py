@@ -1,4 +1,5 @@
 from time import time, sleep
+import struct
 
 from .fixed_length_message import FixedLengthMessage
 
@@ -10,17 +11,20 @@ class Timeout(Exception):
 class BlockingFixedLengthMessage(FixedLengthMessage):
 	def __init__(self):
 		FixedLengthMessage.__init__(self)
-		self._message = None
+		self._messages = []
 
 
 	def receiveMessage(self, timeout=120):
+		message = self.getMessage()
+		if message is not None:
+			return message
+
 		start_time = time()
 		while True:
 			self.transport.doRead()
 
-			if self._message is not None:
-				message = self._message
-				self._message = None
+			message = self.getMessage()
+			if message is not None:
 				return message
 
 			if time() - start_time > timeout:
@@ -29,11 +33,18 @@ class BlockingFixedLengthMessage(FixedLengthMessage):
 			sleep(0.1)
 
 
+	def getMessage(self):
+		if len(self._messages) > 0:
+			message = self._messages[0]
+			del self._messages[0]
+			return message
+
+
 	def messageReceived(self, message):
-		self._message = message
+		self._messages.append(message)
 
 
 	def sendMessage(self, data):
 		message = struct.pack('>i', len(data)) + data
-		self.transport.writeSomeData(message)
+		self.transport.write_blocking(message)
 
