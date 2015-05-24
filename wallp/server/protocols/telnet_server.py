@@ -1,6 +1,7 @@
 import os
 
-from line_message import LineMessage
+from .line_message import LineMessage
+from ..server_helper import StartError
 
 
 class TelnetServer(LineMessage):
@@ -20,6 +21,17 @@ class TelnetServer(LineMessage):
 		elif message == 'resume':
 			self._server.resume()
 			response = 'server resumed'
+
+		elif message == 'stop':
+			self._server.stop()
+			response = 'server stopped'
+
+		elif message == 'start':
+			try:
+				self._server.hot_start()
+				response = 'server started'
+			except StartError as e:
+				response = str(e)
 
 		elif message == '':
 			return

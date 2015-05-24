@@ -7,6 +7,10 @@ from .protocols.wp_change_message import WPState
 from ..command import command
 
 
+class StartError(Exception):
+	pass
+
+
 class ServerStats():
 	def __init__(self):
 		self.peak_clients = 0

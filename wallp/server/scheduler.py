@@ -74,7 +74,7 @@ class Scheduler():
 
 
 	def pause(self):
-		pass
+		self.shutdown()
 
 
 	def shutdown(self):

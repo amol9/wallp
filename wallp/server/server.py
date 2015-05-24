@@ -7,7 +7,7 @@ from .select_call import SelectCall, SelectError
 from .scheduler import Scheduler
 from .change_wallpaper import ChangeWallpaper
 from .wallpaper_image import WallpaperImage
-from .server_helper import ServerStats, ServerSharedState, LinuxLimits
+from .server_helper import ServerStats, ServerSharedState, LinuxLimits, StartError
 from .transport.tcp_connection import TCPConnection, HangUp, ConnectionAbort
 from .transport.address import Address
 from .protocols.wallp_server import WallpServer
@@ -45,12 +45,18 @@ class Server():
 
 
 	def create_socket(self, port):
-		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		server.setblocking(0)
-		server.bind(('', port))
-		server.listen(5)
+		try:
+			server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			server.setblocking(0)
+			server.bind(('', port))
+			server.listen(5)
 
-		return server
+			return server
+		except socket.error as e:
+			if e.errno == 98:
+				msg = 'address %s:%d already in use'%('', port)
+				log.error(msg)
+				raise StartError(msg)
 
 
 	def start_scheduler(self):
@@ -92,7 +98,7 @@ class Server():
 
 	def start_select_loop(self):
 		select = SelectCall()
-		self._stop_select_loop = False
+		self._pause_server = False
 
 		while True:
 			readable = writeable = exceptions = None
@@ -120,12 +126,6 @@ class Server():
 				self.handle_incoming_connection(r)
 			
 			elif r in self.client_list or r in self.telnet_client_list or r in self.in_pipes:
-				'''try:
-					r.doRead()
-				except HangUp as e:
-					log.error(str(e))
-					r.abortConnection(raiseException=False)
-					client_list.remove(r)'''
 				self.transport_call(r.doRead)
 				
 			else:
@@ -135,11 +135,6 @@ class Server():
 	def handle_writeable(self, writeable):
 		for w in writeable:
 			if w in self.client_list or w in self.telnet_client_list:
-				'''try:
-					w.doWrite()
-				except (HangUp, ConnectionAbort) as e:
-					log.error(str(e))
-					client_list.remove(w)'''
 				self.transport_call(w.doWrite)
 
 			else:
@@ -216,11 +211,13 @@ class Server():
 
 
 	def get_in_list(self):
-		return [self._server] + [self._telnet_server] + self.client_list + self.telnet_client_list + self.in_pipes
+		wallp_server = [self._server] + self.client_list + self.in_pipes
+		telnet_server = [self._telnet_server] + self.telnet_client_list
+		return (wallp_server if not self._pause_server else []) + telnet_server
 
 
 	def get_out_list(self):
-		return self.client_list + self.telnet_client_list
+		return (self.client_list if not self._pause_server else []) + self.telnet_client_list
 
 
 
@@ -236,16 +233,29 @@ class Server():
 		return self._shared_state.in_pipes
 
 
-	def shutdown(self):
+	def stop(self):
 		self._scheduler.shutdown()
-		self._stop_select_loop = True
+		self._pause_server = True
+
+		for c in self.client_list:
+			self.transport_call(c.abortConnection)
+		self._server.close()
+		self._server = None
+
+
+	def hot_start(self):
+		self.start_server_socket()
+		self._pause_server = False
+		self._scheduler.start()
+
 
 	def pause(self):
-		#pause scheduler
-		self._stop_select_loop = True
+		self._scheduler.pause()
+		self._pause_server = True
+
 
 	def resume(self):
-		#resume scheduler
+		self._scheduler.start()
 		self.start_select_loop()
 
 
