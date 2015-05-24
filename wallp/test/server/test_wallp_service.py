@@ -33,7 +33,7 @@ class TestWallpService(TestCase):
 
 				exc_queue.put('thread# %d\n'%n + traceback.format_exc())
 
-		n = 200
+		n = 50
 		threads = []
 		for i in range(0, n):
 			t = Thread(target=thread_func, args=(exceptions, exc_queue, i))

@@ -1,23 +1,22 @@
 import socket
-import select
 import os
 from os.path import exists
 from time import time
 
+from .select_call import SelectCall, SelectError
 from .scheduler import Scheduler
-from .proto.server_pb2 import Response, ImageInfo, ImageChunk
-from .proto.client_pb2 import Request
 from .change_wallpaper import ChangeWallpaper
-from .protocols.wp_change_message import WPChangeMessage, WPState
 from .wallpaper_image import WallpaperImage
 from .server_helper import ServerStats, ServerSharedState, LinuxLimits
 from .transport.tcp_connection import TCPConnection, HangUp, ConnectionAbort
 from .transport.address import Address
 from .protocols.wallp_server import WallpServer
 from .protocols.telnet_server import TelnetServer
+from .protocols.wp_change_message import WPChangeMessage
 from .transport.pipe_connection import PipeConnection
 from .protocols.wallp_server_factory import WallpServerFactory
 from .protocols.telnet_server_factory import TelnetServerFactory
+from ..logger import log
 
 
 def scheduled_task_placeholder():
@@ -62,8 +61,6 @@ class Server():
 		protocol.makeConnection(transport)
 
 		self._shared_data.in_pipes.append(transport.getReadPipe())
-		self._shared_data.out_pipes.append(transport.getWritePipe())
-
 		self._change_wp = ChangeWallpaper(transport)
 
 		#global scheduled_task_placeholder
@@ -74,103 +71,103 @@ class Server():
 		self._scheduler.start()
 
 
+	def start_protocol_factories(self):
+		self._wallp_server_factory = WallpServerFactory.forProtocol(WallpServer, self._shared_data)
+		self._telnet_server_factory = TelnetServerFactory.forProtocol(TelnetServer, self)
+
+
 	def setup_job(self):
 		pass
 
 
 	def start(self):
+		log.info('starting server...')
+
 		self.start_server_socket()
 		self.start_telnet_server_socket()
 		self.start_scheduler()
+		self.start_protocol_factories()
+		self.start_select_loop()
 
+
+	def start_select_loop(self):
 		client_list = self._shared_data.client_list
 		in_pipes = self._shared_data.in_pipes
 		out_pipes = self._shared_data.out_pipes
-
-		wallp_server_factory = WallpServerFactory.forProtocol(WallpServer, self._shared_data)
-		telnet_server_factory = TelnetServerFactory.forProtocol(TelnetServer, self)
+		select = SelectCall()
+		self._stop_select_loop = False
 
 		while True:
 			readable = writeable = exceptions = None
 			self._stats.update_clients(len(client_list))
 
 			try:
-				readable, writeable, exceptions = select.select(self.get_in_list(), self.get_out_list(), \
-									self.get_in_list() + self.get_out_list())
+				readable, writeable, exceptions = select.execute(self.get_in_list(), self.get_out_list())
 
-			except TypeError as e:
-				#log
-				print e.message
-				break
 
-			except socket.error as e:
-				print 'select error'
+				self.handle_readable(readable)
+				self.handle_writeable(writeable)
+				self.handle_exceptions(exceptions)
 
-				for conn in client_list:
-					try:
-						fno = conn.fileno()
-					except socket.error:
+			except SelectError as e:
+				import traceback; traceback.print_exc()
+				if e.abort_loop:
+					log.error('stopping select loop..')
+					break
 
-						print 'found dead connection'
-						client_list.remove(conn)
-						if conn in out_list:
-							out_list.remove(conn)
+				self.handle_bad_fds(e.bad_fds)
 
-				for conn in out_list:
-					try:
-						fno = conn.fileno()
-					except socket.error:
-						print 'found dead connection'
-						out_list.remove(conn)
 
-				continue
+	def handle_readable(self, readable):
+		client_list = self._shared_data.client_list
+		in_pipes = self._shared_data.in_pipes
 
-			except ValueError as e:
-				import pdb; pdb.set_trace()
+		for r in readable:
+			if r is self._server:
+				log.debug('incoming wallp client connection')
+				self.handle_incoming_connection(r, self._wallp_server_factory)
+			
+			elif r is self._telnet_server:
+				log.debug('incoming telnet client connection')
+				self.handle_incoming_connection(r, self._telnet_server_factory)
 
-			for r in readable:
-				if r is self._server:
-					print 'incoming connection'
-					self.handle_incoming_connection(r, wallp_server_factory)
+			elif r in client_list or r in in_pipes:
+				try:
+					r.doRead()
+				except HangUp as e:
+					log.error(str(e))
+					r.abortConnection(raiseException=False)
+					client_list.remove(r)
 				
-				elif r is self._telnet_server:
-					print 'incoming telnet connection'
-					self.handle_incoming_connection(r, telnet_server_factory)
+			else:
+				log.error('bad readable from select')
 
-				elif r in client_list:
-					print 'readable client'
-					try:
-						r.doRead()
-					except HangUp as e:
-						print 'client hung up'
-						r.abortConnection(raiseException=False)
-						client_list.remove(r)
-						continue
+	
+	def handle_writeable(self, writeable):
+		client_list = self._shared_data.client_list	
+		for w in writeable:
+			if w in client_list:
+				try:
+					w.doWrite()
+				except (HangUp, ConnectionAbort) as e:
+					log.error(str(e))
+					client_list.remove(w)
 
-				elif r in in_pipes:
-					r.connection.doRead()
-					
-				else:
-					print 'bad readable from select'
+			else:
+				log.error('bad writable from select')
 
-			for w in writeable:
-				if w in client_list:
-					try:
-						w.doWrite()
-					except (HangUp, ConnectionAbort) as e:
-						print str(e)
-						client_list.remove(w)
 
-				elif w in out_pipes:
-					w.connection.doWrite()
+	def handle_exceptions(self, exceptions):
+		if len(exceptions) > 0:
+			log.error('select found %d exceptions'%len(exceptions))
 
-				else:
-					print 'bad writable from select'
 
-			for e in exceptions:
-				print 'select found exceptions'
-				pass
-				#do something
+	def handle_bad_fds(self, bad_fds):
+		if bad_fds is None:
+			return
+
+		client_list = self._shared_data.client_list	
+		map(client_list.remove, bad_fds)
 
 
 	def handle_incoming_connection(self, server_socket, factory):
@@ -178,7 +175,7 @@ class Server():
 
 		if len(client_list) < self._limits.clients:
 			connection, client_address = server_socket.accept()
-			print 'client address: ', client_address
+			log.debug('client connected: ' + str(client_address))
 
 			addr = Address(*client_address)
 			protocol = factory.buildProtocol(addr)
@@ -187,7 +184,7 @@ class Server():
 
 			client_list.append(transport)
 		else:
-			print 'connections full'
+			log.error('connections full')
 
 
 	def get_in_list(self):
@@ -195,15 +192,18 @@ class Server():
 
 
 	def get_out_list(self):
-		return self._shared_data.client_list + self._shared_data.out_pipes
-
-
-
-	def cleanup_closed_connections(conn_list):
-		pass
-		#issue: can't recv() on open connections, it'll remove data from their buffers
+		return self._shared_data.client_list
 
 
 	def shutdown(self):
 		self._scheduler.shutdown()
+		self._stop_select_loop = True
+
+	def pause(self):
+		#pause scheduler
+		self._stop_select_loop = True
+
+	def resume(self):
+		#resume scheduler
+		self.start_select_loop()
 

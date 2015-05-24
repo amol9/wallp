@@ -14,6 +14,10 @@ class Pipe:
 		return self.pipe.fileno()
 
 
+	def doRead(self):
+		self.connection.doRead()
+
+
 class PipeConnection:
 	implements(ITransport, IReadWriteDescriptor)
 
@@ -37,6 +41,10 @@ class PipeConnection:
 
 	def write(self, data):
 		self._tempDataBuffer.append(data)
+
+	
+	def write_blocking(self, data):
+		self.wpipe.send(data)
 
 
 	def writeSequence(self, data):

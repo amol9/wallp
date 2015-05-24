@@ -16,10 +16,10 @@ class ChangeWallpaper():
 			self.send_to_server(WPState.CHANGING)
 			sleep(6)
 
-			wp_path = get_image(service_name='bitmap', query=None, color=None)
-			print 'wp_path:', wp_path
+			#wp_path = get_image(service_name='bitmap', query=None, color=None)
+			#print 'wp_path:', wp_path
 
-			style = compute_style(wp_path)
+			#style = compute_style(wp_path)
 
 			#dt = get_desktop()
 			#dt.set_wallpaper(wp_path, style=style)
@@ -36,5 +36,5 @@ class ChangeWallpaper():
 		
 
 	def send_to_server(self, message):
-		self._transport.write(message)
+		self._transport.write_blocking(message)
 
