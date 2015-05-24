@@ -13,7 +13,7 @@ from .transport.address import Address
 from .protocols.wallp_server import WallpServer
 from .protocols.telnet_server import TelnetServer
 from .protocols.wp_change_message import WPChangeMessage
-from .transport.pipe_connection import PipeConnection, ChildPipe
+from .transport.pipe_connection import PipeConnection
 from .protocols.wallp_server_factory import WallpServerFactory
 from .protocols.telnet_server_factory import TelnetServerFactory
 from ..logger import log
@@ -34,11 +34,14 @@ class Server():
 
 	def start_server_socket(self):
 		self._server = self.create_socket(self._port)
+		#self._shared_state.in_list.append(self._server)
+
 		self._stats.start_time = time()
 
 
 	def start_telnet_server_socket(self):
 		self._telnet_server = self.create_socket(self._port + 1)
+		#self._shared_state.in_list.append(self._telnet_server)
 
 
 	def create_socket(self, port):
@@ -88,16 +91,12 @@ class Server():
 
 
 	def start_select_loop(self):
-		client_list 		= self._shared_state.client_list
-		in_pipes 		= self._shared_state.in_pipes
-		out_pipes 		= self._shared_state.out_pipes
-		select 			= SelectCall()
-		self._pause_server 	= False
+		select = SelectCall()
+		self._stop_select_loop = False
 
 		while True:
 			readable = writeable = exceptions = None
-			self._stats.update_clients(len(client_list))
-			self._stats.update_open_fds()
+			self._stats.update_clients(len(self.client_list))
 
 			try:
 				readable, writeable, exceptions = select.execute(self.get_in_list(), self.get_out_list())
@@ -116,29 +115,38 @@ class Server():
 
 
 	def handle_readable(self, readable):
-		client_list = self._shared_state.client_list
-		telnet_client_list = self._shared_state.telnet_client_list
-		in_pipes = self._shared_state.in_pipes
-
 		for r in readable:
 			if r in [self._server, self._telnet_server]:
 				self.handle_incoming_connection(r)
 			
-			elif (r in client_list) or (r in telnet_client_list) or (r in in_pipes):
-				if r in client_list: 
-					print 'client read', id(r)
-				elif r in in_pipes: print 'pipe read'
-
+			elif r in self.client_list or r in self.telnet_client_list or r in self.in_pipes:
+				'''try:
+					r.doRead()
+				except HangUp as e:
+					log.error(str(e))
+					r.abortConnection(raiseException=False)
+					client_list.remove(r)'''
 				self.transport_call(r.doRead)
-
+				
 			else:
 				log.error('bad readable from select')
 
+	
+	def handle_writeable(self, writeable):
+		for w in writeable:
+			if w in self.client_list or w in self.telnet_client_list:
+				'''try:
+					w.doWrite()
+				except (HangUp, ConnectionAbort) as e:
+					log.error(str(e))
+					client_list.remove(w)'''
+				self.transport_call(w.doWrite)
+
+			else:
+				log.error('bad writable from select')
+
 
 	def transport_call(self, func):
-		client_list = self._shared_state.client_list
-		telnet_client_list = self._shared_state.telnet_client_list
-		in_pipes = self._shared_state.in_pipes
 		t = func.im_self
 
 		try:
@@ -151,30 +159,16 @@ class Server():
 
 			if isinstance(t.protocol, WallpServer):
 				self._stats.update_client_lifetime(t.get_lifetime())
-				client_list.remove(t)
-				print 'client removed from list', len(client_list)
+				self.client_list.remove(t)
 
 			elif isinstance(t.protocol, TelnetServer):
-				telnet_client_list.remove(t)
+				self.telnet_client_list.remove(t)
 
 			elif isinstance(t, ChildPipe):
-				in_pipes.remove(t)
+				self.in_pipes.remove(t)
 
 			else:
 				log.error('should not get here, unknown type of transport was closed')
-
-	
-	def handle_writeable(self, writeable):
-		client_list = self._shared_state.client_list
-		telnet_client_list = self._shared_state.telnet_client_list
-
-		for w in writeable:
-			print 'w client list len', len(client_list)
-			if (w in client_list) or (w in telnet_client_list):
-				self.transport_call(w.doWrite)
-
-			else:
-				log.error('bad writable from select')
 
 
 	def handle_exceptions(self, exceptions):
@@ -190,68 +184,73 @@ class Server():
 		map(client_list.remove, bad_fds)
 
 
-	def handle_incoming_connection(self, server_socket):
-		if server_socket is self._server:
+	def handle_incoming_connection(self, server):
+		if server is self._server:
 			factory = self._wallp_server_factory
-			clist = self._shared_state.client_list
+			clist = self.client_list
 
-		elif server_socket is self._telnet_server:
+		elif server is self._telnet_server:
 			factory = self._telnet_server_factory
-			clist = self._shared_state.telnet_client_list
+			clist = self.telnet_client_list
 
 		else:
-			log.error('something went wrong, incoming connection not on server or telnet port')
+			log.error('got an incoming on an unexpected server socket')
 			return
 
 		if not self.server_full():
-			connection, client_address = server_socket.accept()
+			connection, client_address = server.accept()
 			log.debug('client connected: ' + str(client_address))
-			connection.setblocking(0)
 
 			addr = Address(*client_address)
 			protocol = factory.buildProtocol(addr)
 			transport = TCPConnection(connection, protocol)
 			protocol.makeConnection(transport)
 
-			print 'client tr id:', id(transport)
 			clist.append(transport)
 		else:
 			log.error('connections full')
 
-	
+
 	def server_full(self):
 		return False
 
 
 	def get_in_list(self):
-		in_list = [self._server] + [self._telnet_server] + self._shared_state.client_list + \
-				self._shared_state.telnet_client_list + self._shared_state.in_pipes
-		#in_list =  [self._telnet_server] + self._shared_state.telnet_client_list
-		#if not self._pause_server:
-			#in_list += [self._server] + self._shared_state.client_list + self._shared_state.in_pipes
-
-		return in_list
+		return [self._server] + [self._telnet_server] + self.client_list + self.telnet_client_list + self.in_pipes
 
 
 	def get_out_list(self):
-		out_list = self._shared_state.telnet_client_list
-		if not self._pause_server:
-			out_list += self._shared_state.client_list
+		return self.client_list + self.telnet_client_list
 
-		return out_list
+
+
+	def get_client_list(self):
+		return self._shared_state.client_list
+
+
+	def get_telnet_client_list(self):
+		return self._shared_state.telnet_client_list
+
+
+	def get_in_pipes(self):
+		return self._shared_state.in_pipes
 
 
 	def shutdown(self):
 		self._scheduler.shutdown()
-		self._pause_server = True
-
+		self._stop_select_loop = True
 
 	def pause(self):
 		#pause scheduler
-		self._pause_server = True
-
+		self._stop_select_loop = True
 
 	def resume(self):
 		#resume scheduler
-		self._pause_server = False
+		self.start_select_loop()
+
+
+	client_list 		= property(get_client_list)
+	telnet_client_list 	= property(get_telnet_client_list)
+	in_pipes		= property(get_in_pipes)
+
 

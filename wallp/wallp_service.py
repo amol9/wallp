@@ -33,6 +33,7 @@ class WallpService(Service):
 
 		while retries > 0:
 			try:
+				print 'start get_image'
 				self.start_connection()
 
 				self.update_frequency()
@@ -53,7 +54,8 @@ class WallpService(Service):
 				else:
 					raise ServiceException()
 			except HangUp as e:
-				if retries:
+				self._wallp_client.transport = None
+				if retries > 0:
 					retries -= 1
 					sleep(delay)
 					delay *= 2
@@ -83,6 +85,7 @@ class WallpService(Service):
 		if transport is not None and not transport.is_closed():
 			return 
 
+		print 'starting connection'
 		try:
 			connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			connection.connect((self._host, self._port))
@@ -152,8 +155,10 @@ class WallpService(Service):
 				if not success:
 					success = image_gen.next()
 				extension, length = image_gen.next()
+				print extension, length
 
 				for chunk in image_gen:
+					print 'got chunk',
 					image_file.write(chunk)
 
 				repeat = False

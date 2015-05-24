@@ -65,7 +65,7 @@ class TCPConnection():
 			else:
 				self._producer = None
 
-		if self._tempDataLen == 0 and self._close_after_write_complete:
+		elif self._close_after_write_complete:
 			self.abortConnection()
 
 

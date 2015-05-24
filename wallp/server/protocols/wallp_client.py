@@ -34,7 +34,7 @@ class WallpClient(BlockingFixedLengthMessage):
 		self.send_request(Request.LAST_CHANGE)
 		response = self.recv_response()
 
-		return response.frequency.value
+		return response.last_change.timestamp
 
 
 	def get_image(self):

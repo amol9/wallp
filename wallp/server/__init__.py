@@ -1,3 +1,6 @@
 from ..logger import log
-log.start('stdout')
+import logging
+
+
+log.start('stdout', logging.DEBUG)
 
