@@ -6,6 +6,7 @@ from time import sleep
 from .service import Service, ServiceException
 from .server.protocols.wallp_client import WallpClient, ImageNone, ImageChanging, ImageAbort
 from .server.transport.tcp_connection import TCPConnection, HangUp
+from .logger import log
 
 
 class ServerError(Exception):
@@ -62,11 +63,13 @@ class WallpService(Service):
 
 	def update_frequency(self):
 		frequency = self._wallp_client.get_frequency()
+		print 'freq', frequency
 		#extract frequency and store it, db
 
 
 	def has_image_changed(self):
 		last_change = self._wallp_client.get_last_change()
+		print 'last change' , last_change
 		#get last change from db and compare
 
 		return True
@@ -86,8 +89,10 @@ class WallpService(Service):
 
 			transport = TCPConnection(connection, self._wallp_client)
 			self._wallp_client.makeConnection(transport)
-		except Exception as e:
-			print str(e)				
+		except socket.error as e:
+			log.error(str(e))
+			if e.errno == 111:
+				raise ServerError('connection refused, server down')
 
 
 	def is_connection_open(self, connection):
@@ -107,6 +112,7 @@ class WallpService(Service):
 		recvd_size = os.stat(image_path).st_size
 		if recvd_size != expected_size:
 			raise SizeError('received image size mismatch, expected: %d, received: %d'%(expected_size, recvd_size))
+		print 'image ok'
 
 
 	def retry_image(self):

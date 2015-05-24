@@ -1,9 +1,8 @@
-from subprocess import check_output, CalledProcessError
 import os
+from subprocess import check_output, CalledProcessError
 
-from wallp.logger import log
 from mutils.system import *
-
+from wallp.logger import log
 if is_py3():
 	from subprocess import DEVNULL
 else:

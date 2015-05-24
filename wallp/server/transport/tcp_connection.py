@@ -1,8 +1,10 @@
 from zope.interface import implements
 import socket
 from threading import Lock
+from time import time
 
 from ..imported.twisted.internet_interfaces import ITCPTransport, IReadWriteDescriptor, IConsumer
+from ...logger import log
 
 
 class HangUp(Exception):
@@ -23,11 +25,13 @@ def socket_call(func, args=()):
 
 		return r
 	except socket.error as e:
-		print str(e)
-		with plock:
-			import traceback; traceback.print_exc()
+		#log.error(str(e))
+		#with plock:
+			#import traceback; traceback.print_exc()
 		if e.errno in [104, 32]:
 			raise HangUp()
+		elif e.errno in [11]:
+			return
 
 
 
@@ -41,11 +45,13 @@ class TCPConnection():
 		self._tempDataLen = 0
 		self._producer = None
 		self._close_after_write_complete = False
+		self._start_time = time()
 
 
 	def doRead(self):
 		data = socket_call(self.socket.recv, args=(1024,))
-		self.protocol.dataReceived(data)
+		if data is not None:
+			self.protocol.dataReceived(data)
 
 
 	#ref: twisted.internet.abstract.FileDescriptor
@@ -59,7 +65,7 @@ class TCPConnection():
 			else:
 				self._producer = None
 
-		elif self._close_after_write_complete:
+		if self._tempDataLen == 0 and self._close_after_write_complete:
 			self.abortConnection()
 
 
@@ -106,6 +112,10 @@ class TCPConnection():
 		self.socket = None
 		if raiseException:
 			raise ConnectionAbort('connection closed')
+
+
+	def get_lifetime(self):
+		return time() - self._start_time
 
 
 	def is_closed(self):

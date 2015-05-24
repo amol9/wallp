@@ -29,7 +29,7 @@ class TestServer(TestCase):
 
 	
 	def test_server_start(self):
-		self.setup_job_runonce({'seconds': 15})
+		self.setup_job_runonce({'seconds': 5})
 		server = Server(port)
 		self.start_server(server)
 

@@ -1,10 +1,12 @@
-from zope.interface import implements
 import os
 import multiprocessing
+from zope.interface import implements
 
 from ..imported.twisted.internet_interfaces import ITransport, IReadWriteDescriptor
 
-class Pipe:
+
+class ChildPipe:
+	'a read or a write pipe from a PipeConnection'
 	def __init__(self, pipe, connection):
 		self.pipe = pipe
 		self.connection = connection
@@ -64,9 +66,9 @@ class PipeConnection:
 
 
 	def getReadPipe(self):
-		return Pipe(self.rpipe, self)
+		return ChildPipe(self.rpipe, self)
 
 
 	def getWritePipe(self):
-		return Pipe(self.wpipe, self)
+		return ChildPipe(self.wpipe, self)
 

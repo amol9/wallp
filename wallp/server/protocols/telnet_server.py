@@ -12,8 +12,18 @@ class TelnetServer(LineMessage):
 	def messageReceived(self, message):
 		if message == 'stats':
 			response = str(self._server._stats)
+
+		elif message == 'pause':
+			self._server.pause()
+			response = 'server paused'
+
+		elif message == 'resume':
+			self._server.resume()
+			response = 'server resumed'
+
 		elif message == '':
 			return
+
 		else:
 			response = 'bad command'
 

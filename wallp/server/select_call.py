@@ -1,4 +1,5 @@
 import select
+import socket
 
 from ..logger import log
 
