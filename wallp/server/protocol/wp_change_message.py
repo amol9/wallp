@@ -1,6 +1,7 @@
 from time import time
 
 from ..imported.twisted.internet_protocol import Protocol
+from ..wallpaper_image import WPImageError
 
 
 class WPState():
@@ -10,7 +11,7 @@ class WPState():
 	ERROR = 3
 
 
-class WPChangeMessage(Protocol):
+class WPChangeMessage(Protocol, object):
 	def __init__(self, server_shared_state):
 		self._server_shared_state = server_shared_state
 
@@ -21,29 +22,44 @@ class WPChangeMessage(Protocol):
 
 	def messageReceived(self, message):
 		if message == WPState.READY:
+			print 'image ready'
 			self._server_shared_state.last_change = int(time())
-			self._server_shared_state.wp_state = WPState.READY
+			self.server_wp_state = WPState.READY
 
 			self._server_shared_state.abort_image_producers()
 
 		elif message == WPState.CHANGING:
-			self._server_shared_state.wp_state = WPState.CHANGING
+			self.server_wp_state = WPState.CHANGING
 
 		elif message == WPState.ERROR:
 			if self._server_shared_state.wp_image is not None:
-				self._server_shared_state.wp_state = WPState.READY
+				self.server_wp_state = WPState.READY
 			else:
-				self._server_shared_state.wp_state = WPState.NONE
+				self.server_wp_state = WPState.NONE
 				
 		elif type(message) == str:
-			if self._server_shared_state.wp_state == WPState.READY:
+			if self.server_wp_state == WPState.READY:
 				print 'wp path: ', message
-				self._server_shared_state.wp_image.set_path(message)
+				try:
+					self._server_shared_state.wp_image.path = message
+				except WPImageError as e:
+					log.error('error loading new image')
+					self.server_wp_state = WPState.NONE
 			else:
 				self.messageError('wallpaper path received when not expected, %s'%message)
 
 		
 	def messageError(self, reason):
-		#log
-		print reason
+		log.error(reason)
+
+
+	def get_server_wp_state(self):
+		return self._server_shared_state.wp_state
+
+
+	def set_server_wp_state(self, value):
+		self._server_shared_state.wp_state = value
+
+
+	server_wp_state = property(get_server_wp_state, set_server_wp_state)
 

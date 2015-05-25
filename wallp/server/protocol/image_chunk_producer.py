@@ -4,6 +4,7 @@ import struct
 from ..imported.twisted.internet_interfaces import IPullProducer
 from ..server_helper import get_limits
 from .protobuf.server_pb2 import Response
+from ..wallpaper_image import WPImageError
 
 
 class ImageChunkProducer:
@@ -33,7 +34,11 @@ class ImageChunkProducer:
 		if self._chunk_no < self._wp_image.chunk_count:
 			response = Response()
 			response.type = Response.IMAGE_CHUNK
-			response.image_chunk.data = self._wp_image.chunk(self._chunk_no)
+			try:
+				response.image_chunk.data = self._wp_image.chunk(self._chunk_no)
+			except WPImageError as e:
+				log.error('cannot produce image chunk, aborting..')
+				self.stopProducing()
 
 			message = response.SerializeToString()
 			message = struct.pack('>i', len(message)) + message

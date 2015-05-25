@@ -4,19 +4,41 @@ import tempfile
 from time import sleep
 
 from .service import Service, ServiceException
-from .server.protocol.wallp_client import WallpClient, ImageNone, ImageChanging, ImageAbort
+from .server.protocol.wallp_client import WallpClient, ImageNone, ImageChanging, ImageAbort, ServerError
 from .server.transport.tcp_connection import TCPConnection, HangUp
 from .logger import log
 
 
-class ServerError(Exception):
+class WallpServiceError(Exception):
 	def __init__(self, message, retry=False):
 		Exception.__init__(self, message)
 		self.retry = retry
 
 
-class SizeError(ServerError):
+class SizeError(WallpServiceError):
 	pass
+
+
+class Retry:
+	def __init__(self, retries, delay):
+		self.retries = retries
+		self.delay = delay
+
+	def retry(self, exception):
+		if self.retries == 0:
+			if exception is not None:
+				raise exception
+			return
+
+		self.retries -= 1
+		sleep(self.delay)
+		self.delay *= 2
+
+	def left(self):
+		return self.retries > 0
+
+	def cancel(self):
+		self.retries = 0
 
 
 #a class to talk to wallp server
@@ -28,12 +50,9 @@ class WallpService(Service):
 
 
 	def get_image(self):
-		retries = 3
-		delay = 10
-
-		while retries > 0:
+		retries = Retry(3, 10)
+		while retries.left():
 			try:
-				print 'start get_image'
 				self.start_connection()
 
 				self.update_frequency()
@@ -41,26 +60,21 @@ class WallpService(Service):
 					raise ServerImageNotChanged('server image is unchanged')
 
 				self.get_image_from_server()
-				retries = 0
+				retries.cancel()
 
 				self.close_connection()
 
-			except ServerError as e:
-				print e.message
+			except WallpServiceError as e:
+				log.error(str(e))
 				if e.retry:
-					retries -= 1
-					sleep(delay)
-					delay *= 2
-				else:
-					raise ServiceException()
+					retries.retry(ServiceException())
+
 			except HangUp as e:
 				self._wallp_client.transport = None
-				if retries > 0:
-					retries -= 1
-					sleep(delay)
-					delay *= 2
-				else:
-					raise ServiceException('server hung up')
+				retries.retry(ServiceException('server hung up'))
+
+			except ServerError as e:
+				retries.retry(ServiceException('server error'))
 
 
 	def update_frequency(self):
@@ -85,7 +99,6 @@ class WallpService(Service):
 		if transport is not None and not transport.is_closed():
 			return 
 
-		print 'starting connection'
 		try:
 			connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			connection.connect((self._host, self._port))
@@ -95,7 +108,7 @@ class WallpService(Service):
 		except socket.error as e:
 			log.error(str(e))
 			if e.errno == 111:
-				raise ServerError('connection refused, server down')
+				raise WallpServiceError('connection refused, server down')
 
 
 	def is_connection_open(self, connection):
@@ -124,7 +137,7 @@ class WallpService(Service):
 
 		while retries > 0:
 			sleep(delay)
-			print 'retrying server..'
+			log.error('retrying server..')
 
 			try:
 				image_gen = self._wallp_client.get_image()
@@ -135,7 +148,7 @@ class WallpService(Service):
 				retries -= 1
 				delay *= 2
 
-		raise ServerError('image none or changing on the server for too long')
+		raise WallpServiceError('image none or changing on the server for too long')
 			
 
 	def get_image_from_server(self):
@@ -155,17 +168,14 @@ class WallpService(Service):
 				if not success:
 					success = image_gen.next()
 				extension, length = image_gen.next()
-				print extension, length
 
 				for chunk in image_gen:
-					print 'got chunk',
 					image_file.write(chunk)
 
 				repeat = False
 
 				image_file.close()
 				self.check_recvd_image_size(length, temp_image_file.name)
-				#print 'received image'
 
 			except (ImageNone, ImageChanging) as e:
 				image_gen = self.retry_image()
@@ -180,7 +190,7 @@ class WallpService(Service):
 				else:
 					image_file.close()
 					os.remove(temp_image_file.name)
-					raise ServerError()
+					raise WallpServiceError()
 
 		return temp_image_file.name
 

@@ -17,6 +17,10 @@ class ImageAbort(Exception):
 	pass
 
 
+class ServerError(Exception):
+	pass
+
+
 class WallpClient(BlockingFixedLengthMessage):
 
 	def __init__(self):
@@ -75,6 +79,9 @@ class WallpClient(BlockingFixedLengthMessage):
 
 		response = Response()
 		response.ParseFromString(message)
+
+		if response.type == Response.SERVER_ERROR:
+			raise ServerError()
 
 		return response
 

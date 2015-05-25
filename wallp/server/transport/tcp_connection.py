@@ -1,6 +1,5 @@
 from zope.interface import implements
 import socket
-from threading import Lock
 from time import time
 
 from ..imported.twisted.internet_interfaces import ITCPTransport, IReadWriteDescriptor, IConsumer
@@ -15,37 +14,34 @@ class ConnectionAbort(Exception):
 	pass
 
 
-plock = Lock()
-
 def socket_call(func, args=()):
 	try:
 		r = func(*args)
+
 		if func.__name__ == 'recv' and len(r) == 0:
 			raise HangUp()
 
 		return r
+
 	except socket.error as e:
-		#log.error(str(e))
-		#with plock:
-			#import traceback; traceback.print_exc()
 		if e.errno in [104, 32]:
 			raise HangUp()
-		elif e.errno in [11]:
-			return
 
+		elif e.errno in [11]:
+			log.error(str(e))
 
 
 class TCPConnection():
 	implements(ITCPTransport, IReadWriteDescriptor, IConsumer)
 
 	def __init__(self, socket, protocol):
-		self.socket = socket
-		self.protocol = protocol
-		self._tempDataBuffer = b''
-		self._tempDataLen = 0
-		self._producer = None
-		self._close_after_write_complete = False
-		self._start_time = time()
+		self.socket 				= socket
+		self.protocol 				= protocol
+		self._tempDataBuffer 			= b''
+		self._tempDataLen 			= 0
+		self._producer				= None
+		self._close_after_write_complete 	= False
+		self._start_time 			= time()
 
 
 	def doRead(self):
@@ -76,7 +72,6 @@ class TCPConnection():
 
 
 	#ref: twisted.internet.tcp.Connection
-	#todo: optimize later
 	def writeSomeData(self, data):
 		sent = socket_call(self.socket.send, args=(self._tempDataBuffer,))
 		self._tempDataBuffer = self._tempDataBuffer[sent : ]
@@ -126,6 +121,7 @@ class TCPConnection():
 			self.socket.fileno()
 		except socket.error as e:
 			return True
+
 		return False
 
 

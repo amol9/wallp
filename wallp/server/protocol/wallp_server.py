@@ -52,8 +52,8 @@ class WallpServer(FixedLengthMessage):
 				response.type = Response.IMAGE_NONE
 
 			else:
-				#log / handle error
-				return
+				log.error('something bad happened, wp state is set to %d'%wp_state)
+				response.type = Response.SERVER_ERROR
 
 
 		else:

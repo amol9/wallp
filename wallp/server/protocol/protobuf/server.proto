@@ -34,6 +34,7 @@ message Response {
 		IMAGE_CHANGING = 6;
 		IMAGE_NONE = 7;
 		BAD_REQUEST = 8;
+		SERVER_ERROR = 9;
 	}
 		
 	required Type type = 1;
