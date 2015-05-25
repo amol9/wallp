@@ -3,8 +3,10 @@ import re
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor
+from apscheduler.schedulers import SchedulerAlreadyRunningError, SchedulerNotRunningError
 
 from ..globals import Const
+from ..logger import log
 
 
 class Scheduler():
@@ -70,7 +72,10 @@ class Scheduler():
 
 
 	def start(self):
-		self._apscheduler.start()
+		try:
+			self._apscheduler.start()
+		except SchedulerAlreadyRunningError as e:
+			log.error(str(e))
 
 
 	def pause(self):
@@ -78,4 +83,8 @@ class Scheduler():
 
 
 	def shutdown(self):
-		self._apscheduler.shutdown()
+		try:
+			self._apscheduler.shutdown()
+		except SchedulerNotRunningError as e:
+			log.error(str(e))
+

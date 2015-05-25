@@ -66,14 +66,19 @@ class ServerStats():
 
 
 class GenericLimits():
-	max_message_size = 10 * 1024 * 1024
-	max_messages_in_queue_per_conn = 10
-	max_line_message_length = 512
+	max_message_size 		= 10 * 1024 * 1024
+	max_messages_in_queue_per_conn 	= 10
+	max_line_message_length		= 512
 
 
 class LinuxLimits(GenericLimits):
-	select = 1024
-	clients = 1014
+	max_select_fds 	= 1024
+	max_open_fds 	= 20
+	fd_buffer 	= 5
+
+
+	def fds_full(self, open_fds):
+		return open_fds >= (self.max_open_fds - self.fd_buffer)
 
 
 def get_limits():

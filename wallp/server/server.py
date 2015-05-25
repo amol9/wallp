@@ -103,6 +103,7 @@ class Server():
 		while True:
 			readable = writeable = exceptions = None
 			self._stats.update_clients(len(self.client_list))
+			self._stats.update_open_fds()
 
 			try:
 				readable, writeable, exceptions = select.execute(self.get_in_list(), self.get_out_list())
@@ -180,6 +181,10 @@ class Server():
 
 
 	def handle_incoming_connection(self, server):
+		if self.server_full():
+			log.error('connections full')
+			return
+
 		if server is self._server:
 			factory = self._wallp_server_factory
 			clist = self.client_list
@@ -192,22 +197,19 @@ class Server():
 			log.error('got an incoming on an unexpected server socket')
 			return
 
-		if not self.server_full():
-			connection, client_address = server.accept()
-			log.debug('client connected: ' + str(client_address))
+		connection, client_address = server.accept()
+		log.debug('client connected: ' + str(client_address))
 
-			addr = Address(*client_address)
-			protocol = factory.buildProtocol(addr)
-			transport = TCPConnection(connection, protocol)
-			protocol.makeConnection(transport)
+		addr = Address(*client_address)
+		protocol = factory.buildProtocol(addr)
+		transport = TCPConnection(connection, protocol)
+		protocol.makeConnection(transport)
 
-			clist.append(transport)
-		else:
-			log.error('connections full')
+		clist.append(transport)
 
 
 	def server_full(self):
-		return False
+		return self._limits.fds_full(self._stats.open_fds)
 
 
 	def get_in_list(self):

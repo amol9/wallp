@@ -4,6 +4,7 @@ from .protobuf.server_pb2 import Response
 from .protobuf.client_pb2 import Request
 from .wp_change_message import WPState
 from .image_chunk_producer import ImageChunkProducer
+from ...logger import log
 
 
 class WallpServer(FixedLengthMessage):
@@ -21,9 +22,7 @@ class WallpServer(FixedLengthMessage):
 		wp_image = self._server_shared_data.wp_image
 		wp_state = self._server_shared_data.wp_state
 
-		import binascii
-		print 'processing request..', binascii.hexlify(message), '  ', len(message)
-		print 'request type: ', request.type
+		log.debug('request type: %d'%request.type)
 
 		if request.type == Request.FREQUENCY:
 			response.type = Response.FREQUENCY
@@ -59,7 +58,7 @@ class WallpServer(FixedLengthMessage):
 		else:
 			response.type = Response.BAD_REQUEST
 
-		print 'response type: ', response.type
+		log.debug('response type: %d'%response.type)
 
 		self.sendMessage(response.SerializeToString())
 

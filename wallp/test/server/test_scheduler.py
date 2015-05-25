@@ -3,6 +3,7 @@ from time import sleep
 import os
 from os.path import exists
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.schedulers import SchedulerAlreadyRunningError, SchedulerNotRunningError
 
 from wallp.server.scheduler import Scheduler
 
@@ -88,6 +89,23 @@ class TestScheduler(TestCase):
 		self.assertEquals(2, task.count)
 
 		sched.shutdown()
+
+
+	def test_start_exception(self):
+		sched = Scheduler()
+		sched.start()
+
+		self.assertRaises(SchedulerAlreadyRunningError, sched.start)
+		sched.shutdown()
+
+	
+	def test_shutdown_exception(self):
+		sched = Scheduler()
+		self.assertRaises(SchedulerNotRunningError, sched.shutdown)
+
+		sched.start()
+		sched.shutdown()
+		self.assertRaises(SchedulerNotRunningError, sched.shutdown)
 
 
 if __name__ == '__main__':

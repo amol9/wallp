@@ -2,6 +2,7 @@ from time import time
 
 from ..imported.twisted.internet_protocol import Protocol
 from ..wallpaper_image import WPImageError
+from ...logger import log
 
 
 class WPState():
@@ -22,7 +23,7 @@ class WPChangeMessage(Protocol, object):
 
 	def messageReceived(self, message):
 		if message == WPState.READY:
-			print 'image ready'
+			log.debug('new image ready')
 			self._server_shared_state.last_change = int(time())
 			self.server_wp_state = WPState.READY
 
@@ -39,7 +40,6 @@ class WPChangeMessage(Protocol, object):
 				
 		elif type(message) == str:
 			if self.server_wp_state == WPState.READY:
-				print 'wp path: ', message
 				try:
 					self._server_shared_state.wp_image.path = message
 				except WPImageError as e:

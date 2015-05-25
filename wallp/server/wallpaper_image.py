@@ -1,5 +1,7 @@
 import os
 
+from ..logger import log
+
 
 class WPImageError(Exception):
 	pass
@@ -49,7 +51,6 @@ class WallpaperImage(object):
 			self._chunk_count += 1
 
 		self._extension = self._path[self._path.rfind('.') + 1:]
-		print 'extension = ', self._extension
 
 		del self._buffer
 		self._buffer = None
