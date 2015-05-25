@@ -10,12 +10,12 @@ from .wallpaper_image import WallpaperImage
 from .server_helper import ServerStats, ServerSharedState, LinuxLimits, StartError
 from .transport.tcp_connection import TCPConnection, HangUp, ConnectionAbort
 from .transport.address import Address
-from .protocols.wallp_server import WallpServer
-from .protocols.telnet_server import TelnetServer
-from .protocols.wp_change_message import WPChangeMessage
+from .protocol.wallp_server import WallpServer
+from .protocol.telnet_server import TelnetServer
+from .protocol.wp_change_message import WPChangeMessage
 from .transport.pipe_connection import PipeConnection
-from .protocols.wallp_server_factory import WallpServerFactory
-from .protocols.telnet_server_factory import TelnetServerFactory
+from .protocol.wallp_server_factory import WallpServerFactory
+from .protocol.telnet_server_factory import TelnetServerFactory
 from ..logger import log
 
 

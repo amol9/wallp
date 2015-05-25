@@ -3,7 +3,7 @@ import struct
 
 from ..imported.twisted.internet_interfaces import IPullProducer
 from ..server_helper import get_limits
-from ..proto.server_pb2 import Response
+from .protobuf.server_pb2 import Response
 
 
 class ImageChunkProducer:

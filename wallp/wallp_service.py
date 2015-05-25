@@ -4,7 +4,7 @@ import tempfile
 from time import sleep
 
 from .service import Service, ServiceException
-from .server.protocols.wallp_client import WallpClient, ImageNone, ImageChanging, ImageAbort
+from .server.protocol.wallp_client import WallpClient, ImageNone, ImageChanging, ImageAbort
 from .server.transport.tcp_connection import TCPConnection, HangUp
 from .logger import log
 

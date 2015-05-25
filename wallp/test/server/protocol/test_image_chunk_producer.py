@@ -3,9 +3,10 @@ from random import randint
 from Queue import Queue
 import os
 
-from wallp.server.protocols.image_chunk_producer import ImageChunkProducer
+from wallp.server.protocol.image_chunk_producer import ImageChunkProducer
 from wallp.server.wallpaper_image import WallpaperImage
-from wallp.server.proto.server_pb2 import Response
+from wallp.server.protocol.protobuf.server_pb2 import Response
+from wallp.test.server.protocol.mock_transport import MockTransport
 
 
 class TestImageChunkProducer(TestCase):
@@ -31,7 +32,7 @@ class TestImageChunkProducer(TestCase):
 		transport = MockTransport()
 		icp = ImageChunkProducer(transport, self.wp_image)
 
-		while not transport.unregistered:
+		while icp.producing:
 			icp.resumeProducing()
 
 
@@ -54,7 +55,7 @@ class TestImageChunkProducer(TestCase):
 
 		abort_after_chunk_no = randint(0, self.wp_image.chunk_count - 2)
 		chunk_no = 0
-		while not transport.unregistered:
+		while icp.producing:
 			icp.resumeProducing()
 			if chunk_no == abort_after_chunk_no:
 				icp.stopProducing()

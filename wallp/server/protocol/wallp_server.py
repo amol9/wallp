@@ -1,7 +1,7 @@
 
 from .fixed_length_message import FixedLengthMessage
-from ..proto.server_pb2 import Response
-from ..proto.client_pb2 import Request
+from .protobuf.server_pb2 import Response
+from .protobuf.client_pb2 import Request
 from .wp_change_message import WPState
 from .image_chunk_producer import ImageChunkProducer
 

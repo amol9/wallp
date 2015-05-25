@@ -2,7 +2,7 @@ from time import sleep
 
 from ..helper import get_image, compute_style
 from ..desktop_factory import get_desktop, DesktopException
-from .protocols.wp_change_message import WPState
+from .protocol.wp_change_message import WPState
 
 
 class ChangeWallpaper():

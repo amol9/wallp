@@ -3,7 +3,7 @@ from time import time
 import os
 
 from .wallpaper_image import WallpaperImage
-from .protocols.wp_change_message import WPState
+from .protocol.wp_change_message import WPState
 from ..command import command
 
 

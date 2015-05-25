@@ -1,8 +1,8 @@
 from time import time, sleep
 
 from .blocking_fixed_length_message import BlockingFixedLengthMessage
-from ..proto.server_pb2 import Response
-from ..proto.client_pb2 import Request
+from .protobuf.server_pb2 import Response
+from .protobuf.client_pb2 import Request
 
 
 class ImageNone(Exception):

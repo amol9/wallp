@@ -19,3 +19,7 @@ class MockTransport:
 	def registerProducer(self, producer, streaming=False):
 		self.producer = producer
 
+
+	def closeAfterWriteComplete(self):
+		pass
+

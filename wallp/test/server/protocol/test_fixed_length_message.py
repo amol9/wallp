@@ -2,7 +2,7 @@ from unittest import TestCase, main as ut_main
 from Queue import Queue
 import struct
 
-from wallp.server.protocols.fixed_length_message import FixedLengthMessage
+from wallp.server.protocol.fixed_length_message import FixedLengthMessage
 
 
 

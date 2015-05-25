@@ -2,13 +2,13 @@ from unittest import TestCase, main as ut_main, skip
 from Queue import Queue
 import os
 
-from wallp.server.protocols.image_chunk_producer import ImageChunkProducer
+from wallp.server.protocol.image_chunk_producer import ImageChunkProducer
 from wallp.server.wallpaper_image import WallpaperImage
-from wallp.server.proto.server_pb2 import Response
-from wallp.server.proto.client_pb2 import Request
-from wallp.server.protocols.wallp_server import WallpServer
-from wallp.server.protocols.wp_change_message import WPState
-from .mock_transport import MockTransport
+from wallp.server.protocol.protobuf.server_pb2 import Response
+from wallp.server.protocol.protobuf.client_pb2 import Request
+from wallp.server.protocol.wallp_server import WallpServer
+from wallp.server.protocol.wp_change_message import WPState
+from wallp.test.server.protocol.mock_transport import MockTransport
 
 
 class MockServerSharedState:
