@@ -1,8 +1,7 @@
 from zope.interface import implements
 import struct
 
-from ..imported.twisted.internet_interfaces import IPullProducer
-from ..server_helper import get_limits
+from mayserver.imported.twisted.internet_interfaces import IPullProducer
 from .protobuf.server_pb2 import Response
 from ..wallpaper_image import WPImageError
 

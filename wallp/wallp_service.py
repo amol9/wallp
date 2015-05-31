@@ -5,7 +5,7 @@ from time import sleep
 
 from .service import Service, ServiceException
 from .server.protocol.wallp_client import WallpClient, ImageNone, ImageChanging, ImageAbort, ServerError
-from .server.transport.tcp_connection import TCPConnection, HangUp
+from mayserver.transport.tcp_connection import TCPConnection, HangUp
 from .logger import log
 
 
@@ -45,7 +45,7 @@ class Retry:
 class WallpService(Service):
 	def __init__(self):
 		self._host = ''
-		self._port = 40001
+		self._port = 40002
 		self._wallp_client = None
 
 

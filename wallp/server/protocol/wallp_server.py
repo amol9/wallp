@@ -1,5 +1,5 @@
 
-from .fixed_length_message import FixedLengthMessage
+from mayserver.protocol.fixed_length_message import FixedLengthMessage
 from .protobuf.server_pb2 import Response
 from .protobuf.client_pb2 import Request
 from .wp_change_message import WPState
@@ -8,9 +8,10 @@ from ...logger import log
 
 
 class WallpServer(FixedLengthMessage):
-	def __init__(self, server_shared_data):
+	def __init__(self, wp_state, wp_image):
 		FixedLengthMessage.__init__(self)
-		self._server_shared_data = server_shared_data
+		self._wp_state = wp_state
+		self._wp_image = wp_image
 
 
 	def messageReceived(self, message):
@@ -18,9 +19,6 @@ class WallpServer(FixedLengthMessage):
 		request.ParseFromString(message)
 
 		response = Response()
-
-		wp_image = self._server_shared_data.wp_image
-		wp_state = self._server_shared_data.wp_state
 
 		log.debug('request type: %d'%request.type)
 
@@ -33,25 +31,25 @@ class WallpServer(FixedLengthMessage):
 			response.last_change.timestamp = self.get_last_change() #self._server_shared_data.last_change
 
 		elif request.type == Request.IMAGE:
-			if wp_state == WPState.READY:
+			if self.wp_state == WPState.READY:
 				response.type = Response.IMAGE_INFO
 				image_info = response.image_info
 
-				image_info.extension = wp_image.extension
-				image_info.length = wp_image.length
-				image_info.chunk_count = wp_image.chunk_count
+				image_info.extension = self._wp_image.extension
+				image_info.length = self._wp_image.length
+				image_info.chunk_count = self._wp_image.chunk_count
 
-				self.transport.registerProducer(ImageChunkProducer(self.transport, wp_image))
+				self.transport.registerProducer(ImageChunkProducer(self.transport, self._wp_image))
 				self.transport.closeAfterWriteComplete()
 
-			elif wp_state == WPState.CHANGING:
+			elif self.wp_state == WPState.CHANGING:
 				response.type = Response.IMAGE_CHANGING
 
-			elif wp_state == WPState.NONE:
+			elif self.wp_state == WPState.NONE:
 				response.type = Response.IMAGE_NONE
 
 			else:
-				log.error('something bad happened, wp state is set to %d'%wp_state)
+				log.error('something bad happened, wp state is set to %d'%self.wp_state)
 				response.type = Response.SERVER_ERROR
 
 
@@ -70,4 +68,14 @@ class WallpServer(FixedLengthMessage):
 	def get_last_change(self):
 		return 0
 
+
+	def get_wp_state(self):
+		return self._wp_state.state
+
+
+	def set_wp_state(self, state):
+		self._wp_state.state = state
+
+
+	wp_state = property(get_wp_state, set_wp_state)
 

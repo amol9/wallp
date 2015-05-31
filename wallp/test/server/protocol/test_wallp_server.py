@@ -21,16 +21,18 @@ class TestWallpServer(TestCase):
 	wallp_server 	= None
 	frequency 	= '1h'
 	last_change 	= 0
-	shared_state 	= None
+	wp_state 	= WPState()
+	wp_image	= WallpaperImage()
 	test_image_path = '/home/amol/Pictures/Firefox_wallpaper.png'
 
 
 	@classmethod
 	def setUpClass(cls):
-		cls.shared_state = MockServerSharedState()
+		'''cls.shared_state = MockServerSharedState()
 		cls.shared_state.wp_image = WallpaperImage()
 		cls.shared_state.wp_image.set_path(cls.test_image_path)
-		cls.shared_state.wp_state = WPState.NONE
+		cls.shared_state.wp_state = WPState.NONE'''
+		cls.wp_image.path = cls.test_image_path
 
 		cls.ws_orig_get_frequency = WallpServer.get_frequency
 		cls.ws_orig_get_last_change = WallpServer.get_last_change
@@ -39,7 +41,7 @@ class TestWallpServer(TestCase):
 		WallpServer.get_last_change = lambda slf : cls.last_change
 		WallpServer.sendMessage = lambda slf, msg : slf.transport.write(msg)
 
-		cls.wallp_server = WallpServer(cls.shared_state)
+		cls.wallp_server = WallpServer(cls.wp_state, cls.wp_image)
 		cls.wallp_server.transport = MockTransport()
 
 
@@ -93,7 +95,7 @@ class TestWallpServer(TestCase):
 
 
 	def test_image_none(self):
-		self.shared_state.wp_state = WPState.NONE
+		self.wp_state.state = WPState.NONE
 
 		self.send_image_request()
 		response = self.get_response()
@@ -103,7 +105,7 @@ class TestWallpServer(TestCase):
 
 
 	def test_image_changing(self):
-		self.shared_state.wp_state = WPState.CHANGING
+		self.wp_state.state = WPState.CHANGING
 	
 		self.send_image_request()
 		response = self.get_response()
@@ -113,7 +115,7 @@ class TestWallpServer(TestCase):
 
 	
 	def test_image_ready(self):
-		self.shared_state.wp_state = WPState.READY
+		self.wp_state.state = WPState.READY
 
 		self.send_image_request()
 		response = self.get_response()

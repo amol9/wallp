@@ -1,6 +1,6 @@
 from time import time
 
-from ..imported.twisted.internet_protocol import Protocol
+from mayserver.imported.twisted.internet_protocol import Protocol
 from ..wallpaper_image import WPImageError
 from ...logger import log
 
@@ -11,10 +11,14 @@ class WPState():
 	CHANGING = 2
 	ERROR = 3
 
+	def __init__(self):
+		self.state = self.NONE
+
 
 class WPChangeMessage(Protocol, object):
-	def __init__(self, server_shared_state):
-		self._server_shared_state = server_shared_state
+	def __init__(self, wp_state, wp_image):
+		self._wp_state = wp_state
+		self._wp_image = wp_image
 
 
 	def dataReceived(self, data):
@@ -24,42 +28,31 @@ class WPChangeMessage(Protocol, object):
 	def messageReceived(self, message):
 		if message == WPState.READY:
 			log.debug('new image ready')
-			self._server_shared_state.last_change = int(time())
-			self.server_wp_state = WPState.READY
+			#self._server_shared_state.last_change = int(time())
+			self._wp_state.state = WPState.READY
 
-			self._server_shared_state.abort_image_producers()
+			#self._server_shared_state.abort_image_producers() ???
 
 		elif message == WPState.CHANGING:
-			self.server_wp_state = WPState.CHANGING
+			self._wp_state.state = WPState.CHANGING
 
 		elif message == WPState.ERROR:
-			if self._server_shared_state.wp_image is not None:
-				self.server_wp_state = WPState.READY
+			if self._wp_image is not None:
+				self._wp_state.state = WPState.READY
 			else:
-				self.server_wp_state = WPState.NONE
+				self._wp_state.state = WPState.NONE
 				
 		elif type(message) == str:
-			if self.server_wp_state == WPState.READY:
+			if self._wp_state.state == WPState.READY:
 				try:
-					self._server_shared_state.wp_image.path = message
+					self._wp_image.path = message
 				except WPImageError as e:
 					log.error('error loading new image')
-					self.server_wp_state = WPState.NONE
+					self._wp_state = WPState.NONE
 			else:
 				self.messageError('wallpaper path received when not expected, %s'%message)
 
 		
 	def messageError(self, reason):
 		log.error(reason)
-
-
-	def get_server_wp_state(self):
-		return self._server_shared_state.wp_state
-
-
-	def set_server_wp_state(self, value):
-		self._server_shared_state.wp_state = value
-
-
-	server_wp_state = property(get_server_wp_state, set_server_wp_state)
 

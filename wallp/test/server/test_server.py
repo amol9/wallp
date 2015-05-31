@@ -1,13 +1,13 @@
 from unittest import TestCase, main as ut_main
 from datetime import datetime, timedelta
 
-from wallp.server.server import Server, scheduled_task_placeholder
+from wallp.server.wallp_server import WallpServer, scheduled_task_placeholder
 from wallp.manager import Manager
 from wallp.server.scheduler import Scheduler
 from apscheduler.jobstores.memory import MemoryJobStore
 
 
-port = 40001
+port = 40002
 
 class TestServer(TestCase):
 	@classmethod
@@ -30,7 +30,7 @@ class TestServer(TestCase):
 	
 	def test_server_start(self):
 		self.setup_job_runonce({'seconds': 5})
-		server = Server(port)
+		server = WallpServer(port)
 		self.start_server(server)
 
 
@@ -61,7 +61,7 @@ class TestServer(TestCase):
 
 			print 'added job for test'
 
-		Server.setup_job = new_setup_job
+		WallpServer.setup_job = new_setup_job
 
 
 if __name__ == '__main__':
