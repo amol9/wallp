@@ -13,7 +13,7 @@ import wallp.web as web
 from wallp.logger import log
 from wallp.config import config
 from mutils.html.parser import HtmlParser
-from wallp.service import Service, ServiceException, service_factory
+from wallp.service import Service, ServiceException
 
 
 search_url = "http://imgur.com/search?"
@@ -169,19 +169,4 @@ class Imgur(Service):
 				link_urls.append(m)
 
 		return link_urls
-
-
-if config.get(Imgur.name, 'enabled', default=True, type=bool):
-	service_factory.add('imgur', Imgur)
-
-'''
-imgur mega dumps: 
-http://imgur.com/gallery/wCBYO - 2163
-http://imgur.com/gallery/hfHhb - 625
-http://imgur.com/gallery/D3vya - 976
-dump of dumps: http://imgur.com/a/GV71l?gallery - 52000
-http://imgur.com/gallery/5vKwE
-http://imgur.com/gallery/JAyva
-http://imgur.com/gallery/1qukj
-'''
 

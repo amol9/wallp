@@ -7,7 +7,7 @@ from wallp.logger import log
 from wallp.imgur import Imgur
 from wallp.config import config
 from wallp.globals import Const
-from wallp.service import Service, service_factory, ServiceException
+from wallp.service import Service, ServiceException
 
 
 subreddit_list =	['earthporn', 'wallpapers', 'wallpaperdump', 'specart', 'quotesporn', 'offensive_wallpapers',
@@ -60,8 +60,4 @@ class Reddit(Service):
 			d.start()
 
 		return basename + '.' + ext
-
-
-if config.get(Reddit.name, 'enabled', default=True, type=bool):
-	service_factory.add(Reddit.name, Reddit)
 

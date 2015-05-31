@@ -6,7 +6,7 @@ from wallp.logger import log
 from wallp.config import config
 from wallp.colors import colors
 from wallp.desktop_factory import get_desktop
-from wallp.service import Service, ServiceException, service_factory
+from wallp.service import Service, ServiceException
 
 
 class Bitmap(Service):
@@ -88,8 +88,4 @@ class Bitmap(Service):
 		log.debug('row size: %d'%row_size)
 		pa_size = row_size * height
 		return pa_size, row_size
-
-
-if config.get(Bitmap.name, 'enabled', default=True, type=bool):
-	service_factory.add(Bitmap.name, Bitmap)
 
