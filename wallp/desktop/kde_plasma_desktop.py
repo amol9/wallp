@@ -3,9 +3,10 @@ import dbus
 from time import sleep
 from tempfile import NamedTemporaryFile
 
+from mutils.system import sys_command
+
 from ..util.logger import log
 from .desktop import Desktop
-from ..util.command import command
 from .linux_desktop_helper import get_desktop_size, uses_dbus
 
 
@@ -68,8 +69,7 @@ class KdePlasmaDesktop(Desktop):
 		xdo_cmd = "xdotool search --name \"Desktop Shell Scripting Console\" " + \
 				"windowsize 200 200 key \"ctrl+e\" key \"ctrl+w\" windowminimize"
 
-		with command(xdo_cmd) as cmd:
-			rc = cmd.execute(supress_output=True)
+		rc, _ = sys_command(xdo_cmd, supress_output=True)
 
 
 	def get_style_code(self, style):

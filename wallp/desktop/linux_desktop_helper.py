@@ -2,8 +2,10 @@ import re
 import os
 import sys
 
+
+from mutils.system import sys_command
+
 from ..util.logger import log
-from ..util.command import command
 
 
 def is_cron_session():
@@ -29,14 +31,12 @@ def set_dbus_session_vars_if_cron():
 			return False
 
 		dbusd_pids = []
-		with command('pgrep dbus-daemon -u %s'%uid) as cmd:
-			pids, rc = cmd.execute()
-			if rc != 0:
-				log.error('could not get pid of dbus-daemon')
-				return False
-			dbusd_pids = pids.split()
-			log.debug('dbus-daemon pids: %s'%' '.join(dbusd_pids))
-
+		rc, pids = sys_command('pgrep dbus-daemon -u %s'%uid)
+		if rc != 0:
+			log.error('could not get pid of dbus-daemon')
+			return False
+		dbusd_pids = pids.split()
+		log.debug('dbus-daemon pids: %s'%' '.join(dbusd_pids))
 
 		dbus_session_bus_addr = None
 		dbus_session_bus_addr_re = re.compile(b'DBUS_SESSION_BUS_ADDRESS.*?\x00')
@@ -97,10 +97,9 @@ def get_desktop_size():
 	xinfo = rc = None
 	width = height = None
 
-	with command('xdpyinfo') as c:
-		xinfo, rc = c.execute()
-		if rc != 0:
-			log.error('xdpyinfo failed')
+	rc, xinfo = sys_command('xdpyinfo')
+	if rc != 0:
+		log.error('xdpyinfo failed')
 
 	dim_regex = re.compile(".*dimensions:\s+(\d+)x(\d+).*", re.M | re.S)
 	m = dim_regex.match(xinfo)

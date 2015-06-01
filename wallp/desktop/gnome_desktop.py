@@ -1,7 +1,8 @@
 
+from mutils.system import sys_command
+
 from .desktop import Desktop
 from ..util.logger import log
-from ..util.command import command
 from ..util.config import config
 from .linux_desktop_helper import get_desktop_size, uses_dbus
 
@@ -25,8 +26,7 @@ class GnomeDesktop(Desktop):
 	@uses_dbus
 	def set_wallpaper(self, filepath, style=None):
 		cmd = 'gsettings set org.gnome.desktop.background picture-uri file://%s'%filepath
-		with command(cmd) as c:
-			c.execute()
+		sys_command(cmd)
 		
 		if style is not None:
 			self.set_wallpaper_style(style)
@@ -39,6 +39,5 @@ class GnomeDesktop(Desktop):
 			wp_style = self.wp_styles['none']
 
 		cmd = 'gsettings set org.gnome.desktop.background picture-options %s'%wp_style
-		with command(cmd) as c:
-			c.execute()
+		sys_command(cmd)
 
