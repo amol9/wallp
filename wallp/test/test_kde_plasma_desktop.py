@@ -3,9 +3,9 @@ from os.path import exists, abspath, join as joinpath
 from os import mkdir
 from shutil import rmtree
 
-from wallp.kde_plasma_desktop import KdePlasmaDesktop
-from wallp.bitmap import Bitmap
-from wallp.config import config
+from wallp.desktop.kde_plasma_desktop import KdePlasmaDesktop
+from wallp.service.bitmap import Bitmap
+from wallp.util.config import config
 from wallp.globals import Const
 
 

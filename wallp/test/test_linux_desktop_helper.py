@@ -1,7 +1,7 @@
 from unittest import TestCase, main as ut_main
 
-import wallp.linux_desktop_helper as ldh
-from wallp.logger import log
+import wallp.desktop.linux_desktop_helper as ldh
+from wallp.util.logger import log
 
 
 class TestLinuxDesktopHelper(TestCase):

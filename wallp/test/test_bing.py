@@ -1,4 +1,4 @@
-from unittest import TestCase, main as ut_main
+from unittest import TestCase, main as ut_main, skip
 
 from mutils.system import *
 if is_py3():
@@ -7,12 +7,13 @@ if is_py3():
 else:
 	from urllib2 import HTTPError, urlopen
 
-from wallp.bing import Bing
-from wallp.standard_desktop_sizes import StandardDesktopSizes
+from wallp.service.bing import Bing
+from wallp.desktop.standard_desktop_sizes import StandardDesktopSizes
 
 
 class TestBing(TestCase):
 
+	@skip('not really a unit test')
 	def test_valid_image_sizes(self):
 		bing = Bing()
 		std_sizes = StandardDesktopSizes()
@@ -48,6 +49,11 @@ class TestBing(TestCase):
 		print('Result\n------')
 		for width, height in valid_sizes:
 			print('(%d, %d)'%(width, height))
+
+
+	def test_run(self):
+		bing = Bing()
+		bing.get_image('.', 'test_wallp')
 
 
 if __name__ == '__main__':

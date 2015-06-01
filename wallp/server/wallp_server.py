@@ -14,7 +14,7 @@ from .protocol.wallp_server import WallpServer
 from .protocol.wp_change_message import WPChangeMessage, WPState
 from .factory.wallp_server_factory import WallpServerFactory
 from .factory.wp_change_message_factory import WPChangeMessageFactory
-from ..logger import log
+from ..util.logger import log
 
 
 def scheduled_task_placeholder():

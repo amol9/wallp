@@ -1,9 +1,9 @@
 from time import sleep
 
-from ..helper import get_image, compute_style
-from ..desktop_factory import get_desktop, DesktopException
+from ..client.helper import get_image, compute_style
+from ..desktop.desktop_factory import get_desktop, DesktopException
 from .protocol.wp_change_message import WPState
-from ..logger import log
+from ..util.logger import log
 
 
 class ChangeWallpaper():

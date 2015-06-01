@@ -1,6 +1,6 @@
 from unittest import TestCase, main as ut_main
 
-from wallp.standard_desktop_sizes import StandardDesktopSizes, DesktopSizeException
+from wallp.desktop.standard_desktop_sizes import StandardDesktopSizes, DesktopSizeException
 
 
 class TestStandardDesktopSizes(TestCase):

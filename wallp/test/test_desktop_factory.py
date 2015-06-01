@@ -1,6 +1,6 @@
 from unittest import TestCase, main as ut_main
 
-from wallp.desktop_factory import get_desktop
+from wallp.desktop.desktop_factory import get_desktop
 
 
 class TestDesktopFactory(TestCase):

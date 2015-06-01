@@ -6,7 +6,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers import SchedulerAlreadyRunningError, SchedulerNotRunningError
 
 from ..globals import Const
-from ..logger import log
+from ..util.logger import log
 
 
 class Scheduler():

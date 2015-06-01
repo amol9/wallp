@@ -2,7 +2,7 @@ from time import time
 
 from mayserver.imported.twisted.internet_protocol import Protocol
 from ..wallpaper_image import WPImageError
-from ...logger import log
+from ...util.logger import log
 
 
 class WPState():

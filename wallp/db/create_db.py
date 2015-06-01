@@ -6,10 +6,10 @@ from os.path import dirname, abspath, join as joinpath
 
 from . import *
 from ..globals import Const
-from ..service_factory import service_factory
+from ..service import service_factory
 
 
-class CreateOp():
+class CreateDB():
 	def __init__(self, db_path):
 		self._engine = create_engine('sqlite:///' + db_path, echo=True)
 		self._session = sessionmaker(bind=self._engine)()
@@ -64,10 +64,4 @@ class CreateOp():
 			for row in reddit_reader:
 				self._session.add(Reddit(sub=row[0]))
 		self._session.commit()
-
-
-def create_db(db_path):
-	co = CreateOp(db_path)
-	co.create_schema()
-	co.insert_data()
 

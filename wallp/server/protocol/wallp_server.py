@@ -4,7 +4,7 @@ from .protobuf.server_pb2 import Response
 from .protobuf.client_pb2 import Request
 from .wp_change_message import WPState
 from .image_chunk_producer import ImageChunkProducer
-from ...logger import log
+from ...util.logger import log
 
 
 class WallpServer(FixedLengthMessage):

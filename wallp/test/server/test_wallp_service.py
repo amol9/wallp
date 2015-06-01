@@ -4,7 +4,7 @@ from time import sleep
 import traceback
 from Queue import Queue
 
-from wallp.wallp_service import WallpService
+from wallp.service.wallp_service import WallpService
 from wallp.service import ServiceException
 
 

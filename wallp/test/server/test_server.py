@@ -2,7 +2,6 @@ from unittest import TestCase, main as ut_main
 from datetime import datetime, timedelta
 
 from wallp.server.wallp_server import WallpServer, scheduled_task_placeholder
-from wallp.manager import Manager
 from wallp.server.scheduler import Scheduler
 from apscheduler.jobstores.memory import MemoryJobStore
 
@@ -32,14 +31,6 @@ class TestServer(TestCase):
 		self.setup_job_runonce({'seconds': 5})
 		server = WallpServer(port)
 		self.start_server(server)
-
-
-	def test_client(self):
-		Manager.parse_args = lambda x : None
-		Manager.set_frequency = lambda x : None
-
-		cl = Manager()
-		cl.get_image_from_wallp_server('localhost,' + str(port))
 
 
 	def setup_job_interval(self, int_arg):
