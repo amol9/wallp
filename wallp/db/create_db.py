@@ -46,7 +46,7 @@ class CreateDB():
 			config_reader = reader(config_csv)
 			for row in config_reader:
 				group, name = row[0].split('.')
-				self._session.add(Config(group=group, name=name, value=row[1]))
+				self._session.add(Setting(group=group, name=name, value=row[1]))
 
 
 
@@ -54,7 +54,7 @@ class CreateDB():
 		with open(joinpath(self._data_dir_abspath, 'imgur.csv'), 'r') as imgur_csv:
 			imgur_reader = reader(imgur_csv)
 			for row in imgur_reader:
-				self._session.add(Imgur(album=row[0]))
+				self._session.add(ImgurAlbum(url=row[0]))
 		self._session.commit()
 
 
@@ -62,6 +62,6 @@ class CreateDB():
 		with open(joinpath(self._data_dir_abspath, 'reddit.csv'), 'r') as reddit_csv:
 			reddit_reader = reader(reddit_csv)
 			for row in reddit_reader:
-				self._session.add(Reddit(sub=row[0]))
+				self._session.add(Subreddit(name=row[0]))
 		self._session.commit()
 

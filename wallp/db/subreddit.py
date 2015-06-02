@@ -3,10 +3,10 @@ from sqlalchemy import Column, Integer, String, Boolean
 from . import Base
 
 
-class SearchTerm(Base):
-	__tablename__ = 'search_terms'
+class Subreddit(Base):
+	__tablename__ = 'reddit'
 
 	id = 		Column(Integer, primary_key=True)
-	term = 		Column(String(100))
+	name = 		Column(String(70))
 	enabled = 	Column(Boolean, default=True)
 
