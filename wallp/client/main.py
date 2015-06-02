@@ -1,12 +1,9 @@
 import sys
 
-from .manager import Manager
-
+from . import ArgParser
 
 #entry point
 def main():
-	mgr = Manager()
-	mgr.change_wallpaper()
-
-#main()
+	argparser = ArgParser()
+	argparser.parse_args()
 
