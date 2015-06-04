@@ -2,6 +2,10 @@
 from . import DBSession
 
 
+class SettingError(Exception):
+	pass
+
+
 class Config:
 	def __init__(self):
 		self._session = DBSession()

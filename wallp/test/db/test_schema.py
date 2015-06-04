@@ -1,7 +1,7 @@
 from unittest import TestCase, main as ut_main
 from sqlalchemy import create_engine
 
-from wallp.db import *
+from wallp.db import Base
 
 
 class TestSchema(TestCase):
