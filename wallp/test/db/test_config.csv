@@ -1,12 +1,12 @@
 group+name 		value 		type		valid name?	group		name		new value	valid new value?
-'test', 		'test', 	str,		True,		'',		'test',		'test'
-'group.test', 		'test', 	str,		True,		'group',	'test',		'new'
-'group.', 		'value', 	str,		False,		None,		None,		None
-'', 			'value', 	str,		False,		None,		None,		None
-'1', 			'value', 	str,		True,		'',		'1',		100
-'group.sub.test', 	'test', 	str,		True,		'group',	'sub.test',	'new value'
-'.', 			'', 		str,		True,		'',		'.',		'x'
-'integer', 		1, 		int,		True,		'',		'integer',	
-'float', 		3.14, 		float,		True,		'',		'float'
 
-
+test,	 		'test', 	str,		True,		,		test,		'test',		True
+group.test, 		'test', 	str,		True,		group,		test,		'new',		True
+group., 		'value', 	str,		False,		,		,		None,		False
+, 			'value', 	str,		False,		,		,		None,		False
+1, 			'value', 	str,		False,		,		,		None,		False
+group.sub.test, 	'test', 	str,		True,		group,		sub.test,	'new value',	True
+., 			'', 		str,		False,		,		,		None,		False
+integer, 		1, 		int,		True,		,		integer,	20,		True
+float,	 		3.14, 		float,		True,		,		float,		0.01,		True
+number, 		1, 		int,		True,		,		number,		'x',		False

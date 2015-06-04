@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine
-from sqlalchemy. import sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from . import *
+from ..globals import Const
 
 
 #singleton
@@ -22,14 +23,14 @@ class DBSession():
 	session_class = None
 
 	def __init__(self, db_path=None):
-		if self.session_class is None:
+		if DBSession.session_class is None:
 			db_path = Const.db_path if db_path is None else db_path
-			engine = create_engine('sqlite:///' + db_path, Const.debug)
-			self.session_class = sessionmaker(bind=engine)
+			engine = create_engine('sqlite:///' + db_path, echo=Const.debug)
+			DBSession.session_class = sessionmaker(bind=engine)
 
-		if self.instance is None:
-			instance = self.session_class()
+		if DBSession.instance is None:
+			DBSession.instance = DBSession.session_class()
 
 
 	def __getattr__(self, name):
-		return getattr(self.instance, name)
+		return getattr(DBSession.instance, name)

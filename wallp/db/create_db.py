@@ -38,7 +38,8 @@ class CreateDB():
 
 	def insert_service_status(self):
 		for service in service_factory.get_all():
-			self._session.add(Config(group=service.name, name='enabled', value='true'))
+			print service.name
+			self._session.add(Setting(group=service.name, name='enabled', value='true'))
 
 
 	def insert_config_defaults(self):

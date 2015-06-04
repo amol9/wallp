@@ -6,7 +6,9 @@ from .subreddit import Subreddit
 from .image_trace import ImageTrace
 from .image import Image
 from .search_term import SearchTerm
-from .config import Config
+from .setting import Setting
 
 from .db_session import DBSession
+from .config import Config, SettingError
+
 
