@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 from csv import reader
 import os
@@ -9,19 +10,26 @@ from ..globals import Const
 from ..service import service_factory
 
 
+class CreateDBError(Exception):
+	pass
+
+
 class CreateDB():
 	def __init__(self, db_path):
-		self._engine = create_engine('sqlite:///' + db_path, echo=True)
-		self._session = sessionmaker(bind=self._engine)()
+		self._session = DBSession(db_path=db_path)
 		self._data_dir_abspath = joinpath(dirname(abspath(__file__)), 'data')
 
 
-	def create_schema(self):
+	def execute(self):
+		self.create_schema()
 		try:
-			Base.metadata.create_all(self._engine)
-		except Exception as e:
-			print('error in creating schema')
-			raise Exception()
+			self.insert_data()
+		except IntegrityError as e:
+			raise CreateDBError(str(e))
+
+
+	def create_schema(self):
+		Base.metadata.create_all(self._session.bind)
 
 
 	def insert_data(self):
@@ -31,24 +39,23 @@ class CreateDB():
 
 	
 	def insert_default_config(self):
-		self.insert_service_status()
-		self.insert_config_defaults()
+		config = Config()
+		self.insert_service_status(config)
+		self.insert_config_defaults(config)
+
 		self._session.commit()
 
 
-	def insert_service_status(self):
+	def insert_service_status(self, config):
 		for service in service_factory.get_all():
-			print service.name
-			self._session.add(Setting(group=service.name, name='enabled', value='true'))
+			config.add(service.name + '.enabled', True, bool)
 
 
-	def insert_config_defaults(self):
+	def insert_config_defaults(self, config):
 		with open(joinpath(self._data_dir_abspath, 'config.csv'), 'r') as config_csv:
 			config_reader = reader(config_csv)
 			for row in config_reader:
-				group, name = row[0].split('.')
-				self._session.add(Setting(group=group, name=name, value=row[1]))
-
+				config.add(row[0], eval(row[1]), row[2])
 
 
 	def insert_imgur_data(self):

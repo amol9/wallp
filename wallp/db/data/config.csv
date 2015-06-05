@@ -1,2 +1,2 @@
-reddit.posts_limit,10
-imgur.get_full_album,true
+reddit.posts_limit,	10,	int
+imgur.get_full_album,	True,	bool

@@ -10,3 +10,5 @@ group.sub.test, 	'test', 	str,		True,		group,		sub.test,	'new value',	True
 integer, 		1, 		int,		True,		,		integer,	20,		True
 float,	 		3.14, 		float,		True,		,		float,		0.01,		True
 number, 		1, 		int,		True,		,		number,		'x',		False
+enabled,		'-',		str,		True,		,		enabled,	10,		True
+google.enabled,		True,		bool,		True,		google,		enabled,	False,		True

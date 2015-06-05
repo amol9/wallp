@@ -24,10 +24,27 @@ class Config:
 		self._name_max_len = Setting.name.property.columns[0].type.length
 
 
+	def add(self, fullname, value, vtype):
+		group, name = self.split_name(fullname)
+
+		if type(vtype) == type:
+			vtype = str(vtype)[7 : -2]	#e.g. "<type 'int'>" - extract the "int" part
+
+		setting = Setting(group=group, name=name, value=value, type=vtype)
+		self._session.add(setting)
+
+
 	def get(self, name):
 		setting = self.get_setting(name)
 		vtype = eval(setting.type)
-		return vtype(setting.value)
+
+		value = None
+		if vtype != str:
+			value = eval(setting.value)
+		else:
+			value = setting.value
+
+		return value
 
 
 	def single_result(self, result):
