@@ -3,19 +3,7 @@ from functools import partial
 from csv import reader
 
 from wallp.db import Config, DBSession, Base, SettingError, Setting
-
-
-def cmp_test_case_order(self, tc1, tc2):
-	func1 = getattr(TestConfig, tc1)
-	func2 = getattr(TestConfig, tc2)
-
-	if getattr(func1, '__order__', None) is None or getattr(func2, '__order__', None) is None:
-		return 0
-
-	return func1.__order__ - func2.__order__
-
-	
-TestLoader.sortTestMethodsUsing = cmp_test_case_order
+from wallp.test.utils import order, replace_default_testcase_sort_order
 
 
 class SettingTestData:
@@ -30,11 +18,14 @@ class SettingTestData:
 		self.valid_new_value 	= eval(valid_new_value)		#bool
 
 
+replace_default_testcase_sort_order()
+
+
 class TestConfig(TestCase):
 	dbsession 		= None
 	data_inserted 		= False
 	settings 		= []
-	db_path			= 'tc.db'
+	db_path			= ':memory:'
 	test_data_csv_filepath	= 'test_config.csv'
 
 	@classmethod
@@ -82,20 +73,12 @@ class TestConfig(TestCase):
 		return new_func
 
 
-	def exe_order(order):
-		'decorator for test cases'
-		def new_dec(func):
-			func.__order__ = order
-			return func
-		return new_dec
-
-
 	@classmethod
 	def tearDownClass(cls):
 		pass
 
 
-	@exe_order(0)
+	@order(0)
 	def test_split_name(self):
 		config = Config()
 
@@ -108,7 +91,7 @@ class TestConfig(TestCase):
 					config.split_name(setting.fullname)
 
 
-	@exe_order(1)
+	@order(1)
 	@insert_data
 	def test_set(self):
 		config = Config()
@@ -122,7 +105,7 @@ class TestConfig(TestCase):
 						config.set(setting.fullname, setting.new_value)
 
 
-	@exe_order(2)
+	@order(2)
 	def test_get(self):
 		config = Config()
 
@@ -143,3 +126,4 @@ class TestConfig(TestCase):
 
 if __name__ == '__main__':
 	ut_main()
+

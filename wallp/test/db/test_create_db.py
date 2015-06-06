@@ -18,6 +18,7 @@ class TestCreateDb(TestCase):
 		create_db = CreateDB(self.db_path)
 		create_db.execute()
 
+		import pdb; pdb.set_trace()
 		with self.assertRaises(CreateDBError) as e:
 			create_db.execute()
 

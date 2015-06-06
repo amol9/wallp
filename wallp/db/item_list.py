@@ -39,17 +39,23 @@ class ItemList:
 	
 
 	def get_random(self):
-		count = self.itemtype.query().count()
-		rand_id = randint(0, count)
+		count = self._dbsession.query(func.count(self.itemtype))
+		item_offset = randint(1, count)
 
-		result = self.itemtype.query().filter(self.itemtype.id == rand_id).all()
-		if (len(result) == 1):
-			return result[0][self.column]
+		seen = 0
+		while seen < count:
+			result = self.itemtype.query().limit(1).offset(item_offset)
+			item = result[0]
+			if not item.enabled:
+				seen += 1
+				item_offset += 1
+				if item_offset > count:		#wrap around
+					item_offset = 1
+				continue
 
-		result = self.itemtype.query().all()
-		count = len(result)
+			return getattr(item, self.column)
 
-		return choice(result)[column]
+		raise NotFoundError('no %s found'%self.column)
 
 
 	def enable(self, value):
@@ -68,7 +74,8 @@ class ItemList:
 
 
 	def get_item(self, value):
-		result = self.itemtype.query().filter(self.itemtype[column] == value).all()
+		column_type = getattr(self.itemtype, self.column)
+		result = self.itemtype.query().filter(column_type == value).all()
 
 		if (len(result) == 0):
 			raise NotFoundError('%s not found'%value)
@@ -79,7 +86,6 @@ class ItemList:
 
 		return result[0]
 	
-
 
 
 class ImgurAlbumList(ItemList):
