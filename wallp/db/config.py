@@ -2,16 +2,11 @@ import os
 import re
 
 from . import DBSession, Setting
+from .regex import Regex
 
 
 class SettingError(Exception):
 	pass
-
-
-class Regex:
-	def __init__(self, expr, err_msg):
-		self.expression = expr
-		self.err_msg = err_msg
 
 
 class Config:

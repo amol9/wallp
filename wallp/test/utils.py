@@ -70,3 +70,4 @@ def enable_testcase_ordering(cls):
 	cls.tearDownClass = new_tearDownClass
 
 	return cls
+
