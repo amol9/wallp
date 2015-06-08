@@ -2,7 +2,7 @@ from unittest import TestCase, main as ut_main, TestLoader
 from functools import partial
 from csv import reader
 
-from wallp.db import Config, DBSession, Base, SettingError, Setting
+from wallp.db import Config, DBSession, Base, ConfigError, Setting
 from wallp.test.utils import order, replace_default_testcase_sort_order
 
 
@@ -25,7 +25,7 @@ class TestConfig(TestCase):
 	dbsession 		= None
 	data_inserted 		= False
 	settings 		= []
-	db_path			= ':memory:'
+	db_path			= 'test.db'
 	test_data_csv_filepath	= 'test_config.csv'
 
 	@classmethod
@@ -64,7 +64,7 @@ class TestConfig(TestCase):
 			for setting in instance.settings:
 				try:
 					config.add(setting.fullname, setting.value, setting.vtype)
-				except SettingError as e:
+				except ValueError as e:
 					continue
 			instance.dbsession.commit()
 
@@ -87,7 +87,7 @@ class TestConfig(TestCase):
 			if setting.valid_name:
 				self.assertEquals(config.split_name(setting.fullname), (setting.group, setting.name))
 			else:
-				with self.assertRaises(SettingError) as e:
+				with self.assertRaises(ValueError) as e:
 					config.split_name(setting.fullname)
 
 
@@ -101,7 +101,7 @@ class TestConfig(TestCase):
 				if setting.valid_new_value:
 					config.set(setting.fullname, setting.new_value)
 				else:
-					with self.assertRaises(SettingError) as e:
+					with self.assertRaises(ValueError) as e:
 						config.set(setting.fullname, setting.new_value)
 
 

@@ -5,6 +5,7 @@ from ..version import __version__
 from ..util import Scheduler
 from . import change_wallpaper, CWSpec
 from ..service import service_factory
+from ..db import func
 
 
 class MultilineFormatter(HelpFormatter):
@@ -78,6 +79,13 @@ class ArgParser:
 		set_parser.add_argument('name', help='setting name')
 		set_parser.add_argument('value', help='setting value')
 
+		setsubparsers = set_parser.add_subparsers(dest='setsubcmd')
+		server_parser = setsubparsers.add_parser('server')
+		server_parser.add_argument('host')
+		server_parser.add_argument('port', default=Const.default_server_port)
+
+		server_parser.set_defaults(func.self._subcommands.set_server)
+
 		set_parser.set_defaults(func=self._subcommands.set)
 
 
@@ -89,13 +97,41 @@ class ArgParser:
 		get_parser.set_defaults(func=self._subcommands.get)
 
 
-	def add_subcmd_add(self, subparsers):
+	def add_list_subcommands(self, subparsers):
 		add_parser = subparsers.add_parser('add')
+		enable_parser = subparsers.add_parser('enable')
+		disable_parser = subparsers.add_parser('disable')
 
-		add_parser.add_argument('list_name', help='list name')
-		add_parser.add_argument('value', help='item value')
+		list_names = [l.name for l in func.get_lists()]
+		for parser in [add_parser, enable_parser, disable_parser]:
+			parser.add_argument('list-name', choice=list_names, help='list name')
+			parser.add_argument('value', help='item value')
 
 		add_parser.set_defaults(func=self._subcommands.add)
+		enable_parser.set_defaults(func=self._subcommands.enable)
+		disable_parser.set_defaults(func=self._subcommands.disable)
+
+
+	def add_subcmd_like(self, subparsers):
+		like_parser = subparsers.add_parser('like')
+
+		like_parser.set_defaults(func=self._subcommands.like)
+
+
+	def add_subcmd_dislike(self, subparsers):
+		dislike_parser = subparsers.add_parser('dislike')
+
+		dislike_parser.add_argument('-n', '--dont-change', action='store_true', help='don\'t change the wallpaper') 
+
+		dislike_parser.set_defaults(func=self._subcommands.dislike)
+
+
+	def add_subcmd_keep(self, subparsers):
+		keep_parser = subparsers.add_parser('keep')
+
+		keep_parser.add_argument('period', help='keep wallpaper for specified time')
+
+		keep_parser.set_defaults(func=self._subcommands.keep)
 
 
 	def dispatch(self, args):

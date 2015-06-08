@@ -114,6 +114,7 @@ class ItemList:
 
 
 class ImgurAlbumList(ItemList):
+	name		= 'imgur-album'
 	itemtype 	= ImgurAlbum
 	column 		= 'url'
 	regex 		= Regex("https?://imgur.com/\w+", 'imgur url be like http://imgur.com/...')
@@ -126,12 +127,14 @@ class ImgurAlbumList(ItemList):
 
 
 class SubredditList(ItemList):
+	name		= 'subreddit'
 	itemtype 	= Subreddit
 	column 		= 'name'
 	regex		= Regex("[a-zA-Z]\w+", 'not a good subreddit name, is it? gotta start with an alphabet.')
 
 
 class SearchTermList(ItemList):
+	name		= 'search-term'
 	itemtype 	= SearchTerm
 	column 		= 'term'
 	regex		= Regex(".*", 'are you kidding me?')

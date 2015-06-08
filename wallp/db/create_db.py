@@ -37,6 +37,14 @@ class CreateDB():
 		self.insert_imgur_data()
 		self.insert_reddit_data()
 
+
+	def insert_globalvars(self):
+		with open(joinpath(self._data_dir_abspath, 'globalvars.csv'), 'r') as globalvars_csv:
+			globalvars_reader = reader(globalvars_csv)
+			globalvars = GlobalVars()
+			for row in globalvars_reader:
+				globalvars.add(row[0], eval(row[1]), row[2])
+
 	
 	def insert_default_config(self):
 		config = Config()
