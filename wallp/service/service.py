@@ -20,6 +20,9 @@ class IImageGenService(IService):
 	def get_image(query=None, color=None):
 		'Get image.'
 
+	def get_extension():
+		'Get extension of generated image.'
+
 
 class ServiceError(Exception):
 	pass

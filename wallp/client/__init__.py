@@ -1,6 +1,4 @@
-from .get_image import get_image, GetImageError
-from .compute_wp_style import compute_wp_style
-from .change_wallpaper import change_wallpaper, CWSpec
+from .client import Client, GetImageError
 from .arg_parser import ArgParser
 from .subcommands import Subcommands
 

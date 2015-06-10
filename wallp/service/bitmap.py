@@ -21,6 +21,10 @@ class Bitmap(ImageMixin):
 		super(Bitmap, self).__init__()
 
 
+	def get_extension(self):
+		return 'bmp'
+
+
 	def get_image(self, query=None, color=None):
 		#width, height = get_desktop().get_size()
 		width, height = 2, 2

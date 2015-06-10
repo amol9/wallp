@@ -2,14 +2,14 @@ from unittest import TestCase, main as ut_main
 from os.path import exists
 import logging
 
-from wallp.client import get_image, CWSpec, GetImageError
+from wallp.client import Client, GetImageError
 from wallp.service import service_factory
 from wallp.db.create_db import CreateDB
 from wallp.globals import Const
 from wallp.util import log
 
 
-class TestGetImage(TestCase):
+class TestClient(TestCase):
 
 	@classmethod
 	def setUpClass(cls):
@@ -27,19 +27,21 @@ class TestGetImage(TestCase):
 
 	def test_all_service(self):
 		#import pdb; pdb.set_trace()
-		spec = CWSpec()
 		for service_type in service_factory.get_all():
 			print('testing ' + service_type.name)
-			spec.service_name = service_type.name
-			try:
-				filepath, width, height = get_image(spec)
-			except GetImageError:
-				continue
+			
 
-			self.assertIsNotNone(filepath)
-			self.assertTrue(exists(filepath))
-			self.assertIsInstance(width, int)
-			self.assertIsInstance(height, int)
+	def get_image(self, service_name):
+		client = Client(service_name=service_name)
+		try:
+			filepath, width, height = client.get_image()
+		except GetImageError:
+			continue
+
+		self.assertIsNotNone(filepath)
+		self.assertTrue(exists(filepath))
+		self.assertIsInstance(width, int)
+		self.assertIsInstance(height, int)
 
 
 	def test_bitmap(self):
