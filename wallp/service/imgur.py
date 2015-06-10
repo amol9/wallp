@@ -10,8 +10,6 @@ from mutils.html.parser import HtmlParser
 from .. import web
 from ..util.logger import log
 from .service import IHttpService, ServiceError
-from .image_source import ImageSource
-from ..db import ImageTrace
 from .image_mixin import ImageMixin
 
 if is_py3():
@@ -39,7 +37,7 @@ class Imgur(ImageMixin):
 		results = self.search(query)
 		page_url = search_result_link_prefix + results[randint(0, len(results) - 1)]
 
-		self._image_trace.append(ImageTrace(name='select random url', data=page_url))
+		#self._image_trace.append(ImageTrace(name='select random url', data=page_url))
 		log.debug('selected page url: ' + page_url)
 		
 		image_url = self.get_image_url_from_page(page_url)
@@ -111,7 +109,7 @@ class Imgur(ImageMixin):
 				log.debug('imgur: getting full album, %s'%full_album_url)
 				url = self.get_url_from_full_album(full_album_url)
 
-		self._image_trace.append(ImageTrace(name='get random url from gallery', data=url))
+		#self._image_trace.append(ImageTrace(name='get random url from gallery', data=url))
 		return url
 	
 
@@ -153,7 +151,7 @@ class Imgur(ImageMixin):
 		log.testresult(len(urls))
 		url = urls[randint(0, len(urls) - 1)]
 
-		self._image_trace.append(ImageTrace(name='get random url from full album', data=url))
+		#self._image_trace.append(ImageTrace(name='get random url from full album', data=url))
 		return url	
 
 	
@@ -181,6 +179,6 @@ class Imgur(ImageMixin):
 			for m in matches:
 				link_urls.append(m)
 
-		self._image_trace.append(ImageTrace(name='imgur search', data=query))
+		#self._image_trace.append(ImageTrace(name='imgur search', data=query))
 		return link_urls
 

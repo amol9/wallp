@@ -57,5 +57,17 @@ class TestClient(TestCase):
 		self.get_image('deviantart')
 
 
+	def test_reddit(self):
+		self.get_image('reddit')
+
+
+	def test_google(self):
+		self.get_image('google')
+
+
+	def test_imgur(self):
+		self.get_image('imgur')
+
+
 if __name__ == '__main__':
 	ut_main()

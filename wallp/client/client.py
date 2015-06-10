@@ -173,7 +173,8 @@ class Client:
 		image.description = image_source.description
 		image.artist = image.artist
 
-		self.add_trace(image.trace, service.image_trace)
+		#self.add_trace(image.trace, service.image_trace)
+		image.trace = service.image_trace
 
 		image.save()
 

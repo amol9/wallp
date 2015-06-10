@@ -6,8 +6,7 @@ from ..util import log, Retry
 from .imgur import Imgur
 from ..globals import Const
 from .service import IHttpService, ServiceError
-from .image_source import ImageSource
-from ..db import SubredditList, Config, ImageTrace
+from ..db import SubredditList, Config
 from .image_mixin import ImageMixin
 from ..web import func as webfunc
 
@@ -17,7 +16,6 @@ class Reddit(ImageMixin):
 	name = 'reddit'
 
 	def __init__(self):
-		#self._subreddit_list = config.get_list('reddit', 'subreddit_list', default=subreddit_list)
 		super(Reddit, self).__init__()
 		self._posts_limit = Config().get('reddit.posts_limit')
 
@@ -48,10 +46,6 @@ class Reddit(ImageMixin):
 					retry.retry()
 			else:
 				retry.cancel()
-
-		#save_filepath = joinpath(pictures_dir, basename) + '.' + ext
-
-		#download(url, save_filepath)
 
 		return url
 

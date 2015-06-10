@@ -12,29 +12,26 @@ from zope.interface import implementer
 
 from .. import web
 from ..util.logger import log
-from ..desktop.desktop_factory import get_desktop
 from . import IHttpService, ServiceError
-from ..desktop.standard_desktop_sizes import get_standard_desktop_size
-from .image_source import ImageSource
+from ..desktop import get_desktop, get_standard_desktop_size
 from ..util import Retry
 from .image_mixin import ImageMixin
 
 
-image_list_url = 'http://www.bing.com/gallery/home/browsedata'
-app_js_url = 'http://az615200.vo.msecnd.net/site/scripts/app.f21eb9ba.js'
-
-
 @implementer(IHttpService)
 class Bing(ImageMixin):
-	name = 'bing'
+	name 		= 'bing'
+	image_list_url 	= 'http://www.bing.com/gallery/home/browsedata'
+	app_js_url 	= 'http://az615200.vo.msecnd.net/site/scripts/app.f21eb9ba.js'
+
 	valid_sizes = [		#valid image sizes on bing
 		(1366, 768),	#evaluated using test case TestBing::test_valid_image_sizes
 		(1920, 1200)
 	]
-		
 	
 	def __init__(self):
 		super(Bing, self).__init__()
+
 
 	def get_image_url(self, query=None, color=None):
 		image_names = self.get_image_names()
@@ -46,7 +43,7 @@ class Bing(ImageMixin):
 		server_url = self.get_image_server()
 
 		if server_url == None:
-			log.error('bing: no valid image server found in %s'%app_js_url)
+			log.error('bing: no valid image server found in %s'%self.app_js_url)
 			raise ServiceError()
 
 		ext = 'jpg'
@@ -80,7 +77,7 @@ class Bing(ImageMixin):
 
 
 	def get_image_names(self):
-		jsfile = web.func.get_page(image_list_url) 
+		jsfile = web.func.get_page(self.image_list_url) 
 
 		data_regex = re.compile(".*browseData=({.*});.*")
 		m = data_regex.match(jsfile)
@@ -94,7 +91,7 @@ class Bing(ImageMixin):
 
 
 	def get_image_server(self):
-		js = web.func.get_page(app_js_url)
+		js = web.func.get_page(self.app_js_url)
 
 		server_url_regex = re.compile(".*(\/\/.*?\.vo\.msecnd\.net\/files\/).*", re.M | re.S)
 		m = server_url_regex.match(js)

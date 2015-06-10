@@ -7,7 +7,7 @@ import os
 
 from ..util.logger import log
 from ..util.colors import colors
-from ..desktop.desktop_factory import get_desktop
+from ..desktop import get_desktop
 from .service import IImageGenService, ServiceError
 from .image_mixin import ImageMixin
 
@@ -53,6 +53,8 @@ class Bitmap(ImageMixin):
 			raise ServiceError()
 
 		f.close()
+		self.add_trace_step('generated bitmap', 'color: %s'%color)
+
 		return temp_file_path
 
 
