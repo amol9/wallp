@@ -15,7 +15,8 @@ class CreateDBError(Exception):
 
 
 class CreateDB():
-	def __init__(self, db_path):
+	def __init__(self, db_path=None):
+		db_path = db_path if db_path is not None else Const.db_path
 		self._session = DBSession(db_path=db_path)
 		self._data_dir_abspath = joinpath(dirname(abspath(__file__)), 'data')
 
@@ -36,6 +37,8 @@ class CreateDB():
 		self.insert_default_config()
 		self.insert_imgur_data()
 		self.insert_reddit_data()
+		self.insert_search_term_data()
+		self.insert_globalvars()
 
 
 	def insert_globalvars(self):
@@ -79,5 +82,13 @@ class CreateDB():
 			reddit_reader = reader(reddit_csv)
 			for row in reddit_reader:
 				self._session.add(Subreddit(name=row[0]))
+		self._session.commit()
+
+
+	def insert_search_term_data(self):
+		with open(joinpath(self._data_dir_abspath, 'search_term.csv'), 'r') as search_term_csv:
+			search_term_reader = reader(search_term_csv)
+			for row in search_term_reader:
+				self._session.add(SearchTerm(term=row[0]))
 		self._session.commit()
 

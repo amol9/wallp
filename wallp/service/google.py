@@ -9,35 +9,41 @@ else:
 import json
 from random import choice
 from os.path import join as joinpath
+from zope.interface import implementer
 
-from ..web import download
+from .. import web
 from ..util.logger import log
-from ..util.config import config
-from .service import Service
+from .service import IHttpService
+from ..db import SearchTermList, ImageTrace
+from .image_mixin import ImageMixin
 
 
 default_queries = ['flower', 'cheat sheet']
 search_base_url = "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&"
 
 
-class Google(Service):
+@implementer(IHttpService)
+class Google(ImageMixin):
 	name = 'google'
 
-	def get_image(self, pictures_dir, basename, query=None, color=None):
-		url = self.get_image_url(query)
-		ext = url[url.rfind('.')+1:]
+	def __init__(self):
+		super(Google, self).__init__()
+
+
+	def get_image_url(self, query=None, color=None):
+		url = self.search(query)
+		#ext = url[url.rfind('.')+1:]
 
 		log.debug('selected url: %s'%url)
-		save_path = joinpath(pictures_dir, basename + '.' + ext)
-		download(url, save_path)
+		#save_path = joinpath(pictures_dir, basename + '.' + ext)
+		#download(url, save_path)
 
-		return basename + '.' + ext 
+		return url
 
 
-	def get_image_url(self, query=None):
+	def search(self, query=None):
 		if query is None:
-			queries = config.get(Google.name, 'queries', default=default_queries)
-			query = choice(queries)
+			query = SearchTermList().get_random() 
 
 		params = {
 			'q': query,
@@ -49,7 +55,7 @@ class Google(Service):
 
 		url = search_base_url + urlencode(params) + "&start=" + str(0)
 		try:
-			res = download(url)
+			res = web.func.get_page(url)
 			jdata = json.loads(res)
 
 			results = jdata['responseData']['results']
@@ -59,7 +65,10 @@ class Google(Service):
 				urls.append(r['url'])
 			#print i['width'], 'x', i['height']
 		except (HTTPError, ValueError):
-			raise ServiceException()
-			
-		return choice(urls)
+			raise ServiceError()
+		self._image_trace.append(ImageTrace(name='google search', data=query))
+
+		image_url = choice(urls)
+		self._image_trace.append(ImageTrace(name='select random url', data=image_url))
+		return image_url
 

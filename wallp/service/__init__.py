@@ -1,6 +1,6 @@
+from .service import IHttpService, IImageGenService, ServiceError
 from .service_factory import service_factory
-from .service import Service, ServiceException
 
 
-__all__ = ['service_factory', 'Service', 'ServiceException']
+#__all__ = ['service_factory', 'IHttpService', 'ServiceError']
 

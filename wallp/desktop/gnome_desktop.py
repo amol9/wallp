@@ -3,7 +3,6 @@ from mutils.system import sys_command
 
 from .desktop import Desktop
 from ..util.logger import log
-from ..util.config import config
 from .linux_desktop_helper import get_desktop_size, uses_dbus
 
 

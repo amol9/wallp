@@ -66,7 +66,7 @@ class ItemList:
 
 	def get_random(self):
 		count = self._dbsession.query(self.itemtype).count()
-		item_offset = random.randint(1, count)
+		item_offset = random.randint(0, count - 1)
 
 		seen = 0
 		while seen < count:

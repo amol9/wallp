@@ -7,13 +7,15 @@ else:
 from random import choice
 import xml.etree.ElementTree as ET
 from os.path import join as joinpath
+from zope.interface import implementer
 
-from ..web import download
+from .. import web
 from ..util.logger import log
-from ..util.config import config
 from ..desktop.desktop_factory import get_desktop
-from .service import Service, ServiceException
+from .service import IHttpService, ServiceError
 from ..desktop.standard_desktop_sizes import get_standard_desktop_size
+from .image_source import ImageSource
+from .image_mixin import ImageMixin
 
 
 rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&boost:popular&'
@@ -21,10 +23,16 @@ xmlns = {'media': 'http://search.yahoo.com/mrss/'}
 search_terms = ['tower', 'anime', 'art', 'flower', 'movie', 'nature', 'space', 'lego']
 
 
-class DeviantArt(Service):
+@implementer(IHttpService)
+class DeviantArt(ImageMixin):
 	name = 'deviantart'
 
-	def get_image(self, pictures_dir, basename, query=None, color=None):
+
+	def __init__(self):
+		super(DeviantArt, self).__init__()
+
+
+	def get_image_url(self, query=None, color=None):
 		if query is None:
 			slist = config.get_list('deviantart', 'search_terms', default=search_terms)
 			query = choice(slist)
@@ -40,7 +48,7 @@ class DeviantArt(Service):
 		url = rss_url_base + urlencode(params)
 		log.info('da rss url: ' + url)
 
-		res = download(url)
+		res = web.func.get_page(url)
 	
 		rss = ET.fromstring(res)
 
@@ -61,12 +69,12 @@ class DeviantArt(Service):
 					image_urls.append(mc.get('url'))
 
 		download_url = choice(image_urls)
-		log.info('da selected url: ' + download_url)
+		log.info('deviantart selected url: ' + download_url)
 
-		ext = download_url[download_url.rfind('.')+1:]
-		save_filepath = joinpath(pictures_dir, basename) + '.' + ext
+		#ext = download_url[download_url.rfind('.')+1:]
+		#save_filepath = joinpath(pictures_dir, basename) + '.' + ext
 
-		download(download_url, save_filepath)
+		#download(download_url, save_filepath)
 
-		return basename + '.' + ext
+		return download_url
 

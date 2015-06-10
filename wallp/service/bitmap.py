@@ -1,22 +1,27 @@
 from struct import pack
 from random import choice
 from os.path import join as joinpath
+from zope.interface import implementer
+import tempfile
+import os
 
 from ..util.logger import log
-from ..util.config import config
 from ..util.colors import colors
 from ..desktop.desktop_factory import get_desktop
-from .service import Service, ServiceException
+from .service import IImageGenService, ServiceError
+from .image_mixin import ImageMixin
 
 
-class Bitmap(Service):
+@implementer(IImageGenService)
+class Bitmap(ImageMixin):
 	name = 'bitmap'
 
 	def __init__(self, use_color_table=True):
 		self._use_color_table = use_color_table
+		super(Bitmap, self).__init__()
 
 
-	def get_image(self, pictures_dir, basename, query=None, color=None):
+	def get_image(self, query=None, color=None):
 		#width, height = get_desktop().get_size()
 		width, height = 2, 2
 
@@ -27,20 +32,24 @@ class Bitmap(Service):
 				c = colors.get(color)
 				if c is None:
 					print('no such color')
-					raise ServiceException()
+					raise ServiceError()
 				color = c
 		else:
 			color = choice(list(colors.values()))
 
-		save_path = joinpath(pictures_dir, basename + '.bmp')
-
-		with open(save_path, 'wb') as f:
+		fn, temp_file_path = tempfile.mkstemp()
+		f = os.fdopen(fn, 'wb')
+		try:
 			pa_size, _ = self.get_pixel_array_size(width, height)
 			self.write_bmp_header(f, pa_size)
 			self.write_dib_header(f, width, height)
 			self.write_pixel_array(f, width, height, color)
+		except IOError as e:
+			log.error(str(e))
+			raise ServiceError()
 
-		return basename + '.bmp'
+		f.close()
+		return temp_file_path
 
 
 	def write_bmp_header(self, bmpfile, pa_size):

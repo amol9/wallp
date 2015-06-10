@@ -13,7 +13,7 @@ class Image(Base):
 	filepath = 	Column(String(256))
 	artist = 	Column(String(50))
 	url = 		Column(String(512))
-	time = 		Column(DateTime)
+	time = 		Column(Integer)
 	width = 	Column(Integer)
 	height = 	Column(Integer)
 	size = 		Column(Integer)

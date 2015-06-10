@@ -9,17 +9,13 @@ from .kde_plasma_desktop import KdePlasmaDesktop
 from .linux_desktop_helper import uses_dbus
 
 
-class DesktopException(Exception):
-	pass
-
-
 @uses_dbus
 def get_desktop():
 	if is_linux():
 		gdmsession = os.environ.get('GDMSESSION', None)
 		if gdmsession is None:
 			log.error('could not read environment variable: GDMSESSION')
-			raise DesktopException()
+			raise DesktopError()
 
 		if gdmsession.startswith('ubuntu') or gdmsession.startswith('gnome'):
 			return GnomeDesktop()

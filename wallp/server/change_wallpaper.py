@@ -33,7 +33,7 @@ class ChangeWallpaper():
 			#log.error('cannot change wallpaper')
 			self.send_to_server(WPState.ERROR)
 
-		except ServiceException as e:
+		except ServiceError as e:
 			log.error(str(e))
 		
 

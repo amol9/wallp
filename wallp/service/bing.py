@@ -8,39 +8,46 @@ import re
 import json
 from random import randint
 from os.path import join as joinpath
+from zope.interface import implementer
 
-from ..web import download
+from .. import web
 from ..util.logger import log
-from ..util.config import config
 from ..desktop.desktop_factory import get_desktop
-from .service import Service, ServiceException
+from . import IHttpService, ServiceError
 from ..desktop.standard_desktop_sizes import get_standard_desktop_size
+from .image_source import ImageSource
+from ..util import Retry
+from .image_mixin import ImageMixin
 
 
 image_list_url = 'http://www.bing.com/gallery/home/browsedata'
 app_js_url = 'http://az615200.vo.msecnd.net/site/scripts/app.f21eb9ba.js'
 
 
-class Bing(Service):
+@implementer(IHttpService)
+class Bing(ImageMixin):
 	name = 'bing'
 	valid_sizes = [		#valid image sizes on bing
 		(1366, 768),	#evaluated using test case TestBing::test_valid_image_sizes
 		(1920, 1200)
 	]
 		
+	
+	def __init__(self):
+		super(Bing, self).__init__()
 
-	def get_image(self, pictures_dir, basename, query=None, color=None):
+	def get_image_url(self, query=None, color=None):
 		image_names = self.get_image_names()
 
 		if image_names is None or len(image_names) == 0:
 			log.error('bing: no images found at %s'%image_list_url)
-			raise ServiceException()
+			raise ServiceError()
 
 		server_url = self.get_image_server()
 
 		if server_url == None:
 			log.error('bing: no valid image server found in %s'%app_js_url)
-			raise ServiceException()
+			raise ServiceError()
 
 		ext = 'jpg'
 		width, height = get_desktop().get_size()
@@ -49,27 +56,20 @@ class Bing(Service):
 		if not (width, height) in self.valid_sizes:
 			width, height = self.get_nearest_size(width, height)
 
-		try_image = 3
+		retry = Retry(retries=3, final_exc=ServiceError())
 
-		while (try_image):		
+		while (retry.left()):		
 			image_name = image_names[randint(0, len(image_names) - 1)]
 			image_url = 'http:' + server_url + image_name + '_' + str(width) + 'x' + str(height) + '.' + ext
 			log.debug('bing image url: ' + image_url)
 
-			save_filepath = joinpath(pictures_dir, basename) + '.' + ext
-			try:
-				download(image_url, save_filepath)
-				try_image = 0
-			except HTTPError as e:
-				if e.code == 404:
-					if try_image == 0:
-						raise ServiceException()
-					try_image -= 1
-				else:
-					try_image = 0
-					raise ServiceException()
+			#save_filepath = joinpath(pictures_dir, basename) + '.' + ext
 
-		return basename + '.' + ext
+			if web.func.exists(image_url):
+				return image_url
+			retry.retry()
+
+		return image_url
 
 
 	def get_nearest_size(self, width, height):
@@ -80,7 +80,7 @@ class Bing(Service):
 
 
 	def get_image_names(self):
-		jsfile = download(image_list_url) 
+		jsfile = web.func.get_page(image_list_url) 
 
 		data_regex = re.compile(".*browseData=({.*});.*")
 		m = data_regex.match(jsfile)
@@ -94,7 +94,7 @@ class Bing(Service):
 
 
 	def get_image_server(self):
-		js = download(app_js_url)
+		js = web.func.get_page(app_js_url)
 
 		server_url_regex = re.compile(".*(\/\/.*?\.vo\.msecnd\.net\/files\/).*", re.M | re.S)
 		m = server_url_regex.match(js)

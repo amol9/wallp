@@ -1,19 +1,27 @@
 from abc import ABCMeta, abstractmethod
 from random import choice
+from zope.interface import Interface, Attribute
 
 from mutils.system import *
 
 
-class Service():
-
-	__metaclass__ = ABCMeta
-
-	@abstractmethod
-	def get_image(pictures_dir, basename, query=None, color=None):
-		pass
+class IService(Interface):
+	name = Attribute('string identifier')
 
 
-class ServiceException(Exception):
+class IHttpService(IService):
+
+	def get_image_url(query=None, color=None):
+		'Get image url.'
+
+
+class IImageGenService(IService):
+
+	def get_image(query=None, color=None):
+		'Get image.'
+
+
+class ServiceError(Exception):
 	pass
 
 

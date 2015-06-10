@@ -1,62 +1,60 @@
 import praw
 from random import randint
 from os.path import join as joinpath
+from zope.interface import implementer
 
-from ..web import download
-from ..util.logger import log
+from ..util import log, Retry
 from .imgur import Imgur
-from ..util.config import config
 from ..globals import Const
-from .service import Service, ServiceException
+from .service import IHttpService, ServiceError
+from .image_source import ImageSource
+from ..db import SubredditList, Config, ImageTrace
+from .image_mixin import ImageMixin
 
 
-subreddit_list =	['earthporn', 'wallpapers', 'wallpaperdump', 'specart', 'quotesporn', 'offensive_wallpapers',
-		 	 'backgroundart', 'desktoplego', 'wallpaper', 'animewallpaper', 'nocontext_wallpapers',
-			 'musicwallpapers', 'comicwalls',
-			 'ImaginaryLandscapes+ImaginaryMonsters+ImaginaryCharacters+ImaginaryTechnology']
-posts_limit = 10
-
-
-class Reddit(Service):
+@implementer(IHttpService)
+class Reddit(ImageMixin):
 	name = 'reddit'
 
 	def __init__(self):
-		self._subreddit_list = config.get_list('reddit', 'subreddit_list', default=subreddit_list)
+		#self._subreddit_list = config.get_list('reddit', 'subreddit_list', default=subreddit_list)
+		super(Reddit, self).__init__()
+		self._posts_limit = Config().get('reddit.posts_limit')
 
 
-	def get_image(self, pictures_dir, basename, query=None, color=None):
+	def get_image_url(self, query=None, color=None):
 		subreddit = query
 		if subreddit == None:
-			subreddit = self._subreddit_list[randint(0, len(self._subreddit_list)-1)].strip()
+			subreddit = SubredditList().get_random()
 		log.info('chosen subreddit: %s'%subreddit)
 
 		reddit = praw.Reddit(user_agent=Const.app_name)
-		posts = reddit.get_subreddit(subreddit).get_hot(limit=posts_limit)
+		posts = reddit.get_subreddit(subreddit).get_hot(limit=self._posts_limit)
 
 		urls = [p.url for p in posts]
-		retries = 3
-		while retries > 0:
-			try:
-				url = urls[randint(0, len(urls) - 1)]
-				ext = url[url.rfind('.')+1:]
+		retry = Retry(retries=3, final_exc=ServiceError())
 
-				log.info('url: ' + url + ', extension: ' + ext)
+		while retry.left():
+			url = urls[randint(0, len(urls) - 1)]
+			ext = url[url.rfind('.')+1:]
 
-				if ext not in Const.image_extensions:
-					if url.find('imgur') != -1:
-						imgur = Imgur()
-						url = imgur.get_image_url_from_page(url)
-						ext = url[url.rfind('.')+1:]
-					else:
-						log.debug('not a direct link to image')
-						raise ServiceException()
-				retries = 0
-			except ServiceException:
-				retries -= 1
+			log.info('url: ' + url + ', extension: ' + ext)
 
-		save_filepath = joinpath(pictures_dir, basename) + '.' + ext
+			if ext not in Const.image_extensions:
+				if url.find('imgurxx.com') != -1:
+					imgur = Imgur()
+					url = imgur.get_image_url_from_page(url)
+					#ext = url[url.rfind('.')+1:]
+					retry.cancel()
+				else:
+					log.debug('not a direct link to image')
+					retry.retry()
+			else:
+				retry.cancel()
 
-		download(url, save_filepath)
+		#save_filepath = joinpath(pictures_dir, basename) + '.' + ext
 
-		return basename + '.' + ext
+		#download(url, save_filepath)
+
+		return url
 

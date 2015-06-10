@@ -1,6 +1,10 @@
 from abc import ABCMeta, abstractmethod
 
 
+class DesktopError(Exception):
+	pass
+
+
 class Desktop():
 	__metaclass__ = ABCMeta
 

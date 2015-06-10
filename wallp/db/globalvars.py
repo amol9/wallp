@@ -10,8 +10,8 @@ class VarError(NameError):
 
 
 class _GlobalVars(NameValueSet):
-	nvtype = var
-	name_err_type
+	nvtype = Var
+	name_err_type = VarError
 
 
 class GlobalVars(Singleton):

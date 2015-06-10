@@ -1,6 +1,7 @@
 from io import StringIO, BytesIO
 import sys
 from functools import partial
+import socket
 
 from mutils.system import *
 
@@ -8,12 +9,13 @@ from ..globals import Const
 from .webcache import WebCache
 from ..service.service import ServiceError
 from ..util.logger import log
+from .exc import DownloadError, TimeoutError
 
 if is_py3():
 	from urllib.error import HTTPError
 	from urllib.request import urlopen
 else:
-	from urllib2 import HTTPError, urlopen
+	from urllib2 import HTTPError, urlopen, URLError
 
 
 cache = None
@@ -23,11 +25,11 @@ if Const.cache_enabled:
 
 def exists(url):
 	try:
-		res = urlopen(url)
+		res = urlopen(url, timeout=10)
 		if res.code == 200:
 			res.close()
 			return True
-	except HTTPError as e:
+	except (URLError, HTTPError) as e:
 		return False
 
 
@@ -59,8 +61,16 @@ def download(url, save_filepath=None, progress=True, nocache=False, open_file=No
 	res = None
 	try:
 		res = urlopen(url)
+
 	except HTTPError as e:
-		raise e
+		log.error(str(e) + ' ' + url)
+		raise DownloadError()
+
+	except URLError as e:
+		if type(e.reason) == socket.timeout:
+			log.error(str(e) + ' ' + url)
+			raise TimeoutError()
+		raise DownloadError()
 
 	out = None
 	if save_filepath == None:
@@ -85,16 +95,17 @@ def download(url, save_filepath=None, progress=True, nocache=False, open_file=No
 		out.seek(0)
 		cache.add(url, out.read())
 
-	if save_filepath == None:
+	if save_filepath is None and open_file is None:
 		out.seek(0)
 		buf = out.read()
 		out.close()
 		if is_py3():
 			buf = buf.decode(encoding='utf-8')
 		return buf
-	else:
+	elif save_filepath is not None:
 		out.close()
 		return True
+
 
 
 def print_progress_dot():

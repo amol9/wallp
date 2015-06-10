@@ -5,7 +5,7 @@ from time import sleep
 
 from mayserver.transport.tcp_connection import TCPConnection, HangUp
 
-from . import Service, ServiceException
+from . import IHttpService, ServiceError
 from ..server.protocol.wallp_client import WallpClient, ImageNone, ImageChanging, ImageAbort, ServerError
 from ..util.logger import log
 from ..util.retry import Retry
@@ -48,14 +48,14 @@ class WallpService(Service):
 			except WallpServiceError as e:
 				log.error(str(e))
 				if e.retry:
-					retry.retry(ServiceException())
+					retry.retry(ServiceError())
 
 			except HangUp as e:
 				self._wallp_client.transport = None
-				retry.retry(ServiceException('server hung up'))
+				retry.retry(ServiceError('server hung up'))
 
 			except ServerError as e:
-				retry.retry(ServiceException('server error'))
+				retry.retry(ServiceError('server error'))
 
 
 	def update_frequency(self):

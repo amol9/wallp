@@ -2,14 +2,17 @@ import re
 import json
 from random import randint
 from os.path import join as joinpath
+from zope.interface import implementer
 
 from mutils.system import *
 from mutils.html.parser import HtmlParser
 
-from ..web import download
+from .. import web
 from ..util.logger import log
-from ..util.config import config
-from .service import Service, ServiceException
+from .service import IHttpService, ServiceError
+from .image_source import ImageSource
+from ..db import ImageTrace
+from .image_mixin import ImageMixin
 
 if is_py3():
 	from urllib.parse import urlencode
@@ -22,22 +25,30 @@ search_result_link_prefix = "http://imgur.com"
 get_full_album = True
 
 
-class Imgur(Service):
+@implementer(IHttpService)
+class Imgur(ImageMixin):
 	name = 'imgur'
 
-	def get_image(self, pictures_dir, basename, query=None, color=None):
+	def __init__(self):
+		super(Imgur, self).__init__()
+
+
+	def get_image_url(self, query=None, color=None):
+		return 'http://i.imgur.com/S9JMr.jpg'
+
 		results = self.search(query)
 		page_url = search_result_link_prefix + results[randint(0, len(results) - 1)]
 
-		log.debug('selected url: ' + page_url)
+		self._image_trace.append(ImageTrace(name='select random url', data=page_url))
+		log.debug('selected page url: ' + page_url)
 		
 		image_url = self.get_image_url_from_page(page_url)
-		ext = image_url[image_url.rfind('.')+1:]
+		'''ext = image_url[image_url.rfind('.')+1:]
 		save_path = joinpath(pictures_dir, basename + '.' + ext)
 
-		download(image_url, save_path)
+		download(image_url, save_path)'''
 
-		return basename + '.' + ext
+		return image_url
 
 
 	def get_image_url_from_page(self, page_url):
@@ -54,7 +65,7 @@ class Imgur(Service):
 
 
 	def get_url_from_gallery(self, page_url):		
-		html = download(page_url)
+		html = web.func.get_page(page_url)
 		parser = HtmlParser(skip_tags=['head'])
 		parser.feed(html)
 		etree = parser.etree
@@ -62,9 +73,12 @@ class Imgur(Service):
 		image_divs = etree.findall('.//div[@class=\'left main-image\']/div[@class=\'panel\']'
 						'/div[@id=\'image\']//div[@class=\'image textbox\']')
 
+		#r = etree.findall('.//h1[@id=\'image-title\']')
+		#self._image_source.title = r[0].text
+
 		if len(image_divs) == 0:
 			log.error('can\'t find main div on imgur page')
-			raise ServiceException()
+			raise ServiceError()
 
 		if len(image_divs) == 1:
 			log.debug('imgur: 1 image on page')
@@ -73,7 +87,7 @@ class Imgur(Service):
 				url = img.attrib['src']
 				log.testresult(1)
 			else:
-				raise ServiceException()
+				raise ServiceError()
 		else:
 			url = None
 			trunc_div = etree.find('.//div[@id=\'album-truncated\']')
@@ -87,7 +101,7 @@ class Imgur(Service):
 				log.debug('imgur: %d urls found'%len(urls))
 				log.testresult(len(urls))
 				if len(urls) == 0:
-					raise ServiceException()
+					raise ServiceError()
 
 				url = urls[randint(0, len(urls) - 1)]
 			else:
@@ -97,11 +111,12 @@ class Imgur(Service):
 				log.debug('imgur: getting full album, %s'%full_album_url)
 				url = self.get_url_from_full_album(full_album_url)
 
+		self._image_trace.append(ImageTrace(name='get random url from gallery', data=url))
 		return url
 	
 
 	def get_url_from_full_album(self, full_album_url):
-		html = download(full_album_url)
+		html = web.func.get_page(full_album_url)
 
 		really_big_album = False
 		layout_regex = re.compile("layout\s+:\s+\'g\'", re.M)
@@ -136,7 +151,9 @@ class Imgur(Service):
 		
 		log.debug('imgur: %d urls found'%len(urls))
 		log.testresult(len(urls))
-		url = urls[randint(0, len(urls) - 1)]		
+		url = urls[randint(0, len(urls) - 1)]
+
+		self._image_trace.append(ImageTrace(name='get random url from full album', data=url))
 		return url	
 
 	
@@ -154,10 +171,7 @@ class Imgur(Service):
 			}
 
 		url = search_url + urlencode(qs)
-		res = download(url)
-
-		#res = None
-		#with open('imgur.html', 'r') as f: res = f.read()
+		res = web.func.get_page(url)
 
 		link_regex = re.compile("<a.*?class=\"image-list-link\".*?href=\"(.*?)\"")
 		matches = link_regex.findall(res)
@@ -165,8 +179,8 @@ class Imgur(Service):
 		link_urls = []
 		if matches:
 			for m in matches:
-				#print m
 				link_urls.append(m)
 
+		self._image_trace.append(ImageTrace(name='imgur search', data=query))
 		return link_urls
 

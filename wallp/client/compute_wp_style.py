@@ -6,9 +6,9 @@ from ..desktop.desktop_factory import get_desktop
 from ..globals import Const
 
 
-def compute_wp_style(wp_path):
-	if wp_path is None:
-		return
+def compute_wp_style(wp_width, wp_height):
+	assert type(wp_width) == int
+	assert type(wp_height) == int
 
 	dt = get_desktop()
 	
@@ -17,10 +17,7 @@ def compute_wp_style(wp_path):
 
 	style = None
 	buf = None
-	with open(wp_path, 'rb') as f:
-		buf = f.read(10000)
 
-	_, wp_width, wp_height = get_image_info(buf, filepath=wp_path)
 	log.debug('image: width=%d, height=%d'%(wp_width, wp_height))
 
 	if wp_width < 5 and wp_height < 5:

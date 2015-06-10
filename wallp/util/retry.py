@@ -9,7 +9,9 @@ class Retry:
 		self.exp_bkf = exp_bkf
 
 
-	def retry(self, exception):
+	def retry(self, exception=None):
+		self.retries -= 1
+
 		if self.retries == 0:
 			if exception is not None:
 				raise exception
@@ -17,7 +19,6 @@ class Retry:
 				raise self.final_exc
 			return
 
-		self.retries -= 1
 
 		if self.delay is not None:
 			sleep(self.delay)

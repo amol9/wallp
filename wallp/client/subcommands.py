@@ -1,6 +1,7 @@
 
+from mutils.system import Scheduler
+
 from ..db import Config, func
-from ..util import Scheduler
 from . import change_wallpaper
 from ..util import log
 

@@ -1,8 +1,7 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, HelpFormatter
 import logging
 
 from ..version import __version__
-from ..util import Scheduler
 from . import change_wallpaper, CWSpec
 from ..service import service_factory
 from ..db import func
