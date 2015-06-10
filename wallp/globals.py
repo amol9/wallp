@@ -18,4 +18,5 @@ class Const():
 	scheduler_cmd 		= 'wallps' if is_windows() else script_name
 	db_name 		= 'wallp.db'
 	db_path 		= joinpath(data_dir, db_name)
+	page_timeout		= 10
 

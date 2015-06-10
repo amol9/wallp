@@ -29,6 +29,7 @@ class TestClient(TestCase):
 		#import pdb; pdb.set_trace()
 		for service_type in service_factory.get_all():
 			print('testing ' + service_type.name)
+			self.get_image(service_type.name)
 			
 
 	def get_image(self, service_name):
@@ -36,7 +37,7 @@ class TestClient(TestCase):
 		try:
 			filepath, width, height = client.get_image()
 		except GetImageError:
-			continue
+			return
 
 		self.assertIsNotNone(filepath)
 		self.assertTrue(exists(filepath))
@@ -45,15 +46,15 @@ class TestClient(TestCase):
 
 
 	def test_bitmap(self):
-		spec = CWSpec()
-		spec.service_name = 'bitmap'
-		get_image(spec)
+		self.get_image('bitmap')
 
 
 	def test_bing(self):
-		spec = CWSpec()
-		spec.service_name = 'bing'
-		get_image(spec)
+		self.get_image('bing')
+
+
+	def test_deviantart(self):
+		self.get_image('deviantart')
 
 
 if __name__ == '__main__':

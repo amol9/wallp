@@ -16,17 +16,16 @@ from .service import IHttpService, ServiceError
 from ..desktop.standard_desktop_sizes import get_standard_desktop_size
 from .image_source import ImageSource
 from .image_mixin import ImageMixin
+from ..db import SearchTermList
 
 
 rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&boost:popular&'
 xmlns = {'media': 'http://search.yahoo.com/mrss/'}
-search_terms = ['tower', 'anime', 'art', 'flower', 'movie', 'nature', 'space', 'lego']
 
 
 @implementer(IHttpService)
 class DeviantArt(ImageMixin):
 	name = 'deviantart'
-
 
 	def __init__(self):
 		super(DeviantArt, self).__init__()
@@ -34,8 +33,7 @@ class DeviantArt(ImageMixin):
 
 	def get_image_url(self, query=None, color=None):
 		if query is None:
-			slist = config.get_list('deviantart', 'search_terms', default=search_terms)
-			query = choice(slist)
+			query = SearchTermList().get_random()
 	
 		params = {}
 		params['q'] = query

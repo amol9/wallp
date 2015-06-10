@@ -2,7 +2,6 @@
 from mutils.system import Scheduler
 
 from ..db import Config, func
-from . import change_wallpaper
 from ..util import log
 
 
@@ -12,12 +11,9 @@ class Subcommands:
 
 
 	def change(self):
-		spec = CWSpec()
-		spec.service_name = self._args.service
-		spec.query = self._args.query
-		spec.color = self._args.color
-
-		change_wallpaper(spec)
+		args = self._args
+		client = Client(service_name=args.service_name, query=args.query, color=args.color)
+		client.change_wallpaper()
 
 
 	def schedule(self):

@@ -1,4 +1,3 @@
-import praw
 from random import randint
 from os.path import join as joinpath
 from zope.interface import implementer
@@ -10,6 +9,7 @@ from .service import IHttpService, ServiceError
 from .image_source import ImageSource
 from ..db import SubredditList, Config, ImageTrace
 from .image_mixin import ImageMixin
+from ..web import func as webfunc
 
 
 @implementer(IHttpService)
@@ -28,10 +28,7 @@ class Reddit(ImageMixin):
 			subreddit = SubredditList().get_random()
 		log.info('chosen subreddit: %s'%subreddit)
 
-		reddit = praw.Reddit(user_agent=Const.app_name)
-		posts = reddit.get_subreddit(subreddit).get_hot(limit=self._posts_limit)
-
-		urls = [p.url for p in posts]
+		urls = webfunc.get_subreddit_post_urls(subreddit, limit=self._posts_limit)
 		retry = Retry(retries=3, final_exc=ServiceError())
 
 		while retry.left():

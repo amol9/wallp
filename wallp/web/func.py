@@ -2,6 +2,7 @@ from io import StringIO, BytesIO
 import sys
 from functools import partial
 import socket
+import praw
 
 from mutils.system import *
 
@@ -37,6 +38,22 @@ def get_page(url, progress=True, nocache=False):
 	return download(url, progress=progress, nocache=nocache)
 
 
+def exc_wrapped_call(func, *args, **kwargs):
+	try:
+		r = func(*args, **kwargs)
+		return r
+
+	except HTTPError as e:
+		log.error(str(e))
+		raise DownloadError()
+
+	except URLError as e:
+		if type(e.reason) == socket.timeout:
+			log.error(str(e))
+			raise TimeoutError()
+		raise DownloadError()
+
+
 def download(url, save_filepath=None, progress=True, nocache=False, open_file=None):
 	'''if eh:
 		dcm = DownloadCM()
@@ -59,18 +76,8 @@ def download(url, save_filepath=None, progress=True, nocache=False, open_file=No
 	
 	chunksize = 40000
 	res = None
-	try:
-		res = urlopen(url)
 
-	except HTTPError as e:
-		log.error(str(e) + ' ' + url)
-		raise DownloadError()
-
-	except URLError as e:
-		if type(e.reason) == socket.timeout:
-			log.error(str(e) + ' ' + url)
-			raise TimeoutError()
-		raise DownloadError()
+	res = exc_wrapped_call(urlopen, url, timeout=Const.page_timeout)
 
 	out = None
 	if save_filepath == None:
@@ -114,3 +121,14 @@ def print_progress_dot():
 
 def print_progress_ast():
 	prints('*')
+
+
+def get_subreddit_post_urls(subreddit, limit=10):
+	reddit = praw.Reddit(user_agent=Const.app_name, timeout=Const.page_timeout)
+
+	sub = exc_wrapped_call(reddit.get_subreddit, subreddit)
+	posts = exc_wrapped_call(sub.get_hot, limit=limit)
+
+	urls = [p.url for p in posts]
+	return urls
+
