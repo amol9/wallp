@@ -75,3 +75,13 @@ def set_last_change_time():
 def get_lists():
 	return [ImgurAlbumList, SubredditList, SearchTermList]
 
+
+def get_current_wallpaper_image():
+	image_id = GlobalVars().get('current_wallpaper_image')
+	result = DBSession().query(Image).filter(Image.id == image_id).all()
+
+	if len(result) == 0:
+		raise NotFoundError()
+
+	return result[0]
+

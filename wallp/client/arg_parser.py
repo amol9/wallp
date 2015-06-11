@@ -1,9 +1,14 @@
 from argparse import ArgumentParser, HelpFormatter
 import logging
+import sys
+
+from mutils.system import *
 
 from ..version import __version__
 from ..service import service_factory
-from ..db import func
+from ..db import func as dbfunc
+from .subcommands import Subcommands
+from ..globals import Const
 
 
 class MultilineFormatter(HelpFormatter):
@@ -15,6 +20,7 @@ class MultilineFormatter(HelpFormatter):
 
 class ArgParser:
 	def __init__(self):
+		self._subcommands = Subcommands()
 		self.add_args()
 
 
@@ -22,17 +28,27 @@ class ArgParser:
 		self._argparser = ArgumentParser(formatter_class=MultilineFormatter)
 
 		self._argparser.add_argument('-v', '--version', action='version', version=__version__, help='print version')
+		self._argparser.set_defaults(func=self._subcommands.change)
 		
 		subparsers = self._argparser.add_subparsers(dest='subcommand')
 
 		self.add_subcmd_change(subparsers)
 		self.add_subcmd_schedule(subparsers)
+		self.add_subcmd_log(subparsers)
 		self.add_subcmd_set(subparsers)
 		self.add_subcmd_get(subparsers)
 		self.add_subcmd_add(subparsers)
+		self.add_subcmd_enable(subparsers)
+		self.add_subcmd_disable(subparsers)
+		self.add_subcmd_like(subparsers)
+		self.add_subcmd_dislike(subparsers)
+		self.add_subcmd_keep(subparsers)
+		self.add_subcmd_info(subparsers)
 
 
 	def parse_args(self):
+		if len(sys.argv) == 1:
+			sys.argv.append('change')
 		args = self._argparser.parse_args()
 		self.dispatch(args)
 		
@@ -77,13 +93,6 @@ class ArgParser:
 		set_parser.add_argument('name', help='setting name')
 		set_parser.add_argument('value', help='setting value')
 
-		setsubparsers = set_parser.add_subparsers(dest='setsubcmd')
-		server_parser = setsubparsers.add_parser('server')
-		server_parser.add_argument('host')
-		server_parser.add_argument('port', default=Const.default_server_port)
-
-		server_parser.set_defaults(func.self._subcommands.set_server)
-
 		set_parser.set_defaults(func=self._subcommands.set)
 
 
@@ -95,19 +104,26 @@ class ArgParser:
 		get_parser.set_defaults(func=self._subcommands.get)
 
 
-	def add_list_subcommands(self, subparsers):
-		add_parser = subparsers.add_parser('add')
-		enable_parser = subparsers.add_parser('enable')
-		disable_parser = subparsers.add_parser('disable')
+	def add_list_subcmd(self, subparsers, subcmd, func):
+		subcmd_parser = subparsers.add_parser('add')
 
-		list_names = [l.name for l in func.get_lists()]
-		for parser in [add_parser, enable_parser, disable_parser]:
-			parser.add_argument('list-name', choice=list_names, help='list name')
-			parser.add_argument('value', help='item value')
+		list_names = [l.name for l in dbfunc.get_lists()]
+		subcmd_parser.add_argument('list-name', choices=list_names, help='list name')
+		subcmd_parser.add_argument('value', help='item value')
 
-		add_parser.set_defaults(func=self._subcommands.add)
-		enable_parser.set_defaults(func=self._subcommands.enable)
-		disable_parser.set_defaults(func=self._subcommands.disable)
+		subcmd_parser.set_defaults(func=func)
+
+
+	def add_subcmd_add(self, subparsers):
+		self.add_list_subcmd(subparsers, 'add', self._subcommands.add)
+
+
+	def add_subcmd_enable(self, subparsers):
+		self.add_list_subcmd(subparsers, 'enable', self._subcommands.enable)
+
+
+	def add_subcmd_disable(self, subparsers):
+		self.add_list_subcmd(subparsers, 'disable', self._subcommands.disable)
 
 
 	def add_subcmd_like(self, subparsers):
@@ -130,6 +146,14 @@ class ArgParser:
 		keep_parser.add_argument('period', help='keep wallpaper for specified time')
 
 		keep_parser.set_defaults(func=self._subcommands.keep)
+
+
+	def add_subcmd_info(self, subparsers):
+		info_parser = subparsers.add_parser('info')
+
+		info_parser.add_argument('filename', default=None)
+
+		info_parser.set_defaults(func=self._subcommands.info)
 
 
 	def dispatch(self, args):

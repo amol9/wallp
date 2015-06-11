@@ -4,6 +4,7 @@ from csv import reader
 
 from wallp.db import Config, DBSession, Base, ConfigError, Setting
 from wallp.test.utils import order, replace_default_testcase_sort_order
+from wallp.globals import Const
 
 
 class SettingTestData:
@@ -114,7 +115,7 @@ class TestConfig(TestCase):
 				value = config.get(setting.fullname)
 				if setting.valid_new_value:
 					new_value = setting.new_value
-					if type(new_value) != setting.vtype:
+					if new_value is not None and type(new_value) != setting.vtype:
 						try:
 							new_value = setting.vtype(new_value)
 						except ValueError as e:
@@ -122,6 +123,16 @@ class TestConfig(TestCase):
 					self.assertEquals(value, new_value)
 				else:
 					self.assertEquals(value, setting.value)
+
+
+	@order(3)
+	def test_shortcut(self):
+		config = Config()
+
+		config.add_shortcut('server', ['server.host', 'server.port'], [None, Const.default_server_port], ':')
+
+		config.set('server', 'bighost')
+		self.assertEquals(config.get('server'), 'bighost:' + str(Const.default_server_port))
 
 
 if __name__ == '__main__':

@@ -4,10 +4,7 @@ import random
 
 from . import ImgurAlbum, Subreddit, SearchTerm, DBSession
 from .regex import Regex
-
-
-class NotFoundError(Exception):
-	pass
+from .exc import NotFoundError
 
 
 class IItemList(Interface):

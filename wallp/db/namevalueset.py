@@ -4,13 +4,14 @@ from zope.interface import Interface, Attribute, implementer
 
 from . import DBSession
 from .regex import Regex
+from .exc import NotFoundError
 
 
 class NameError(Exception):
 	nv_typename = 'name'
 
 	def __init__(self, fullname):
-		Exception.__init__(self, 'no such ' + nv_typename + ' ' +  fullname)
+		Exception.__init__(self, 'no such ' + self.nv_typename + ' ' +  fullname)
 
 
 class INameValueSet(Interface):
@@ -27,12 +28,13 @@ class INameValueSet(Interface):
 		'Set value.'
 
 @implementer(INameValueSet)
-class NameValueSet:
+class NameValueSet(object):
 	group_regex 	= Regex('[a-zA-Z].*|^$', 'must start with a letter')
 	name_regex 	= Regex('[a-zA-Z].*', 'must start with a letter')
 	name_err_type	= NameError
 
 	def __init__(self):
+		super(NameValueSet, self).__init__()
 		self._dbsession = DBSession()
 		self._group_max_len = self.nvtype.group.property.columns[0].type.length
 		self._name_max_len = self.nvtype.name.property.columns[0].type.length
@@ -50,6 +52,10 @@ class NameValueSet:
 
 	def get(self, fullname):
 		namevalue = self.get_namevalue(fullname)
+
+		if namevalue.value is None:
+			return None
+
 		vtype = eval(namevalue.type)
 
 		value = None
@@ -90,7 +96,7 @@ class NameValueSet:
 		namevalue = self.get_namevalue(fullname)
 		vtype = eval(namevalue.type)
 
-		if type(value) != vtype:
+		if value is not None and type(value) != vtype:
 			try:
 				value = vtype(value)
 			except ValueError as e:
