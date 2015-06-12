@@ -3,6 +3,8 @@ import tempfile
 from os.path import join as joinpath
 from time import time
 import os
+import re
+from datetime import datetime, timedelta
 
 from mutils.system import get_pictures_dir, prints
 from mutils.image.imageinfo import get_image_info
@@ -17,7 +19,7 @@ from ..desktop import desktop_factory, DesktopError
 from .compute_wp_style import compute_wp_style
 from ..server.protocol import WPState
 from mayserver.transport.pipe_connection import PipeConnection
-from ..db import func as dbfunc
+from ..db import func as dbfunc, GlobalVars
 
 
 class GetImageError(Exception):
@@ -28,28 +30,36 @@ class ChangeWPError(Exception):
 	pass
 
 
+class KeepError(Exception):
+	pass
+
+
 class Client:
 	def __init__(self, service_name=None, query=None, color=None, transport=None):
 		self._service_name = service_name
 		self._query = query
 		self._color = color
+		assert type(transport) == PipeConnection if transport is not None else True
 		self._transport = transport
 
 
 	def change_wallpaper(self):
-		assert type(self._transport) == PipeConnection if self._transport is not None else True
+		if self.keep_timeout_not_expired():
+			return
 
 		try:
 			if self._transport is not None:
 				self._transport.write_blocking(WPState.CHANGING)
 
-			filepath, width, height = self.get_image()
+			filepath, width, height, image_id = self.get_image()
 			style = compute_style(width, height)
 
 			dt = get_desktop()
 			dt.set_wallpaper(filepath, style=style)
 
-			dbfunc.set_last_change_time()
+			globalvars = GlobalVars()
+			globalvars.set('current_wallpaper_image', image_id)
+			globalvars.set('last_change_time', int(time()))
 
 			if self._transport is not None:
 				self._transport.write_blocking(WPState.READY)
@@ -67,6 +77,15 @@ class Client:
 		if is_py3(): print('')
 
 
+	def keep_timeout_not_expired(self):
+		keep_timeout = GlobalVars().get('keep_timeout')
+		if keep_timeout is not None and keep_timeout > time():
+			expiry = datetime.fromtimestamp(keep_timeout).strftime('%d %b %Y, %H:%M:%S')
+			log.error('current wallpaper is set not to change until %s'%expiry)
+			return True
+		return False
+
+
 	def get_image(self):
 		retry = Retry(retries=3, final_exc=GetImageError())
 
@@ -77,7 +96,7 @@ class Client:
 				temp_image_path, ext, image_url = self.get_image_to_temp_file(service, self._query, self._color)
 				wp_path = self.move_temp_file(temp_image_path, ext)
 				image_type, image_width, image_height = get_image_info(None, filepath=wp_path)
-				self.save_image_info(service, wp_path, image_url, image_type, image_width, image_height)
+				image_id = self.save_image_info(service, wp_path, image_url, image_type, image_width, image_height)
 
 				retry.cancel()
 
@@ -89,7 +108,7 @@ class Client:
 					retry.retry()
 				raise GetImageError()
 
-		return wp_path, image_width, image_height
+		return wp_path, image_width, image_height, image_id
 
 
 	def get_service(self):
@@ -177,6 +196,7 @@ class Client:
 		image.trace = service.image_trace
 
 		image.save()
+		return image.id
 
 
 	def add_trace(self, trace_list, steps):
@@ -185,3 +205,31 @@ class Client:
 			trace_step.step = 0
 			trace_list.append(trace_step)
 			step += 1
+
+
+	def keep_wallpaper(self, period):
+		period_map = { 's': 'seconds', 'm': 'minutes', 'h': 'hours', 'd': 'days', 'w': 'weeks' }
+		period_regex = re.compile("(\d{1,3})((s|m|h|d|w|M|Y))")
+
+		match = period_regex.match(period)
+		
+		if match is None:
+			raise KeepError('bad time period: %s'%period)
+
+		num = int(match.group(1))
+		abbr_period = match.group(2)
+		tdarg = {}	
+
+		if abbr_period == 'M':
+			tdarg['days'] = 30 * num
+		elif abbr_period == 'Y':
+			tdarg['days'] = 365 * num
+		else:
+			tdarg[period_map[abbr_period]] = num
+
+		td = timedelta(**tdarg)
+		keep_timeout = int(time()) + td.total_seconds()
+
+		globalvars = GlobalVars()
+		globalvars.set('keep_timeout', keep_timeout)
+

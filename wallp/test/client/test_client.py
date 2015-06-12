@@ -1,19 +1,24 @@
 from unittest import TestCase, main as ut_main
 from os.path import exists
 import logging
+from time import time
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-from wallp.client import Client, GetImageError
+from wallp.client import Client, GetImageError, KeepError 
 from wallp.service import service_factory
+from wallp.db import Var
 from wallp.db.create_db import CreateDB
 from wallp.globals import Const
 from wallp.util import log
 
 
 class TestClient(TestCase):
+	db_path = 'test.db'
 
 	@classmethod
 	def setUpClass(cls):
-		Const.db_path = 'test.db'
+		Const.db_path = cls.db_path
 		create_db = CreateDB()
 		create_db.execute()
 
@@ -67,6 +72,47 @@ class TestClient(TestCase):
 
 	def test_imgur(self):
 		self.get_image('imgur')
+
+
+	def get_new_dbsession(self):
+		engine = create_engine('sqlite:///' + self.db_path, echo=Const.debug)
+		session_class = sessionmaker(bind=engine)
+		return session_class()
+
+
+	def test_keep_wallpaper(self):
+		client = Client()
+		now = int(time())
+		client.keep_wallpaper('2h')
+
+		dbsession2 = self.get_new_dbsession()
+		keep_timeout = dbsession2.query(Var).filter(Var.name == 'keep_timeout').all()[0].value
+		self.assertIsNotNone(keep_timeout)
+		keep_timeout = int(keep_timeout)
+
+		self.assertGreaterEqual(keep_timeout - now, 2 * 60 * 60)
+		self.assertTrue(client.keep_timeout_not_expired())
+
+		client.keep_wallpaper('1d')
+		keep_timeout = int(dbsession2.query(Var).filter(Var.name == 'keep_timeout').all()[0].value)
+
+		self.assertGreaterEqual(keep_timeout - now, 24 * 60 * 60)
+
+		try:
+			client.keep_wallpaper('15m')
+			client.keep_wallpaper('15s')
+			client.keep_wallpaper('1Y')
+			client.keep_wallpaper('2w')
+			client.keep_wallpaper('1M')
+		except KeepError as e:
+			self.fail(str(e))
+
+		self.assertRaises(KeepError, client.keep_wallpaper, 'm')
+		self.assertRaises(KeepError, client.keep_wallpaper, '10')
+		self.assertRaises(KeepError, client.keep_wallpaper, '')
+		self.assertRaises(KeepError, client.keep_wallpaper, '1000d')
+		self.assertRaises(KeepError, client.keep_wallpaper, 'mxxxxxxyyyyyyy')
+		self.assertRaises(KeepError, client.keep_wallpaper, 'sm')
 
 
 if __name__ == '__main__':

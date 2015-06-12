@@ -1,7 +1,7 @@
 
 from mutils.system import Scheduler
 
-from ..db import Config, func as dbfunc
+from ..db import Config, func as dbfunc, GlobalVars
 from ..util import log
 from .info_printer import InfoPrinter
 from ..globals import Const
@@ -16,10 +16,7 @@ class Subcommands:
 
 	def change(self):
 		args = self._args
-		if args.subcommand == 'change':
-			client = Client(service_name=args.service_name, query=args.query, color=args.color)
-		else:
-			client = Client()
+		client = Client(service_name=args.service_name, query=args.query, color=args.color)
 		client.change_wallpaper()
 
 
@@ -29,18 +26,14 @@ class Subcommands:
 
 
 	def log(self):
-		log.start(self._args.filename, self._args.level)
+		config = Config()
+		config.set('client.logfile', self._args.filename)
+		config.set('client.loglevel', self._args.level)
 
 
 	def set(self):
 		config = Config()
 		config.set(self._args.name, self._args.value)
-
-
-	def set_server(self):
-		config = Config()
-		config.set('server.host', self._args.host)
-		config.set('server.port', self._args.port)
 
 
 	def get(self):
@@ -88,7 +81,8 @@ class Subcommands:
 
 
 	def keep(self):
-		dbfunc.keep_wallpaper(self._args.period)
+		client = Client()
+		client.keep_wallpaper(self._args.period)
 
 
 	def info(self):

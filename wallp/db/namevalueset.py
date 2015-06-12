@@ -60,11 +60,11 @@ class NameValueSet(object):
 
 		value = None
 		if vtype != str:
-			value = eval(namevalue.value)
+			value = eval(namevalue.value)	#fix for bool
 		else:
 			value = namevalue.value
 
-		return value
+		return vtype(value)
 
 
 	def single_result(self, result):
