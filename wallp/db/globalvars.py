@@ -6,7 +6,7 @@ from .singleton import Singleton
 
 
 class VarError(NameError):
-	nv_typename = 'var'
+	nv_typename = 'variable'
 
 
 class _GlobalVars(NameValueSet):

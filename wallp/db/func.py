@@ -4,6 +4,7 @@ from time import time
 from .globalvars import GlobalVars
 from .dbsession import DBSession
 from .itemlist import ImgurAlbumList, SubredditList, SearchTermList
+from .image import Image
 
 
 def update_wallpaper_score(delta):
@@ -21,18 +22,22 @@ def update_wallpaper_score(delta):
 
 	image = result[0]
 
-	image.score += delta
-	image.save()
+	if image.score is not None:
+		image.score += delta
+	else:
+		image.score = delta
+
+	dbsession.commit()
 
 	return image.score
 
 
 def like_wallpaper():
-	update_wallpaper_score(1)
+	return update_wallpaper_score(1)
 
 
 def dislike_wallpaper():
-	update_wallpaper_score(-1)
+	return update_wallpaper_score(-1)
 
 
 def get_last_change_time():

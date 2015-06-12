@@ -2,18 +2,19 @@
 from mutils.system import sys_command
 
 from .desktop import Desktop
+from .wpstyle import WPStyle
 from ..util.logger import log
 from .linux_desktop_helper import get_desktop_size, uses_dbus
 
 
 class GnomeDesktop(Desktop):
 	wp_styles = {
-		'none': 'none',
-		'tiled': 'wallpaper',
-		'centered': 'centered',
-		'scaled': 'scaled',
-		'stretched': 'strecthed',
-		'zoom': 'zoom'
+		WPStyle.NONE : 		'none',
+		WPStyle.TILED : 	'wallpaper',
+		WPStyle.CENTERED : 	'centered',
+		WPStyle.SCALED : 	'scaled',
+		WPStyle.STRETCHED : 	'strecthed',
+		WPStyle.ZOOM : 		'zoom'
 	}
 
 

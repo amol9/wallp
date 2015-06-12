@@ -5,9 +5,10 @@ from csv import reader
 import os
 from os.path import dirname, abspath, join as joinpath
 
-from . import *
+from . import SearchTerm, ImgurAlbum, Subreddit, Base, Config, GlobalVars
 from ..globals import Const
 from ..service import service_factory
+from .dbsession import DBSession
 
 
 class CreateDBError(Exception):
@@ -17,7 +18,7 @@ class CreateDBError(Exception):
 class CreateDB():
 	def __init__(self, db_path=None):
 		db_path = db_path if db_path is not None else Const.db_path
-		self._session = DBSession(db_path=db_path)
+		self._session = DBSession(db_path=db_path, create_db=True)
 		self._data_dir_abspath = joinpath(dirname(abspath(__file__)), 'data')
 
 
@@ -34,11 +35,14 @@ class CreateDB():
 
 
 	def insert_data(self):
+		import pdb; pdb.set_trace()
 		self.insert_default_config()
 		self.insert_imgur_data()
 		self.insert_reddit_data()
 		self.insert_search_term_data()
 		self.insert_globalvars()
+
+		self._session.commit()
 
 
 	def insert_globalvars(self):
@@ -53,8 +57,6 @@ class CreateDB():
 		config = Config()
 		self.insert_service_status(config)
 		self.insert_config_defaults(config)
-
-		self._session.commit()
 
 
 	def insert_service_status(self, config):
@@ -74,7 +76,6 @@ class CreateDB():
 			imgur_reader = reader(imgur_csv)
 			for row in imgur_reader:
 				self._session.add(ImgurAlbum(url=row[0]))
-		self._session.commit()
 
 
 	def insert_reddit_data(self):
@@ -82,7 +83,6 @@ class CreateDB():
 			reddit_reader = reader(reddit_csv)
 			for row in reddit_reader:
 				self._session.add(Subreddit(name=row[0]))
-		self._session.commit()
 
 
 	def insert_search_term_data(self):
@@ -90,5 +90,4 @@ class CreateDB():
 			search_term_reader = reader(search_term_csv)
 			for row in search_term_reader:
 				self._session.add(SearchTerm(term=row[0]))
-		self._session.commit()
 

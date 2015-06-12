@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 
 
 from ..db import func as dbfunc
@@ -17,19 +18,33 @@ class InfoPrinter:
 	def print_info(self):
 		image = self.get_image_info()
 
-		output = \
-		'filepath: ' + image.filepath + os.linesep + \
-		'url: ' + image.url + os.linesep + \
-		'time: ' + datetime.fromtimestamp(image.time).strftime('%d %b %Y, %I:%M:%S') + \
-		'type: ' + image.type + os.linesep + \
-		'artist: ' + image.artist + os.linesep if image.artist is not None else '' + \
-		'description: ' + image.description + os.linesep if image.description is not None else '' + \
-		'dimensions: ' + str(image.width) + 'x' + str(image.height) + os.linesep + \
-		'size: ' + str(image.size) + os.linesep + \
-		'score: ' + str(image.score) + os.linesep + \
-		'trace:' + os.linesep
+		output = [
+		('filepath', 	image.filepath),
+		('url', 	image.url),
+		('time', 	datetime.fromtimestamp(image.time).strftime('%d %b %Y, %I:%M:%S')),
+		('type',	image.type),
+		('artist',	image.artist) if image.artist is not None else (),
+		('description',	image.description) if image.description is not None else (),
+		('dimensions',	str(image.width) + 'x' + str(image.height)),
+		('size',	self.sizefmt(image.size)),
+		('score',	str(image.score)),
+		('trace',	'') if len(image.trace) > 0 else ()
+		]
+
 		for item in image.trace:
-			output += item.name + (': ' + item.data if item.data is not None else '') + os.linesep
+			output.append(('  '+ item.name, item.data if item.data is not None else ''))
 
-		print(output)
+		for name, data in [(p[0], p[1]) for p in output if len(p) == 2]:
+			print("{0:<20}: {1}".format(name, data))
 
+
+	def sizefmt(self, num, suffix='B'):
+		''''source: http://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
+			by: Sridhar Ratnakumar'''
+
+		for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+			if abs(num) < 1024.0:
+				return "%3.1f%s%s" % (num, unit, suffix)
+			num /= 1024.0
+
+		return "%.1f%s%s" % (num, 'Yi', suffix)

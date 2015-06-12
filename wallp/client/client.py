@@ -6,7 +6,7 @@ import os
 import re
 from datetime import datetime, timedelta
 
-from mutils.system import get_pictures_dir, prints
+from mutils.system import *
 from mutils.image.imageinfo import get_image_info
 
 from ..service import service_factory, ServiceError, IHttpService, IImageGenService
@@ -15,11 +15,10 @@ from ..util.logger import log
 from ..db import Image
 from .. import web
 from ..globals import Const
-from ..desktop import desktop_factory, DesktopError
-from .compute_wp_style import compute_wp_style
+from ..desktop import desktop_factory, DesktopError, get_desktop, WPStyle
 from ..server.protocol import WPState
 from mayserver.transport.pipe_connection import PipeConnection
-from ..db import func as dbfunc, GlobalVars
+from ..db import func as dbfunc, GlobalVars, VarError
 
 
 class GetImageError(Exception):
@@ -51,15 +50,19 @@ class Client:
 			if self._transport is not None:
 				self._transport.write_blocking(WPState.CHANGING)
 
-			filepath, width, height, image_id = self.get_image()
-			style = compute_style(width, height)
+			filepath, im_width, im_height, image_id = self.get_image()
 
 			dt = get_desktop()
+			style = self.compute_wp_style(im_width, im_height, *dt.get_size())
+
 			dt.set_wallpaper(filepath, style=style)
 
 			globalvars = GlobalVars()
-			globalvars.set('current_wallpaper_image', image_id)
-			globalvars.set('last_change_time', int(time()))
+			try:
+				globalvars.set('current_wallpaper_image', image_id)
+				globalvars.set('last_change_time', int(time()))
+			except VarError as e:
+				log.error(str(e))
 
 			if self._transport is not None:
 				self._transport.write_blocking(WPState.READY)
@@ -78,7 +81,13 @@ class Client:
 
 
 	def keep_timeout_not_expired(self):
-		keep_timeout = GlobalVars().get('keep_timeout')
+		try:
+			keep_timeout = GlobalVars().get('keep_timeout')
+		except VarError as e:
+			log.error(str(e))
+			return None
+			#return False
+
 		if keep_timeout is not None and keep_timeout > time():
 			expiry = datetime.fromtimestamp(keep_timeout).strftime('%d %b %Y, %H:%M:%S')
 			log.error('current wallpaper is set not to change until %s'%expiry)
@@ -120,8 +129,8 @@ class Client:
 				log.error('%s: unknown service or service is disabled'%self._service_name)
 				raise GetImageError()
 
-		prints('[%s]'%self._service_name)
-		log.debug('\nusing %s..'%self._service_name)
+		prints('[%s]'%service.name)
+		log.debug('\nusing %s..'%service.name)
 
 		return service
 
@@ -208,7 +217,7 @@ class Client:
 
 
 	def keep_wallpaper(self, period):
-		period_map = { 's': 'seconds', 'm': 'minutes', 'h': 'hours', 'd': 'days', 'w': 'weeks' }
+		period_map = { 's': 'seconds', 'm': 'minutes', 'h': 'hours', 'd': 'days', 'w': 'weeks', 'M': 'months', 'Y': 'years' }
 		period_regex = re.compile("(\d{1,3})((s|m|h|d|w|M|Y))")
 
 		match = period_regex.match(period)
@@ -217,6 +226,8 @@ class Client:
 			raise KeepError('bad time period: %s'%period)
 
 		num = int(match.group(1))
+		if num <= 0:
+			raise KeepError('bad time period: %s'%period)
 		abbr_period = match.group(2)
 		tdarg = {}	
 
@@ -232,4 +243,41 @@ class Client:
 
 		globalvars = GlobalVars()
 		globalvars.set('keep_timeout', keep_timeout)
+
+		return '%d %s'%(num, period_map[abbr_period][0 : -1 if num == 1 else None])
+
+
+	def compute_wp_style(self, im_width, im_height, dt_width, dt_height):
+		assert type(im_width) == int
+		assert type(im_height) == int
+
+		log.debug('image: width=%d, height=%d'%(im_width, im_height))
+		log.debug('desktop: width=%d, height=%d'%(dt_width, dt_height))
+
+		style = None
+		buf = None
+
+		if im_width < 5 and im_height < 5:
+			style = WPStyle.TILED
+		else:
+			same_ar = False
+			dt_ar = float(dt_width) / dt_height
+			im_ar = float(im_width) / im_height
+			
+			if abs(dt_ar - im_ar) < 0.01:
+				same_ar = True	
+
+			wr = float(im_width) / dt_width
+			hr = float(im_height) / dt_height
+
+			if (wr >= 0.9) and (hr >= 0.9):
+				style = WPStyle.SCALED if same_ar else WPStyle.ZOOM
+			elif (wr < 0.9) or (hr < 0.9):
+				style = WPStyle.CENTERED
+			else:
+				style = WPStyle.SCALED if same_ar else WPStyle.ZOOM 
+
+		log.debug('style: %s'%WPStyle.to_string(style))
+
+		return style
 

@@ -3,6 +3,7 @@ import ctypes
 from mutils.system import *
 
 from .desktop import Desktop
+from .wpstyle import WPStyle
 
 
 if is_windows():
@@ -12,12 +13,12 @@ if is_windows():
 
 class WindowsDesktop(Desktop):
 	wp_styles = {
-		'none': '0',
-		'tiled': '0',
-		'centered': '0',
-		'scaled': '6',
-		'stretched': '2',
-		'zoom': '10'
+		WPStyle.NONE : 		'0',
+		WPStyle.TILED : 	'0',
+		WPStyle.CENTERED : 	'0',
+		WPStyle.SCALED : 	'6',
+		WPStyle.STRETCHED : 	'2',
+		WPStyle.ZOOM : 		'10'
 	}
 
 	def get_size(self):

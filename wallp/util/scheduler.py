@@ -25,13 +25,13 @@ class Scheduler:
 		taskname = Const.scheduler_task_name
 		if freq == '0':
 			if self._sys_scheduler.exists(taskname):
-				r = sch.delete(taskname)
+				r = self._sys_scheduler.delete(taskname)
 				print('schedule deletion %s..'%('succeeded' if r else 'failed'))
 			else:
 				print('no schedule exists..')
 		else:
 			if self._sys_scheduler.exists(taskname):
-				sch.delete(taskname)
+				self._sys_scheduler.delete(taskname)
 
 			try:
 				r = self._sys_scheduler.schedule(freq, cmd, taskname)

@@ -1,10 +1,12 @@
 import os
 import re
 from zope.interface import Interface, Attribute, implementer
+from sqlalchemy.exc import OperationalError
 
-from . import DBSession
+from .dbsession import DBSession
 from .regex import Regex
 from .exc import NotFoundError
+from ..util import log
 
 
 class NameError(Exception):
@@ -82,7 +84,13 @@ class NameValueSet(object):
 	def get_namevalue(self, fullname):
 		group, name = self.split_name(fullname)
 
-		result = self._dbsession.query(self.nvtype).filter(self.nvtype.group == group, self.nvtype.name == name).all()
+		result = None
+		try:
+			result = self._dbsession.query(self.nvtype).filter(self.nvtype.group == group, self.nvtype.name == name).all()
+		except OperationalError as e:
+			log.error(e.orig)
+			raise NotFoundError('%s %s not found'%(fullname, self.name_err_type.nv_typename))
+
 		namevalue = None
 		try:
 			namevalue = self.single_result(result)
@@ -90,6 +98,23 @@ class NameValueSet(object):
 			raise self.name_err_type(fullname)
 
 		return namevalue
+
+
+	def get_all_names(self):
+		result = None
+		try:
+			result = self._dbsession.query(self.nvtype).all()
+		except OperationalError as e:
+			log.error(e.orig)
+			raise NotFoundError()
+
+		names = []
+		for r in result:
+			names.append(r.group + '.' + r.name)
+
+		return names
+
+	names = property(get_all_names)
 
 
 	def set(self, fullname, value):

@@ -7,6 +7,7 @@ from mutils.system import sys_command
 
 from ..util.logger import log
 from .desktop import Desktop
+from .wpstyle import WPStyle
 from .linux_desktop_helper import get_desktop_size, uses_dbus
 
 
@@ -24,14 +25,13 @@ wallpaperposition values:
 
 class KdePlasmaDesktop(Desktop):
 	wp_styles = {
-		'none': 	'1',
-		'tiled': 	'3',
-		'centered': 	'1',
-		'scaled': 	'5',
-		'stretched': 	'0',
-		'zoom': 	'5'
+		WPStyle.NONE : 		'1',
+		WPStyle.TILED : 	'3',
+		WPStyle.CENTERED : 	'1',
+		WPStyle.SCALED : 	'5',
+		WPStyle.STRETCHED : 	'0',
+		WPStyle.ZOOM : 		'5'
 	}
-
 
 	@uses_dbus
 	def get_size(self):

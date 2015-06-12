@@ -1,14 +1,13 @@
+import sys
 
 from . import ArgParser
 from ..util import log
-from ..db import Config
+from ..db import Config, DBError, NotFoundError
 
 
 #entry point
 def main():
-	config = Config()
-	log.start(config.get('client.logfile'), loglevel=config.get('client.loglevel'))
-
+	
 	argparser = ArgParser()
 	argparser.parse_args()
 
