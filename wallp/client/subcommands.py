@@ -1,4 +1,5 @@
 import os
+from os.path import exists
 
 from mutils.system import Scheduler
 
@@ -17,7 +18,18 @@ class AppError(Exception):
 class Subcommands(object):
 	def __init__(self):
 		self._args = None
+		self.first_run()
 
+
+	def first_run(self):
+		if not exists(Const.data_dir):	
+			os.mkdir(Const.data_dir)
+			log.debug('data directory created')
+
+			create_db = CreateDB()
+			create_db.execute()
+			log.debug('db created')
+		
 
 	def set_args(self, args):
 		self._args = args

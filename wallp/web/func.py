@@ -19,11 +19,6 @@ else:
 	from urllib2 import HTTPError, urlopen, URLError
 
 
-cache = None
-if Const.cache_enabled:
-	cache = WebCache()
-
-
 def exists(url):
 	try:
 		res = urlopen(url, timeout=10)
@@ -55,13 +50,8 @@ def exc_wrapped_call(func, *args, **kwargs):
 
 
 def download(url, save_filepath=None, progress=True, nocache=False, open_file=None):
-	'''if eh:
-		dcm = DownloadCM()
-		dcm._meth = partial(download, url, save_filepath=save_filepath, progress=progress, nocache=nocache)
-		return dcm'''
-
 	if not nocache and Const.cache_enabled:
-		data = cache.get(url)
+		data = WebCache().get(url)
 		if data is not None:
 			print_progress_ast()
 			#if log.to_stdout(): print('')
@@ -100,7 +90,7 @@ def download(url, save_filepath=None, progress=True, nocache=False, open_file=No
 
 	if not nocache and Const.cache_enabled:
 		out.seek(0)
-		cache.add(url, out.read())
+		WebCache().add(url, out.read())
 
 	if save_filepath is None and open_file is None:
 		out.seek(0)

@@ -5,9 +5,10 @@ from glob import glob
 from datetime import datetime, timedelta
 
 from ..globals import Const
+from ..db.singleton import Singleton
 
 
-class WebCache():
+class _WebCache():
 	def __init__(self):
 		if not exists(Const.cache_dir):
 			makedirs(Const.cache_dir)
@@ -45,3 +46,7 @@ class WebCache():
 		for filepath in glob(joinpath(Const.cache_dir, '*')):
 			remove(filepath)
 		open(joinpath(Const.cache_dir, (datetime.today() + timedelta(days=1)).strftime('expiry%d%b%Y')), 'w').close()
+
+
+class WebCache(Singleton):
+	classtype = _WebCache

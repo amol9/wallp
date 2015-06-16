@@ -1,6 +1,6 @@
 import shutil
 import tempfile
-from os.path import join as joinpath
+from os.path import join as joinpath, exists
 from time import time
 import os
 import re
@@ -19,6 +19,7 @@ from ..desktop import desktop_factory, DesktopError, get_desktop, WPStyle
 from ..server.protocol import WPState
 from mayloop.transport.pipe_connection import PipeConnection
 from ..db import func as dbfunc, GlobalVars, VarError
+from wallp.db.create_db import CreateDB
 
 
 class GetImageError(Exception):
@@ -280,4 +281,4 @@ class Client:
 		log.debug('style: %s'%WPStyle.to_string(style))
 
 		return style
-
+	

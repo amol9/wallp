@@ -17,7 +17,9 @@ class CreateDBError(Exception):
 
 class CreateDB():
 	def __init__(self, db_path=None):
-		db_path = db_path if db_path is not None else Const.db_path
+		if db_path is None:
+			db_path = Const.db_path
+
 		self._session = DBSession(db_path=db_path, create_db=True)
 		self._data_dir_abspath = joinpath(dirname(abspath(__file__)), 'data')
 
@@ -35,7 +37,6 @@ class CreateDB():
 
 
 	def insert_data(self):
-		import pdb; pdb.set_trace()
 		self.insert_default_config()
 		self.insert_imgur_data()
 		self.insert_reddit_data()
