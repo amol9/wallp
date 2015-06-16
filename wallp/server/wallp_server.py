@@ -4,8 +4,8 @@ from os.path import exists
 from time import time
 import logging
 
-from mayserver.server import Server
-from mayserver.config import Config
+from mayloop.server import Server
+from mayloop.config import Config
 
 from .scheduler import Scheduler
 from .change_wallpaper import ChangeWallpaper

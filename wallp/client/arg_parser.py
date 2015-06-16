@@ -21,15 +21,14 @@ class MultilineFormatter(HelpFormatter):
 class ArgParser:
 	def __init__(self):
 		self._subcommands = Subcommands()
-
 		self.add_args()
 
 
 	def add_args(self):
-		self._argparser = ArgumentParser(formatter_class=MultilineFormatter)
+		self._argparser = ArgumentParser(formatter_class=MultilineFormatter, prog='wallp client',
+						description='A command line utility to download wallpapers from various sources.')
 
 		self._argparser.add_argument('-v', '--version', action='version', version=__version__, help='print version')
-		#self._argparser.set_defaults(func=self._subcommands.change)
 		
 		subparsers = self._argparser.add_subparsers(dest='subcommand')
 

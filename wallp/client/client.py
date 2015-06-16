@@ -17,7 +17,7 @@ from .. import web
 from ..globals import Const
 from ..desktop import desktop_factory, DesktopError, get_desktop, WPStyle
 from ..server.protocol import WPState
-from mayserver.transport.pipe_connection import PipeConnection
+from mayloop.transport.pipe_connection import PipeConnection
 from ..db import func as dbfunc, GlobalVars, VarError
 
 
@@ -110,7 +110,7 @@ class Client:
 				retry.cancel()
 
 			except ServiceError as e:
-				log.error('unable to get image from %s'%self._service_name)
+				log.error('unable to get image from %s'%service.name)
 				if self._service_name is not None:
 					retry.cancel()
 				else:

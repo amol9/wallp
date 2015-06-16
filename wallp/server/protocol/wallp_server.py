@@ -1,5 +1,5 @@
 
-from mayserver.protocol.fixed_length_message import FixedLengthMessage
+from mayloop.protocol.fixed_length_message import FixedLengthMessage
 from .protobuf.server_pb2 import Response
 from .protobuf.client_pb2 import Request
 from .wp_change_message import WPState

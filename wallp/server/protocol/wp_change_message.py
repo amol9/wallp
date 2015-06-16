@@ -1,6 +1,6 @@
 from time import time
 
-from mayserver.imported.twisted.internet_protocol import Protocol
+from mayloop.imported.twisted.internet_protocol import Protocol
 from ..wallpaper_image import WPImageError
 from ...util.logger import log
 

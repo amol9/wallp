@@ -3,7 +3,7 @@ import os
 import tempfile
 from time import sleep
 
-from mayserver.transport.tcp_connection import TCPConnection, HangUp
+from mayloop.transport.tcp_connection import TCPConnection, HangUp
 
 from . import IHttpService, ServiceError
 from ..server.protocol.wallp_client import WallpClient, ImageNone, ImageChanging, ImageAbort, ServerError

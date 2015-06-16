@@ -1,7 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
-from .db_session import DBSession
+from .dbsession import DBSession
 
 from .imgur_album import ImgurAlbum
 from .subreddit import Subreddit

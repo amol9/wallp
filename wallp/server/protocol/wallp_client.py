@@ -1,6 +1,6 @@
 from time import time, sleep
 
-from mayserver.protocol.blocking_fixed_length_message import BlockingFixedLengthMessage
+from mayloop.protocol.blocking_fixed_length_message import BlockingFixedLengthMessage
 from .protobuf.server_pb2 import Response
 from .protobuf.client_pb2 import Request
 

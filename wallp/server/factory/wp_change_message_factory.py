@@ -1,5 +1,5 @@
 
-from mayserver.imported.twisted.internet_protocol import Factory
+from mayloop.imported.twisted.internet_protocol import Factory
 from ..protocol.wp_change_message import WPChangeMessage
 
 
