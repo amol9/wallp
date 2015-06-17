@@ -1,0 +1,17 @@
+site_name: wallp
+
+dev_addr: 0.0.0.0:8090
+
+pages:
+- 'index.md'
+- sub-commands:
+        - get: 'get.md'
+        - log: 'log.md'
+        - set: 'set.md'
+        - change: 'change.md'
+        - info: 'info.md'
+        - like / dislike: 'like_dislike.md'
+        - add / enable / disable: 'list.md'
+        - keep: 'keep.md'
+        - db: 'db.md'
+        - schedule: 'schedule.md'
