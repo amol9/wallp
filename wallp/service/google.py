@@ -12,7 +12,7 @@ from os.path import join as joinpath
 from zope.interface import implementer
 
 from .. import web
-from ..util.logger import log
+from ..util import log, colors
 from .service import IHttpService
 from .image_mixin import ImageMixin
 from ..db import SearchTermList
@@ -42,7 +42,8 @@ class Google(ImageMixin):
 			query = SearchTermList().get_random()
 
 		if color is None:
-			color = 'color'
+			color = choice(list(colors.keys()))
+		self.add_trace_step('preferred color', color)
 
 		params = {
 			'q': 		query,
@@ -54,6 +55,8 @@ class Google(ImageMixin):
 
 		search_url = self.search_base_url + urlencode(params) + "&start=" + str(0)
 		response = web.func.get_page(search_url)
+		self.add_trace_step('searched google', query)
+
 		jdata = json.loads(response)
 		results = None
 
@@ -67,7 +70,6 @@ class Google(ImageMixin):
 		for r in results:
 			image_urls.append(r['url'])
 
-		self.add_trace_step('searched google', '%s, color: %s'%(query, color))
 
 		return image_urls
 

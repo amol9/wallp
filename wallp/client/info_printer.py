@@ -27,15 +27,23 @@ class InfoPrinter:
 		('description',	image.description) if image.description is not None else (),
 		('dimensions',	str(image.width) + 'x' + str(image.height)),
 		('size',	self.sizefmt(image.size)),
-		('score',	str(image.score)),
-		('trace',	'') if len(image.trace) > 0 else ()
+		('score',	str(image.score))
 		]
-
-		for item in image.trace:
-			output.append(('  '+ item.name, item.data if item.data is not None else ''))
 
 		for name, data in [(p[0], p[1]) for p in output if len(p) == 2]:
 			print("{0:<20}: {1}".format(name, data))
+
+		if len(image.trace) > 0:
+			print('\ntrace:')
+
+			for item in image.trace:
+				line = str(item.step) + '. '
+				line += "{0:<25}".format(item.name)
+				if item.data is not None:
+					line += ': ' + item.data
+				print(line)
+
+		print('')
 
 
 	def sizefmt(self, num, suffix='B'):

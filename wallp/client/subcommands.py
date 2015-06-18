@@ -93,13 +93,22 @@ class Subcommands(object):
 
 	def set(self):
 		config = Config()
-		config.set(self._args.name, self._args.value)
+		self.config_call(config.set, self._args.name, self._args.value)
 
 
 	def get(self):
 		config = Config()
-		value = config.get(self._args.name)
+		value = self.config_call(config.get, self._args.name)
 		print(value)
+
+
+	def config_call(self, func, *args):
+		try:
+			r = func(*args)
+			return r
+		except ConfigError as e:
+			print(str(e))
+			raise AppError()
 
 
 	def get_item_list(self):
@@ -111,9 +120,9 @@ class Subcommands(object):
 		return item_list[0]()
 
 
-	def itemlist_call(self, dbfunc, *args, **kwargs):
+	def itemlist_call(self, func, *args, **kwargs):
 		try:
-			dbfunc(*args, **kwargs)
+			func(*args, **kwargs)
 		except (ValueError, NotFoundError) as e:
 			print(str(e))
 			raise AppError()

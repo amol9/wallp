@@ -1,13 +1,15 @@
 import sys
 
 from . import ArgParser
-from ..util import log
-from ..db import Config, DBError, NotFoundError
+from ..command import Command
 
 
 #entry point
 def main():
 	
-	argparser = ArgParser()
-	argparser.parse_args()
+	#argparser = ArgParser()
+	#argparser.parse_args()
+
+	command = Command()
+	command.execute()
 

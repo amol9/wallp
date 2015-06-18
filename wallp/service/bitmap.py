@@ -26,20 +26,22 @@ class Bitmap(ImageMixin):
 
 
 	def get_image(self, query=None, color=None):
-		#width, height = get_desktop().get_size()
 		width, height = 2, 2
 
 		if color is not None:
-			if color.startswith('0x'):
-				pass
-			else:
+			self.add_trace_step('preferred color', color)
+			if not color.startswith('0x'):
 				c = colors.get(color)
 				if c is None:
 					print('no such color')
 					raise ServiceError()
 				color = c
+
 		else:
-			color = choice(list(colors.values()))
+			color = choice(list(colors.keys()))
+			self.add_trace_step('random color', color)
+			color = colors[color]
+
 
 		fn, temp_file_path = tempfile.mkstemp()
 		f = os.fdopen(fn, 'wb')
@@ -53,7 +55,7 @@ class Bitmap(ImageMixin):
 			raise ServiceError()
 
 		f.close()
-		self.add_trace_step('generated bitmap', 'color: %s'%color)
+		self.add_trace_step('generated bitmap', None)
 
 		return temp_file_path
 

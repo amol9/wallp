@@ -26,7 +26,7 @@ class ArgParser:
 
 
 	def add_args(self):
-		self._argparser = ArgumentParser(formatter_class=MultilineFormatter, prog='wallp client',
+		self._argparser = ArgumentParser(formatter_class=MultilineFormatter, prog='wallp',
 						description='A command line utility to download wallpapers from various sources.')
 
 		self._argparser.add_argument('-v', '--version', action='version', version=__version__, help='print version')
