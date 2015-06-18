@@ -1,8 +1,14 @@
 import sys
 import logging
 
+from mutils.system import is_py3
 
 class Logger():
+	if is_py3():
+		levels = dict([(k.lower(), v) for (k, v) in logging._nameToLevel.items() if v != 0])
+	else:
+		levels = dict([(k.lower(), v) for (k, v) in logging._levelNames.items() if type(k) == str and v != 0])
+
 	def __init__(self, log_testresults=False):
 		self._log = logging.getLogger('wallp')
 		self._log.propagate = False

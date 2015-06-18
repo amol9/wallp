@@ -88,7 +88,7 @@ class Subcommands(object):
 	def log(self):
 		config = Config()
 		config.set('client.logfile', self._args.filename)
-		config.set('client.loglevel', self._args.level)
+		config.set('client.loglevel', log.levels[self._args.level])
 
 
 	def set(self):

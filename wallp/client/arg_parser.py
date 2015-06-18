@@ -9,6 +9,7 @@ from ..service import service_factory
 from ..db import func as dbfunc
 from .subcommands import Subcommands, AppError
 from ..globals import Const
+from ..util import log
 
 
 class MultilineFormatter(HelpFormatter):
@@ -74,16 +75,8 @@ class ArgParser:
 	def add_subcmd_log(self, subparsers):
 		log_parser = subparsers.add_parser('log')
 		
-		logging_levels = None
-		if is_py3():
-			logging_levels = dict(chain(logging._nameToLevel.items(), logging._levelToName.items()))
-		else:
-			logging_levels = logging._levelNames
-
-		choices = [v.lower() for (k, v) in list(logging_levels.items()) if type(k) == int and k > 0]
-
 		log_parser.add_argument('filename', default='stdout', help='filename for logging or none for standard output')
-		log_parser.add_argument('-l', '--level', choices=choices)
+		log_parser.add_argument('-l', '--level', choices=log.levels.keys())
 
 		log_parser.set_defaults(func=self._subcommands.log)
 
