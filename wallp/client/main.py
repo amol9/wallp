@@ -1,6 +1,6 @@
 import sys
 
-from .version import __version__
+from ..version import __version__
 from . import ArgParser
 from ..command import Command
 

@@ -9,22 +9,27 @@ def subcmd(func):
 
 
 class SubcmdFunc:
-	def __init__(self, subcmd_cls, func, arg_names):
-		self.subcmd_cls = subcmd_cls
+	def __init__(self, subcmd, func, arg_names):
+		self.subcmd 	= subcmd
 		self.func 	= func
 		self.arg_names	= arg_names
 
 	
 	def execute(self, args):
-		arg_list = [args[name] for name in self.arg_names]
-		subcmd = self.subcmd_cls()
-		self.func(subcmd, *arg_list)
+		arg_list = [getattr(args, name) for name in self.arg_names]
+		self.func(self.subcmd, *arg_list)
 
 
 class Choices:
-	def __init__(self, *args, default=0):
-		self.list = args
+	def __init__(self, list, default=None):
+		self.list = list
+		assert default is None or self.list.index(default) >= 0
 		self.default = default
+
+	
+class PositionalArg:
+	def __init__(self, nargs=None):
+		self.nargs = nargs
 
 
 class Subcommand(Command):
@@ -62,6 +67,8 @@ class Subcommand(Command):
 					assert argspec.args[0] == 'self'
 					del argspec.args[0]
 
+					#import pdb; pdb.set_trace()
+
 					if argspec.defaults is not None:
 						default_offset = len(argspec.args) - len(argspec.defaults)
 					else:
@@ -73,22 +80,36 @@ class Subcommand(Command):
 						default = None
 						names 	= None
 						choices = None
+						nargs	= None
 						if arg_index >= default_offset:
-							default = argspec.defaults[arg_index]
+							default = argspec.defaults[arg_index - default_offset]
 							names = ['-' + arg[0], '--' + arg]
 
-							if type(default) == Choices:
+							if default.__class__ == Choices:
 								choices_obj = default
 								choices = choices_obj.list
-								if choices_obj.default is not None:
-									default = choices[choices_obj.default]
+								default = choices_obj.default
+								if default is None:
+									names = [arg]
+							elif default.__class__ == PositionalArg:
+								nargs = default.nargs
 								default = None
+								names = [arg]
+	
 						else:
 							names = [arg]
 
-						help = func.__doc__
-						parser.add_argument(*names, default=default, choices=choices, help=help)
+						kwargs = {
+						'default'	: default,
+						'choices'	: choices,
+						'help'		: func.__doc__
+						}
 
+						if nargs is not None:
+							kwargs['nargs'] = nargs
+						parser.add_argument(*names, **kwargs) 
+
+					print func.__name__
 					parser.set_defaults(subcmd_func=SubcmdFunc(subcmd, func, argspec.args))
 
 

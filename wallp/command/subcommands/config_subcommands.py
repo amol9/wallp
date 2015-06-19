@@ -1,9 +1,24 @@
+import os
 
 from ..subcommand import Subcommand, subcmd
-from ...util import Config, ConfigError
+from ...db import Config, ConfigError
+from ..exc import CommandError
+from ...globals import Const
 
 
 class ConfigSubcommands(Subcommand):
+	def __init__(self, parser):
+		super(ConfigSubcommands, self).__init__(parser)
+		self.add_config_shortcuts()
+
+	
+	def add_config_shortcuts(self):
+		config = Config()
+		config.add_shortcut('server', ['server.host', 'server.port'], [None, Const.default_server_port], ':')
+
+		setting_names = config.names
+		config.add_shortcut('all', setting_names, None, os.linesep, get_only=True, print_fmt=True)
+
 
 	@subcmd
 	def get(self, name):
@@ -24,5 +39,5 @@ class ConfigSubcommands(Subcommand):
 			return r
 		except ConfigError as e:
 			print(str(e))
-			raise AppError()
+			raise CommandError()
 

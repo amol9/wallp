@@ -21,6 +21,6 @@ class ScoreSubcommands(Subcommand):
 			print('image score: %d'%score)
 		except LikeError as e:
 			print(str(e))
-			raise AppError()
+			raise CommandError()
 
 

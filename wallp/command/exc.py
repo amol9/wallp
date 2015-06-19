@@ -1,0 +1,5 @@
+
+class CommandError(Exception):
+	pass
+
+

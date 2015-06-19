@@ -1,14 +1,14 @@
 
 from ..subcommand import Subcommand, subcmd
 from ...globals import Const
-from ...db import CreateDB
+from ...db.create_db import CreateDB
 
 
 class DbSubcommand(Subcommand):
 
 	@subcmd
 	def db(self):
-		pass
+		print 'db sub'
 
 
 class DbSubSubCommands(DbSubcommand):

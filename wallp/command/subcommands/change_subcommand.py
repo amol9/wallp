@@ -1,6 +1,7 @@
 
 from ..subcommand import Subcommand, subcmd
 from ...client import Client, ChangeWPError
+from ..exc import CommandError
 
 
 class ChangeSubcommand(Subcommand):
@@ -12,5 +13,5 @@ class ChangeSubcommand(Subcommand):
 			client.change_wallpaper()
 		except ChangeWPError as e:
 			log.error(str(e))
-			raise AppError()
+			raise CommandError()
 

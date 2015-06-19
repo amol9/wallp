@@ -1,4 +1,7 @@
 from argparse import ArgumentParser
+import sys
+
+from .exc import CommandError
 
 
 class Command(object):
@@ -18,9 +21,15 @@ class Command(object):
 
 
 	def execute(self):
-		self.argparser.parse_args()
-		print 'not implemented'
+		args = self.argparser.parse_args()
+		try:
+			subcmd_func = args.subcmd_func
+			subcmd_func.execute(args)
+		except CommandError as e:
+			sys.exit(1)
 
+		sys.exit(0)
 
 	def add_version(self, version):
 		self.argparser.add_argument('-v', '--version', action='version', version=version, help='print version')
+

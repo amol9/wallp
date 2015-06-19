@@ -1,6 +1,14 @@
+import re
+from datetime import timedelta
+from time import time
 
 from ..subcommand import Subcommand, subcmd
 from ...db import GlobalVars
+from ..exc import CommandError
+
+
+class KeepError(Exception):
+	pass
 
 
 class KeepSubcommand(Subcommand):
@@ -12,7 +20,7 @@ class KeepSubcommand(Subcommand):
 			print('wallpaper will stick for next %s'%exp_period)
 		except KeepError as e:
 			print(str(e))
-			raise AppError()
+			raise CommandError()
 
 	
 	def keep_wallpaper(self, period):

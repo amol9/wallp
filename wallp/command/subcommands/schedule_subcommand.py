@@ -1,6 +1,7 @@
 
 from ..subcommand import Subcommand, subcmd
-from ..util import Scheduler, SchedulerError
+from ...util import Scheduler, SchedulerError
+from ..exc import CommandError
 
 
 class ScheduleSubcommand(Subcommand):
@@ -12,5 +13,5 @@ class ScheduleSubcommand(Subcommand):
 			scheduler.set_frequency(frequency)
 		except SchedulerError as e:
 			print(str(e))
-			raise AppError()
+			raise CommandError()
 
