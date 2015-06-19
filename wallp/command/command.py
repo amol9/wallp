@@ -20,3 +20,7 @@ class Command(object):
 	def execute(self):
 		self.argparser.parse_args()
 		print 'not implemented'
+
+
+	def add_version(self, version):
+		self.argparser.add_argument('-v', '--version', action='version', version=version, help='print version')

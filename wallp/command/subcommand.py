@@ -22,8 +22,9 @@ class SubcmdFunc:
 
 
 class Choices:
-	def __init__(self, *args):
+	def __init__(self, *args, default=0):
 		self.list = args
+		self.default = default
 
 
 class Subcommand(Command):
@@ -77,8 +78,11 @@ class Subcommand(Command):
 							names = ['-' + arg[0], '--' + arg]
 
 							if type(default) == Choices:
-								choices = default.list
-								default = choices[0]
+								choices_obj = default
+								choices = choices_obj.list
+								if choices_obj.default is not None:
+									default = choices[choices_obj.default]
+								default = None
 						else:
 							names = [arg]
 
