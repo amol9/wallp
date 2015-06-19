@@ -11,6 +11,7 @@ class Command(object):
 		self.argparser = ArgumentParser(prog='wallp',
 						description='A command line utility to download wallpapers from various sources.')
 
+		self.default_subcommand = None
 		self.add_subcommands()
 
 	
@@ -19,8 +20,10 @@ class Command(object):
 			subcmd_cls(self.argparser)
 
 
-
 	def execute(self):
+		if self.default_subcommand is not None and len(sys.argv) == 1:
+			sys.argv.append(self.default_subcommand)
+
 		args = self.argparser.parse_args()
 		try:
 			subcmd_func = args.subcmd_func
@@ -30,6 +33,11 @@ class Command(object):
 
 		sys.exit(0)
 
+
 	def add_version(self, version):
 		self.argparser.add_argument('-v', '--version', action='version', version=version, help='print version')
+
+	
+	def set_default_subcommand(self, name):
+		self.default_subcommand = name
 

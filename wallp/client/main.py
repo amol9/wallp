@@ -7,11 +7,8 @@ from ..command import Command
 
 #entry point
 def main():
-	
-	#argparser = ArgParser()
-	#argparser.parse_args()
-
 	command = Command()
 	command.add_version(__version__)
+	command.set_default_subcommand('change')
 	command.execute()
 

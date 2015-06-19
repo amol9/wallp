@@ -33,8 +33,6 @@ class PositionalArg:
 
 
 class Subcommand(Command):
-	name = 'subcommand'
-
 	def __init__(self, parser):
 		self.parser = parser
 		self.subparsers = None
@@ -48,7 +46,7 @@ class Subcommand(Command):
 
 	def add_subcommand(self, subcmd_cls):
 		if self.subparsers is None:
-			self.subparsers = self.parser.add_subparsers(dest=self.name)
+			self.subparsers = self.parser.add_subparsers(dest=self.__class__.__name__)
 		
 		for member_name, member_val in inspect.getmembers(subcmd_cls):
 			if inspect.ismethod(member_val):
@@ -66,8 +64,6 @@ class Subcommand(Command):
 					argspec = inspect.getargspec(func)
 					assert argspec.args[0] == 'self'
 					del argspec.args[0]
-
-					#import pdb; pdb.set_trace()
 
 					if argspec.defaults is not None:
 						default_offset = len(argspec.args) - len(argspec.defaults)
@@ -109,7 +105,6 @@ class Subcommand(Command):
 							kwargs['nargs'] = nargs
 						parser.add_argument(*names, **kwargs) 
 
-					print func.__name__
-					parser.set_defaults(subcmd_func=SubcmdFunc(subcmd, func, argspec.args))
-
+					if not subcmd.subparsers:
+						parser.set_defaults(subcmd_func=SubcmdFunc(subcmd, func, argspec.args))
 
