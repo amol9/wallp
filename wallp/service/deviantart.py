@@ -8,7 +8,7 @@ from .. import web
 from ..util.logger import log
 from .service import IHttpService, ServiceError
 from ..desktop import get_desktop, get_standard_desktop_size
-from .image_mixin import ImageMixin
+from .image_info_mixin import ImageInfoMixin
 from ..db import SearchTermList
 
 if is_py3():
@@ -18,7 +18,7 @@ else:
 
 
 @implementer(IHttpService)
-class DeviantArt(ImageMixin):
+class DeviantArt(ImageInfoMixin):
 	name = 'deviantart'
 	rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&boost:popular&'
 	xmlns = {'media': 'http://search.yahoo.com/mrss/'}

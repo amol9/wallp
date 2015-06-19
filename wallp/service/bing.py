@@ -15,11 +15,11 @@ from ..util.logger import log
 from . import IHttpService, ServiceError
 from ..desktop import get_desktop, get_standard_desktop_size
 from ..util import Retry
-from .image_mixin import ImageMixin
+from .image_info_mixin import ImageInfoMixin
 
 
 @implementer(IHttpService)
-class Bing(ImageMixin):
+class Bing(ImageInfoMixin):
 	name 		= 'bing'
 	image_list_url 	= 'http://www.bing.com/gallery/home/browsedata'
 	app_js_url 	= 'http://az615200.vo.msecnd.net/site/scripts/app.f21eb9ba.js'

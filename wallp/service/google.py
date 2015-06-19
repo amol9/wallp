@@ -14,12 +14,12 @@ from zope.interface import implementer
 from .. import web
 from ..util import log, colors
 from .service import IHttpService
-from .image_mixin import ImageMixin
+from .image_info_mixin import ImageInfoMixin
 from ..db import SearchTermList
 
 
 @implementer(IHttpService)
-class Google(ImageMixin):
+class Google(ImageInfoMixin):
 	name = 'google'
 	search_base_url = "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&"
 

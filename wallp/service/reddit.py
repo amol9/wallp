@@ -7,12 +7,12 @@ from .imgur import Imgur
 from ..globals import Const
 from .service import IHttpService, ServiceError
 from ..db import SubredditList, Config
-from .image_mixin import ImageMixin
+from .image_info_mixin import ImageInfoMixin
 from ..web import func as webfunc
 
 
 @implementer(IHttpService)
-class Reddit(ImageMixin):
+class Reddit(ImageInfoMixin):
 	name = 'reddit'
 
 	def __init__(self):

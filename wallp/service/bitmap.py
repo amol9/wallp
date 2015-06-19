@@ -9,11 +9,11 @@ from ..util.logger import log
 from ..util.colors import colors
 from ..desktop import get_desktop
 from .service import IImageGenService, ServiceError
-from .image_mixin import ImageMixin
+from .image_info_mixin import ImageInfoMixin
 
 
 @implementer(IImageGenService)
-class Bitmap(ImageMixin):
+class Bitmap(ImageInfoMixin):
 	name = 'bitmap'
 
 	def __init__(self, use_color_table=True):

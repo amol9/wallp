@@ -3,7 +3,7 @@ from .image_source import ImageSource
 from ..db import ImageTrace
 
 
-class ImageMixin(object):
+class ImageInfoMixin(object):
 	def __init__(self):
 		self._image_source = ImageSource()
 		self._image_trace = []

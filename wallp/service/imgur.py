@@ -1,6 +1,6 @@
 import re
 import json
-from random import randint
+from random import choice
 from os.path import join as joinpath
 from zope.interface import implementer
 
@@ -10,7 +10,7 @@ from mutils.html.parser import HtmlParser
 from .. import web
 from ..util.logger import log
 from .service import IHttpService, ServiceError
-from .image_mixin import ImageMixin
+from .image_info_mixin import ImageInfoMixin
 
 if is_py3():
 	from urllib.parse import urlencode
@@ -18,61 +18,137 @@ else:
 	from urllib import urlencode
 
 
-search_url = "http://imgur.com/search?"
-search_result_link_prefix = "http://imgur.com"
-get_full_album = True
-
-
 @implementer(IHttpService)
-class Imgur(ImageMixin):
+class Imgur(ImageInfoMixin):
 	name = 'imgur'
+
+	search_url = "http://imgur.com/search?"
+	search_result_link_prefix = "http://imgur.com"
+	imgur_base_url_regex = re.compile('https?://imgur.com/(.*)')
+	imgur_gallery_base_url = 'http://imgur.com/gallery/'
 
 	def __init__(self):
 		super(Imgur, self).__init__()
+		self.get_full_album = True
 
 
 	def get_image_url(self, query=None, color=None):
-		return 'http://i.imgur.com/S9JMr.jpg'
+		image_url = None
+		search = album = False
+
+		if query is not None:
+			search = True
+			album = False
+		else:
+			search = choice([True, False])
+			album = not search
+
+		if search:
+			image_url = self.get_image_url_from_search(query)
+		elif album:
+			image_url = self.get_image_url_from_random_album()
+	
+		return image_url
+
+
+	def get_image_url_from_search(self, query):
+		assert query
 
 		results = self.search(query)
-		page_url = search_result_link_prefix + results[randint(0, len(results) - 1)]
+		self.add_trace('searched imgur', query)
 
-		#self._image_trace.append(ImageTrace(name='select random url', data=page_url))
+		page_url = self.search_result_link_prefix + results[choice(results)]
+		self.add_trace('selected page from results', page_url)
+
 		log.debug('selected page url: ' + page_url)
-		
-		image_url = self.get_image_url_from_page(page_url)
-		'''ext = image_url[image_url.rfind('.')+1:]
-		save_path = joinpath(pictures_dir, basename + '.' + ext)
 
-		download(image_url, save_path)'''
+		image_url, _ = self.get_image_url_from_page(page_url)
+		return image_url
 
+
+	def get_image_url_from_random_album(self):
+		album_url = ImgurAlbumList().get_random()
+
+		self.add_trace('selected random album', album_url)
+
+		image_url, _ = self.get_image_url_from_page(album_url)
 		return image_url
 
 
 	def get_image_url_from_page(self, page_url):
-		if page_url.find('/a/') != -1:
-			url = self.get_url_from_full_album(page_url)
-		else:
-			url = self.get_url_from_gallery(page_url)
+		match = self.imgur_base_url_regex.match(page_url)
+		if match is None:
+			raise ImgurError('invalid imgur url: %s'%page_url)
 
-		if not url.startswith('http'):
-			url = 'http:' + url
+		section = match.group(1)
+
+		if section.startswith('a/'):
+			url, image_count = self.get_url_from_full_album(page_url)
+		elif section.startswith('gallery'):
+			url, image_count = self.get_url_from_gallery_link(page_url)
+		else:
+			url, image_count = self.get_url_from_direct_link(page_url)
 
 		log.debug('imgur: selected url = %s'%url)
-		return url
+
+		if not url.startswith('http'):
+			url = 'http' + url
+
+		return url, image_count
 
 
-	def get_url_from_gallery(self, page_url):		
+	def get_url_from_gallery_link(self, page_url):
+		image_div_path = './/div[@class=\'left main-image\']' 	+ \
+				 '/div[@class=\'panel\']' 		+ \
+				 '/div[@id=\'image\']' 			+ \
+				 '//div[@class=\'image textbox\']'
+
+		return self.get_url(page_url, image_div_path)
+
+
+	def get_url_from_direct_link(self, page_url):
+		image_div_path = './/div[@class=\'left main-image\']'	+ \
+				'/div[@class=\'panel\']' 		+ \
+				 '//div[@class=\'image textbox\']'
+
+		return self.get_url(page_url, image_div_path)
+
+
+	def extract_username(self, etree):
+		username = None
+
+		a = etree.findall(".//p[@class='under-title-info']//a")
+		if len(a) > 0:
+			href = a[0].attrib['href']
+			username = href[href.rfind('/') + 1 : ]
+			self._image_source.artist = username
+			return
+
+		a = etree.findall(".//div[@class='under-title-info']//a")
+		if len(a) > 0:
+			username = a[0].text
+			self._image_source.artist = username
+			return
+
+
+	def get_url(self, page_url, image_div_path):		
 		html = web.func.get_page(page_url)
 		parser = HtmlParser(skip_tags=['head'])
 		parser.feed(html)
 		etree = parser.etree
 
-		image_divs = etree.findall('.//div[@class=\'left main-image\']/div[@class=\'panel\']'
-						'/div[@id=\'image\']//div[@class=\'image textbox\']')
+		image_divs = etree.findall(image_div_path)
 
-		#r = etree.findall('.//h1[@id=\'image-title\']')
-		#self._image_source.title = r[0].text
+		title_h1 = etree.findall('.//h1[@id=\'image-title\']')	#gallery, direct link
+
+		if len(title_h1) > 0:
+			self._image_source.title = title_h1[0].text
+		else:
+			log.debug('title h1 not found')
+
+		self.extract_username(etree)
+
+		image_count = None
 
 		if len(image_divs) == 0:
 			log.error('can\'t find main div on imgur page')
@@ -83,13 +159,13 @@ class Imgur(ImageMixin):
 			img = image_divs[0].find('.//img')
 			if img is not None:
 				url = img.attrib['src']
-				log.testresult(1)
+				image_count = 1
 			else:
 				raise ServiceError()
 		else:
 			url = None
 			trunc_div = etree.find('.//div[@id=\'album-truncated\']')
-			if trunc_div == None or get_full_album == False:
+			if trunc_div == None or self.get_full_album == False:
 				urls = []
 				for div in image_divs:
 					img = div.find('.//img')
@@ -97,20 +173,20 @@ class Imgur(ImageMixin):
 						urls.append(img.attrib['src'])
 
 				log.debug('imgur: %d urls found'%len(urls))
-				log.testresult(len(urls))
 				if len(urls) == 0:
 					raise ServiceError()
 
-				url = urls[randint(0, len(urls) - 1)]
+				url = choice(urls)
+				image_count = len(urls)
 			else:
 				page_id = page_url[page_url.rfind('/')+1:]
 				full_album_url = 'http://imgur.com/a/%s?gallery'%page_id
 
 				log.debug('imgur: getting full album, %s'%full_album_url)
-				url = self.get_url_from_full_album(full_album_url)
+				url, image_count = self.get_url_from_full_album(full_album_url)
 
 		#self._image_trace.append(ImageTrace(name='get random url from gallery', data=url))
-		return url
+		return url, image_count
 	
 
 	def get_url_from_full_album(self, full_album_url):
@@ -148,11 +224,13 @@ class Imgur(ImageMixin):
 					urls.append('//i.imgur.com/%s%s'%(item['hash'], item['ext']))
 		
 		log.debug('imgur: %d urls found'%len(urls))
-		log.testresult(len(urls))
-		url = urls[randint(0, len(urls) - 1)]
+		#log.testresult(len(urls))
+
+		url = choice(urls)
+		image_count = len(urls)
 
 		#self._image_trace.append(ImageTrace(name='get random url from full album', data=url))
-		return url	
+		return url, image_count
 
 	
 	def search(self, query=None):
@@ -168,7 +246,7 @@ class Imgur(ImageMixin):
 				'q_all': query
 			}
 
-		url = search_url + urlencode(qs)
+		url = self.search_url + urlencode(qs)
 		res = web.func.get_page(url)
 
 		link_regex = re.compile("<a.*?class=\"image-list-link\".*?href=\"(.*?)\"")
