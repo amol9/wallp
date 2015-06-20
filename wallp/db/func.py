@@ -58,3 +58,9 @@ def get_current_wallpaper_image():
 
 	return result[0]
 
+
+def image_url_seen(image_url):
+	dbsession = DBSession()
+	count = dbsession.query(Image).filter(Image.url == image_url).count()
+
+	return count > 0

@@ -1,13 +1,18 @@
 from unittest import TestCase, main as ut_main, skip
 import sys
+from os.path import exists
+import os
 
 from wallp.util.logger import log
 from wallp.service.imgur import Imgur
 from wallp.service import ServiceError 
 
+from .db.util import create_db
+
 
 class TestImgur(TestCase):
 	args = []
+	db_path = 'test_imgur.db'
 	imgur_pages = [	('http://imgur.com/gallery/moboUHY', 1),
 			('http://imgur.com/gallery/BZFHk5l', 1),
 			('http://imgur.com/gallery/QKz1d', 3),
@@ -23,7 +28,13 @@ class TestImgur(TestCase):
 
 	@classmethod
 	def setUpClass(cls):
-		pass
+		create_db(cls.db_path)
+
+
+	@classmethod
+	def tearDownClass(cls):
+		if exists(cls.db_path):
+			os.remove(cls.db_path)
 
 
 	@skip('old')
@@ -50,6 +61,12 @@ class TestImgur(TestCase):
 				self.assertEqual(icount, 1)
 
 
+	def validate_image_url(self, url):
+		self.assertIsNotNone(url)
+		self.assertTrue(url.startswith('http'))
+		self.assertIn(url[url.rfind('.') + 1 : ], ['jpg', 'jpeg', 'bmp', 'png'])
+
+
 	def test_all_pages(self):
 		imgur = Imgur()
 
@@ -62,6 +79,14 @@ class TestImgur(TestCase):
 			print imgur._image_source
 
 
+	def test_search(self):
+		imgur = Imgur()
+
+		for i in range(5):
+			url = imgur.get_image_url_from_search(None)
+			self.validate_image_url(url)
+
+
 	def try_command_args(self):
 		imgur = Imgur()
 
@@ -71,12 +96,6 @@ class TestImgur(TestCase):
 				print('image count:', icount)
 			except ServiceError as e:
 				print(str(e))
-
-
-	def validate_image_url(self, url):
-		self.assertIsNotNone(url)
-		self.assertTrue(url.startswith('http'))
-		self.assertIn(url[url.rfind('.') + 1 : ], ['jpg', 'jpeg', 'bmp', 'png'])
 
 
 if __name__ == '__main__':

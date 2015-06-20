@@ -5,6 +5,7 @@ from ..db import ImageTrace
 
 class ImageInfoMixin(object):
 	def __init__(self):
+		super(ImageInfoMixin, self).__init__()
 		self._image_source = ImageSource()
 		self._image_trace = []
 		self._step = 1
