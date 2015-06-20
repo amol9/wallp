@@ -8,7 +8,7 @@ from mutils.system import *
 from mutils.html.parser import HtmlParser
 
 from ..web import func as webfunc
-from ..util.logger import log
+from ..util import log, Retry
 from .service import IHttpService, ServiceError
 from .image_info_mixin import ImageInfoMixin
 from .image_urls_mixin import ImageUrlsMixin
@@ -62,7 +62,8 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 			except ImgurError as e:
 				log.error(str(e))
 				retry.retry()
-	
+
+		self.add_trace_step('selected url', image_url)
 		return image_url
 
 
@@ -74,7 +75,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 
 		log.debug('selected page url: ' + page_url)
 
-		image_url, _ = self.get_image_url_from_page(page_url)
+		image_url = self.get_image_url_from_page(page_url)
 		return image_url
 
 
@@ -83,7 +84,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 
 		self.add_trace_step('selected random album', album_url)
 
-		image_url, _ = self.get_image_url_from_page(album_url)
+		image_url = self.get_image_url_from_page(album_url)
 		return image_url
 
 
@@ -95,18 +96,18 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		section = match.group(1)
 
 		if section.startswith('a/'):
-			url, image_count = self.get_url_from_full_album(page_url)
+			url = self.get_url_from_full_album(page_url)
 		elif section.startswith('gallery'):
-			url, image_count = self.get_url_from_gallery_link(page_url)
+			url = self.get_url_from_gallery_link(page_url)
 		else:
-			url, image_count = self.get_url_from_direct_link(page_url)
+			url = self.get_url_from_direct_link(page_url)
 
 		log.debug('imgur: selected url = %s'%url)
 
 		if not url.startswith('http'):
-			url = 'http' + url
+			url = 'http:' + url
 
-		return url, image_count
+		return url
 
 
 	def get_url_from_gallery_link(self, page_url):
@@ -137,12 +138,14 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 
 		if len(image_urls) == 1 :				#single image found
 			log.debug('found 1 image on page')
-			return image_urls[0], 1
+			self._image_count = 1
+			return image_urls[0]
 
 		else:							#multiple images found
 			trunc_div = etree.find('.//div[@id=\'album-truncated\']')
 			if trunc_div == None or not self.get_full_album:		#don't get full album
-				return self.select_url(image_urls)
+				self.add_urls(image_urls)
+				return self.select_url()
 
 			else:								#get full album
 				page_id = page_url[page_url.rfind('/') + 1 : ]
@@ -234,7 +237,8 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 				for item in images_data['items']:
 					urls.append('//i.imgur.com/%s%s'%(item['hash'], item['ext']))
 		
-		return self.select_url(urls)
+		self.add_urls(urls)
+		return self.select_url()
 
 	
 	def search(self, query):

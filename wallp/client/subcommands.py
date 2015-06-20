@@ -1,5 +1,4 @@
 import os
-from os.path import exists
 
 from mutils.system import Scheduler
 
@@ -21,41 +20,11 @@ class Subcommands(object):
 		self.first_run()
 
 
-	def first_run(self):
-		if not exists(Const.data_dir):	
-			os.mkdir(Const.data_dir)
-			log.debug('data directory created')
-
-			create_db = CreateDB()
-			create_db.execute()
-			log.debug('db created')
-		
-
 	def set_args(self, args):
 		self._args = args
 
 	args = property(None, set_args)	
 
-
-	def start_log(self):
-		try:
-			config = Config()
-			log.start(config.get('client.logfile'), loglevel=config.get('client.loglevel'))
-
-		except DBError as e:
-			if self._args.subcommand == 'db' and self._args.dbsubcommand == 'reset':
-				return
-
-			print(str(e))
-			choice = raw_input('Do you want to create a fresh db? [Y/n]:')
-			if choice in ['Y', 'y', '']:
-				self.create_db()
-			else:
-				raise AppError()
-
-		except (ConfigError, NotFoundError) as e:
-			print(str(e))
-			print('continuing without logging')
 
 
 	def add_config_shortcuts(self):

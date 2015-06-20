@@ -2,6 +2,7 @@
 from ..subcommand import Subcommand, subcmd
 from ...client import Client, ChangeWPError
 from ..exc import CommandError
+from ...util import log
 
 
 class ChangeSubcommand(Subcommand):

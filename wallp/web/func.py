@@ -3,6 +3,7 @@ import sys
 from functools import partial
 import socket
 import praw
+import requests
 
 from mutils.system import *
 
@@ -38,7 +39,7 @@ def exc_wrapped_call(func, *args, **kwargs):
 		r = func(*args, **kwargs)
 		return r
 
-	except HTTPError as e:
+	except (HTTPError, requests.exceptions.HTTPError) as e:
 		log.error(str(e))
 		raise DownloadError()
 
@@ -113,11 +114,19 @@ def print_progress_ast():
 	prints('*')
 
 
-def get_subreddit_post_urls(subreddit, limit=10):
+def get_subreddit_post_urls(subreddit, limit=10, query=None):
 	reddit = praw.Reddit(user_agent=Const.app_name, timeout=Const.page_timeout)
 
-	sub = exc_wrapped_call(reddit.get_subreddit, subreddit)
-	posts = exc_wrapped_call(sub.get_hot, limit=limit)
+	if subreddit is None:
+		if query is None:
+			raise ServiceError('no subreddit and no query, not cool')
+		posts = reddit.search(query)
+	else:
+		sub = exc_wrapped_call(reddit.get_subreddit, subreddit)
+		if query is None:
+			posts = exc_wrapped_call(sub.get_hot, limit=limit)
+		else:
+			posts = exc_wrapped_call(sub.search, query)
 
 	urls = [p.url for p in posts]
 	return urls

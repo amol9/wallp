@@ -8,11 +8,12 @@ from ..globals import Const
 from .service import IHttpService, ServiceError
 from ..db import SubredditList, Config
 from .image_info_mixin import ImageInfoMixin
+from .image_urls_mixin import ImageUrlsMixin
 from ..web import func as webfunc
 
 
 @implementer(IHttpService)
-class Reddit(ImageInfoMixin):
+class Reddit(ImageInfoMixin, ImageUrlsMixin):
 	name = 'reddit'
 
 	def __init__(self):
@@ -21,25 +22,27 @@ class Reddit(ImageInfoMixin):
 
 
 	def get_image_url(self, query=None, color=None):
-		subreddit = query
-		if subreddit == None:
+		subreddit = None
+		if query is None:
 			subreddit = SubredditList().get_random()
-		log.info('chosen subreddit: %s'%subreddit)
+			self.add_trace_step('subreddit', subreddit)
+		else:
+			self.add_trace_step('searched', query)
 
-		urls = webfunc.get_subreddit_post_urls(subreddit, limit=self._posts_limit)
-		retry = Retry(retries=3, final_exc=ServiceError())
+		urls = webfunc.get_subreddit_post_urls(subreddit, limit=self._posts_limit, query=query)
+		self.add_urls(urls)
+		retry = Retry(retries=len(urls), final_exc=ServiceError())
 
+		log.debug('%d posts found'%len(urls))
 		while retry.left():
-			url = urls[randint(0, len(urls) - 1)]
-			ext = url[url.rfind('.')+1:]
-
-			log.info('url: ' + url + ', extension: ' + ext)
+			url = self.select_url()
+			ext = url[url.rfind('.') + 1 : ]
 
 			if ext not in Const.image_extensions:
-				if url.find('imgurxx.com') != -1:
+				if url.find('imgur.com') != -1:
 					imgur = Imgur()
 					url = imgur.get_image_url_from_page(url)
-					#ext = url[url.rfind('.')+1:]
+					self.add_trace_from(imgur)
 					retry.cancel()
 				else:
 					log.debug('not a direct link to image')
@@ -47,5 +50,6 @@ class Reddit(ImageInfoMixin):
 			else:
 				retry.cancel()
 
+		self.add_trace_step('selected url', url)
 		return url
 

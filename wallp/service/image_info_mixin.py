@@ -16,6 +16,10 @@ class ImageInfoMixin(object):
 		self._step += 1
 
 
+	def add_trace_from(self, service):
+		self._image_trace += service.image_trace
+
+
 	def get_image_source(self):
 		return self._image_source
 
