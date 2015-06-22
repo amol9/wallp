@@ -5,6 +5,7 @@ from .enable_subcommands import EnableSubcommands
 from .config_subcommands import ConfigSubcommands
 from .info_subcommand import InfoSubcommand
 from .keep_subcommand import KeepSubcommand
+from .list_subcommand import ListSubcommand
 from .log_subcommand import LogSubcommand
 from .schedule_subcommand import ScheduleSubcommand
 

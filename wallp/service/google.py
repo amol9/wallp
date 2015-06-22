@@ -11,8 +11,10 @@ from random import choice
 from os.path import join as joinpath
 from zope.interface import implementer
 
+from mutils.misc.colors import colors
+
 from .. import web
-from ..util import log, colors
+from ..util import log
 from .service import IHttpService
 from .image_info_mixin import ImageInfoMixin
 from ..db import SearchTermList

@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from wallp.client import Client, GetImageError, KeepError 
-from wallp.service import service_factory
+from wallp.service import ServiceFactory
 from wallp.db import Var
 from wallp.db.create_db import CreateDB
 from wallp.globals import Const
@@ -30,17 +30,16 @@ class TestClient(TestCase):
 		pass
 
 
-	def test_all_service(self):
-		#import pdb; pdb.set_trace()
-		for service_type in service_factory.get_all():
-			print('testing ' + service_type.name)
-			self.get_image(service_type.name)
+	def test_all_services(self):
+		for service_name in [name for name, _ in ServiceFactory().services]:
+			print('testing ' + service_name)
+			self.get_image(service_name)
 			
 
 	def get_image(self, service_name):
 		client = Client(service_name=service_name)
 		try:
-			filepath, width, height = client.get_image()
+			filepath, width, height, _ = client.get_image()
 		except GetImageError:
 			return
 

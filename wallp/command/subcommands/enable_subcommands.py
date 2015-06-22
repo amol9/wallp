@@ -1,13 +1,13 @@
 
 from ..subcommand import Subcommand, subcmd, Choices, PositionalArg
 from .list_mixin import ListMixin
-from ...service import service_factory
+from ...service import ServiceFactory
 from ..exc import CommandError
 from ...db import Config
 
 
 class EnableSubcommands(Subcommand, ListMixin):
-	service_choices = [s.name for s in service_factory.services]
+	service_choices = [n for n, _ in ServiceFactory().services]
 	name_choices = Choices(ListMixin.list_choices + service_choices, default=None)
 	
 	@subcmd
@@ -18,8 +18,6 @@ class EnableSubcommands(Subcommand, ListMixin):
 	@subcmd
 	def disable(self, name=name_choices, item=PositionalArg(nargs='?')):
 		self.update(name, item, False)
-
-
 
 
 	def update(self, name, item, state):

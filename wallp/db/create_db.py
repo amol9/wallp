@@ -7,7 +7,7 @@ from os.path import dirname, abspath, join as joinpath
 
 from . import SearchTerm, ImgurAlbum, Subreddit, Base, Config, GlobalVars
 from ..globals import Const
-from ..service import service_factory
+from ..service import ServiceFactory
 from .dbsession import DBSession
 
 
@@ -61,8 +61,8 @@ class CreateDB():
 
 
 	def insert_service_status(self, config):
-		for service in service_factory.get_all():
-			config.add(service.name + '.enabled', True, bool)
+		for service_name in [name for name, _ in ServiceFactory().services]:
+			config.add(service_name + '.enabled', True, bool)
 
 
 	def insert_config_defaults(self, config):

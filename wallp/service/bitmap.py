@@ -5,8 +5,9 @@ from zope.interface import implementer
 import tempfile
 import os
 
+from mutils.misc.colors import colors
+
 from ..util.logger import log
-from ..util.colors import colors
 from ..desktop import get_desktop
 from .service import IImageGenService, ServiceError
 from .image_info_mixin import ImageInfoMixin

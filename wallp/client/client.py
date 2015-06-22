@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from mutils.system import *
 from mutils.image.imageinfo import get_image_info
 
-from ..service import service_factory, ServiceError, IHttpService, IImageGenService
+from ..service import ServiceFactory, ServiceDisabled, NoEnabledServices, ServiceError, IHttpService, IImageGenService
 from ..util.retry import Retry
 from ..util.logger import log
 from ..db import Image
@@ -73,7 +73,7 @@ class Client:
 			log.error('error while changing wallpaper')
 
 		except GetImageError as e:
-			log.error('error while getting image for wallpaper')
+			log.error(str(e))
 			if self._transport is not None:
 				self._transport.write_blocking(WPState.ERROR)
 			raise ChangeWPError()
@@ -123,9 +123,17 @@ class Client:
 
 	def get_service(self):
 		if self._service_name == None:
-			service = service_factory.get_random()
+			try:
+				service = ServiceFactory().get_random()
+			except NoEnabledServices as e:
+				raise GetImageError('all services disabled')
 		else:
-			service = service_factory.get(self._service_name)
+			try:
+				service = ServiceFactory().get(self._service_name)
+			except ServiceDisabled as e:
+				log.error('%s is disabled'%self._service_name)
+				raise GetImageError()
+
 			if service is None:
 				log.error('%s: unknown service or service is disabled'%self._service_name)
 				raise GetImageError()
