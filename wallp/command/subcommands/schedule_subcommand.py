@@ -7,7 +7,14 @@ from ..exc import CommandError
 class ScheduleSubcommand(Subcommand):
 
 	@subcmd
-	def schedule(self, frequency):
+	def schedule(self):
+		pass
+
+
+class ScheduleSubSubcommands(ScheduleSubcommand):
+
+	@subcmd
+	def add(self, frequency):
 		scheduler = Scheduler()
 		try:
 			scheduler.set_frequency(frequency)
@@ -15,3 +22,9 @@ class ScheduleSubcommand(Subcommand):
 			print(str(e))
 			raise CommandError()
 
+
+	@subcmd
+	def remove(self):
+		scheduler = Scheduler()
+		scheduler.remove()
+		
