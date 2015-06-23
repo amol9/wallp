@@ -21,10 +21,11 @@ class SubcmdFunc:
 
 
 class Choices:
-	def __init__(self, list, default=None):
+	def __init__(self, list, default=None, opt=False):
 		self.list = list
 		assert default is None or self.list.index(default) >= 0
 		self.default = default
+		self.opt = opt
 
 	
 class PositionalArg:
@@ -58,7 +59,14 @@ class Subcommand(Command):
 					if self.subparsers._name_parser_map.has_key(func.__name__):
 						raise SubcommandError('added subcommand %s again'%func.__name__)
 
-					parser = self.subparsers.add_parser(func.__name__)
+					funcdoc = func.__doc__ if func.__doc__ is not None else ''
+					help_strings = dict((name.strip(), value.strip()) for name, value in \
+							[line.split(':') for line in \
+							funcdoc.splitlines()])
+
+					parser = self.subparsers.add_parser(func.__name__,
+							formatter_class=self.parser.formatter_class,
+							description=help_strings.get('help', None))
 					subcmd = subcmd_cls(parser)
 
 					argspec = inspect.getargspec(func)
@@ -69,6 +77,7 @@ class Subcommand(Command):
 						default_offset = len(argspec.args) - len(argspec.defaults)
 					else:
 						default_offset = len(argspec.args)
+
 
 					for arg in argspec.args:
 						arg_index = argspec.args.index(arg)
@@ -85,7 +94,7 @@ class Subcommand(Command):
 								choices_obj = default
 								choices = choices_obj.list
 								default = choices_obj.default
-								if default is None:
+								if default is None and not choices_obj.opt:
 									names = [arg]
 							elif default.__class__ == PositionalArg:
 								nargs = default.nargs
@@ -98,7 +107,7 @@ class Subcommand(Command):
 						kwargs = {
 						'default'	: default,
 						'choices'	: choices,
-						'help'		: func.__doc__
+						'help'		: help_strings.get(arg, None)
 						}
 
 						if nargs is not None:

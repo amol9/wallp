@@ -2,16 +2,18 @@ from argparse import ArgumentParser
 import sys
 
 from .exc import CommandError
-
+from .command_help_formatter import CommandHelpFormatter
 
 class Command(object):
 	'Command line handler.'
 
 	def __init__(self):
 		self.argparser = ArgumentParser(prog='wallp',
-						description='A command line utility to download wallpapers from various sources.')
+						description='A command line utility to download wallpapers from various sources.',
+						formatter_class=CommandHelpFormatter)
 
 		self.default_subcommand = None
+		self.formatter_class = CommandHelpFormatter
 		self.add_subcommands()
 
 	
@@ -21,7 +23,7 @@ class Command(object):
 
 
 	def execute(self):
-		if self.default_subcommand is not None and len(sys.argv) == 1:
+		if self.default_subcommand is not None and len(sys.argv) == 1 :
 			sys.argv.append(self.default_subcommand)
 
 		args = self.argparser.parse_args()
@@ -35,7 +37,7 @@ class Command(object):
 
 
 	def add_version(self, version):
-		self.argparser.add_argument('-v', '--version', action='version', version=version, help='print version')
+		self.argparser.add_argument('-v', '--version', action='version', version=version, help='print program version')
 
 	
 	def set_default_subcommand(self, name):
