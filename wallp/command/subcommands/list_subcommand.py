@@ -10,6 +10,9 @@ class ListSubcommand(Subcommand):
 
 	@subcmd
 	def list(self, list_name=list_choices):
+		'''help: print built-in lists
+		list_name: name of the list'''
+
 		if list_name == 'colors':
 			self.list_colors()
 		elif list_name == 'services':

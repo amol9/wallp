@@ -9,6 +9,8 @@ class InfoSubcommand(Subcommand):
 
 	@subcmd
 	def info(self):
+		'help: print information about current wallpaper image.'
+
 		self.print_info()
 
 		

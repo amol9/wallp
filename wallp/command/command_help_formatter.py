@@ -2,8 +2,18 @@ from argparse import HelpFormatter, _SubParsersAction, SUPPRESS
 import os
 import textwrap
 
+from mutils.misc import docstring
+
 
 class CommandHelpFormatter(HelpFormatter):
+
+	def __init__(self, *args, **kwargs):
+		if 'extrahelp' in kwargs.keys():
+			self._extrahelp = kwargs['extrahelp']
+			del kwargs['extrahelp']
+
+		super(CommandHelpFormatter, self).__init__(*args, **kwargs)
+
 
 	def format_help(self):
 		help = self._root_section.format_help()
@@ -17,6 +27,8 @@ class CommandHelpFormatter(HelpFormatter):
 	
 	def _format_usage(self, usage, actions, groups, prefix):
 		help = ''
+		usage = 'usage: ' + self._prog + ' '
+		#import pdb; pdb.set_trace()
 		optionals = []
 		positionals = []
 		for action in actions:
@@ -28,7 +40,7 @@ class CommandHelpFormatter(HelpFormatter):
 
 
 		col1 = 15
-		col2 = 45
+		col2 = 65
 		
 		def format_help_lines(lines):
 			out = ''
@@ -80,26 +92,40 @@ class CommandHelpFormatter(HelpFormatter):
 		for o in optionals:
 			name = ', '.join(o.option_strings)
 			help += format_action(name, o.help, o.choices, o.default)
+			usage += '[%s] '%name
 
 		for p in positionals:
 			if p.__class__ == _SubParsersAction:
 				help += os.linesep + 'subcommands:' + os.linesep
 				for subcmd in p.choices.keys():
 					help += format_action(subcmd, p.choices[subcmd].description, None, None)
+
+				usage += 'subcommand [args...]'
 		
 			else:
+				#import pdb; pdb.set_trace()
 				help += format_action(p.dest, p.help, p.choices, p.default)
+				usage += '%s '%p.dest
 
+			if self._extrahelp is not None:
+				help += os.linesep + docstring.trim(self._extrahelp)
+
+		usage += os.linesep + os.linesep
 		if help == '':
-			help = None
-		return help
+			return None
+
+		return usage + help
+
+
+	def _format_text(self, text):
+		return text + os.linesep
 
 
 	def _zzz_format_action_invocation(self, action):
 		return ''
 
 
-	def _format_action(self, action):
+	def _zzz_format_action(self, action):
 		return ''
 
 	

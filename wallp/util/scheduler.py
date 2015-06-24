@@ -1,5 +1,5 @@
 
-from mutils.system import get_scheduler, FrequencyError, PlatformError
+from mutils.system import get_scheduler, FrequencyError, PlatformError, frequency_help
 from mutils.misc import docstring
 
 from ..globals import Const
@@ -10,6 +10,8 @@ class SchedulerError(Exception):
 
 
 class Scheduler:
+	frequency_help = docstring.trim(frequency_help)
+
 	def __init__(self):
 		try:
 			self._sys_scheduler = get_scheduler()

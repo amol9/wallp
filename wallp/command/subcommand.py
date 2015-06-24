@@ -47,7 +47,7 @@ class Subcommand(Command):
 
 	def add_subcommand(self, subcmd_cls):
 		if self.subparsers is None:
-			self.subparsers = self.parser.add_subparsers(dest=self.__class__.__name__)
+			self.subparsers = self.parser.add_subparsers(dest=self.__class__.__name__.lower())
 		
 		for member_name, member_val in inspect.getmembers(subcmd_cls):
 			if inspect.ismethod(member_val):
@@ -65,6 +65,7 @@ class Subcommand(Command):
 							funcdoc.splitlines()])
 
 					parser = self.subparsers.add_parser(func.__name__,
+							prog=self.parser.prog + ' ' + func.__name__,
 							formatter_class=self.parser.formatter_class,
 							description=help_strings.get('help', None))
 					subcmd = subcmd_cls(parser)
@@ -112,7 +113,11 @@ class Subcommand(Command):
 
 						if nargs is not None:
 							kwargs['nargs'] = nargs
-						parser.add_argument(*names, **kwargs) 
+						parser.add_argument(*names, **kwargs)
+						
+						extrahelp = getattr(func, '__extrahelp__', None)
+						if extrahelp is not None:
+							parser.set_extrahelp(extrahelp)
 
 					if not subcmd.subparsers:
 						parser.set_defaults(subcmd_func=SubcmdFunc(subcmd, func, argspec.args))
