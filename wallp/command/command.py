@@ -1,14 +1,15 @@
-from argparse import ArgumentParser
 import sys
 
 from .exc import CommandError
 from .command_help_formatter import CommandHelpFormatter
+from .commandparser import CommandParser
+
 
 class Command(object):
 	'Command line handler.'
 
 	def __init__(self):
-		self.argparser = ArgumentParser(prog='wallp',
+		self.argparser = CommandParser(prog='wallp',
 						description='A command line utility to download wallpapers from various sources.',
 						formatter_class=CommandHelpFormatter)
 

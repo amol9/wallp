@@ -16,9 +16,6 @@ class CommandHelpFormatter(HelpFormatter):
 
 	
 	def _format_usage(self, usage, actions, groups, prefix):
-		#print 'fusage'
-		#if usage is None and not actions:
-			#return self._prog
 		help = ''
 		optionals = []
 		positionals = []
@@ -34,71 +31,64 @@ class CommandHelpFormatter(HelpFormatter):
 		col2 = 45
 		
 		def format_help_lines(lines):
-			help = ''
+			out = ''
 			first_line = True
 			at_least_one_line = False
 
 			for line in lines:
 				if first_line:
-					help += line
+					out += line
 					first_line = False
 				else:
-					help += '{0:<15}{1}'.format('', line)
-				help += os.linesep
+					out += ('{0:<%d}{1}'%col1).format('', line)
+				out += os.linesep
 				at_least_one_line = True
 
 			if not at_least_one_line:
-				help += os.linesep
-			return help
+				out += os.linesep
+			return out
 
-		for o in optionals:	#choices, default, help
-			opt_help = o.help
-			opt_help_lines = []
-			if opt_help is not None:
-				if len(opt_help) > col2:
-					opt_help_lines = textwrap.wrap(opt_help, col2)
-				else:
-					opt_help_lines = [opt_help]
+		def format_action(name, helptext, choices, default):
 
-			choices_lines = []
-			if o.choices is not None:
-				choices = 'choices: ' + ', '.join(o.choices)
+			out = ''
+			def wrap(text):
+				lines = []
+				if text is not None and len(text) > 0:
+					lines = textwrap.wrap(text, col2)
+				return lines
 
-				if len(choices) > col2:
-					choices_lines = textwrap.wrap(choices)
-				else:
-					choices_lines = [choices]
+			help_lines = wrap(helptext)
 
-			default_lines = []
-			if not o.default in [None, SUPPRESS] :
-				#import pdb; pdb.set_trace()
-				default_lines = ['default: ' + o.default]
+			if choices is not None:
+				choices = 'choices: ' + ', '.join(choices)
 
-			help += ('{0:<%d}'%(col1)).format(', '.join(o.option_strings))
+			choices_lines = wrap(choices)
+
+			if not default in [None, SUPPRESS] :
+				default = 'default: ' + default
+			else:
+				default = None
 			
-			help += format_help_lines(opt_help_lines + choices_lines + default_lines)
+			default_lines = wrap(default)
+
+			out += ('{0:<%d}'%(col1)).format(name)			
+			out += format_help_lines(help_lines + choices_lines + default_lines)
+
+			return out
+
+
+		for o in optionals:
+			name = ', '.join(o.option_strings)
+			help += format_action(name, o.help, o.choices, o.default)
 
 		for p in positionals:
 			if p.__class__ == _SubParsersAction:
-				#import pdb; pdb.set_trace()
 				help += os.linesep + 'subcommands:' + os.linesep
 				for subcmd in p.choices.keys():
-					help += ('{0:<%d}'%(col1)).format(subcmd)
-					subcmd_help = p.choices[subcmd].description
-					subcmd_help_lines = []
-					if subcmd_help is not None:
-						if len(subcmd_help) > col2:
-							subcmd_help_lines = textwrap.wrap(subcmd_help, col2)
-						else:
-							subcmd_help_lines = [subcmd_help]
-					help += format_help_lines(subcmd_help_lines)
-
-
+					help += format_action(subcmd, p.choices[subcmd].description, None, None)
+		
 			else:
-				help += p.__class__.__name__
-
-		#_SubparsersAction
-		#_StoreAction
+				help += format_action(p.dest, p.help, p.choices, p.default)
 
 		if help == '':
 			help = None
