@@ -18,7 +18,6 @@ class CommandHelpFormatter(HelpFormatter):
 
 	def format_help(self):
 		help = self._root_section.format_help()
-		#help = self._prog
 		if help:
 		    help = self._long_break_matcher.sub('\n\n', help)
 		    help = help.strip('\n') + '\n'
@@ -29,7 +28,7 @@ class CommandHelpFormatter(HelpFormatter):
 	def _format_usage(self, usage, actions, groups, prefix):
 		help = ''
 		usage = 'usage: ' + self._prog + ' '
-		#import pdb; pdb.set_trace()
+
 		optionals = []
 		positionals = []
 		for action in actions:
@@ -38,11 +37,9 @@ class CommandHelpFormatter(HelpFormatter):
 			else:
 				positionals.append(action)
 
-
-
 		col1 = 15
 		terminal_width, _ = terminalsize.get_terminal_size()
-		col2 = terminal_width - 15
+		col2 = terminal_width - col1
 		
 		def format_help_lines(lines):
 			out = ''
@@ -107,7 +104,6 @@ class CommandHelpFormatter(HelpFormatter):
 				usage += 'subcommand [args...]'
 		
 			else:
-				#import pdb; pdb.set_trace()
 				help += format_action(p.dest, p.help, p.choices, p.default)
 				usage += '%s '%p.dest
 
@@ -122,32 +118,5 @@ class CommandHelpFormatter(HelpFormatter):
 
 
 	def _format_text(self, text):
-		return text + os.linesep
-
-
-	def _zzz_format_action_invocation(self, action):
-		return ''
-
-
-	def _zzz_format_action(self, action):
-		return ''
-
-	
-	def _zzz_metavar_formatter(self, action, default_metavar):
-		if action.metavar is not None:
-			result = action.metavar
-		elif action.choices is not None:
-			choice_strs = [str(choice) for choice in action.choices]
-			#result = '{%s}' % ','.join(choice_strs)
-			result = os.linesep.join(choice_strs)
-		else:
-			result = default_metavar
-
-		def format(tuple_size):
-			if isinstance(result, tuple):
-				return result
-			else:
-				return (result, ) * tuple_size
-		return format
-
+		return docstring.trim(text) + os.linesep
 
