@@ -22,7 +22,7 @@ class ConfigSubcommands(Subcommand):
 
 	@subcmd
 	def get(self, name):
-		'''help: print value of a setting.
+		'''Print value of a setting.
 		name: name of the setting. "all" for printing values for all settings.'''
 
 		config = Config()
@@ -32,7 +32,7 @@ class ConfigSubcommands(Subcommand):
 
 	@subcmd
 	def set(self, name, value):
-		'''help: assign a value to a setting.
+		'''Assign a value to a setting.
 		name: name of the setting.
 		value: value of the setting'''
 

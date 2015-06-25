@@ -8,7 +8,7 @@ class AddSubcommand(Subcommand, ListMixin):
 
 	@subcmd
 	def add(self, list_name=list_name_choices, item=PositionalArg()):
-		'''help: add an item (url or name or string) to the given list.
+		'''Add an item (url or name or string) to the given list.
 		list_name: name of the list
 		item: item to be added'''
 

@@ -12,7 +12,7 @@ class EnableSubcommands(Subcommand, ListMixin):
 	
 	@subcmd
 	def enable(self, name=name_choices, item=PositionalArg(nargs='?')):
-		'''help: enable a service or an item in a list.
+		'''Enable a service or an item in a list.
 		name: name of the service or value of an item in a list
 		item: item to be enabled, (not needed if name is a service)'''
 
@@ -21,7 +21,7 @@ class EnableSubcommands(Subcommand, ListMixin):
 
 	@subcmd
 	def disable(self, name=name_choices, item=PositionalArg(nargs='?')):
-		'''help: disable a service or an item in a list.
+		'''Disable a service or an item in a list.
 		name: name of the service or value of an item in a list
 		item: item to be disabled, (not needed if name is a service)'''
 

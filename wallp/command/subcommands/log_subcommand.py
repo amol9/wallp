@@ -10,9 +10,9 @@ class LogSubcommand(Subcommand):
 
 	@subcmd
 	def log(self, filename, level=level_choices):
-		'''help: set log file and log level
-		level: log level
-		filename: file to store the log, use "stdout" to just print it to screen'''
+		'''Set log file and log level.
+		filename: file to store the log, use "stdout" to just print it to screen
+		level: log level'''
 
 		config = Config()
 		config.set('client.logfile', filename)

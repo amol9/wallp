@@ -1,7 +1,6 @@
 import sys
 
 from ..version import __version__
-from . import ArgParser
 from ..command import Command
 from .init import first_run, start_log
 

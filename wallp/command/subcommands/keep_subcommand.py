@@ -15,7 +15,7 @@ class KeepSubcommand(Subcommand):
 
 	@subcmd
 	def keep(self, period):
-		'''help: keep the wallpaper unchanged for a certain period of time.
+		'''Keep the wallpaper unchanged for a certain period of time.
 		period: time period'''
 		import pdb; pdb.set_trace()
 

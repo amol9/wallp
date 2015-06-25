@@ -8,7 +8,7 @@ class DbSubcommand(Subcommand):
 
 	@subcmd
 	def db(self):
-		'help: database commands'
+		'Database commands.'
 		pass
 
 
@@ -16,7 +16,8 @@ class DbSubSubCommands(DbSubcommand):
 
 	@subcmd
 	def reset(self):
-		'help: reset the database, **WARNING** all custom settings, image history, etc. will be lost'
+		'''Reset the database.
+		**WARNING** all custom settings, image history, etc. will be lost.'''
 
 		choice = raw_input('Are you sure you want to reset the db? [y/N]:')
 		if choice == 'y':
@@ -33,8 +34,16 @@ class DbSubSubCommands(DbSubcommand):
 
 	@subcmd
 	def backup(self, path):
-		'''help: backup the database
+		'''Backup the database.
 		path: path to the directory or the file where backup will be stored'''
+
+		print('not implemented')
+
+
+	@subcmd
+	def restore(self, path):
+		'''Restore the database.
+		path: path to the database backup file to restore from'''
 
 		print('not implemented')
 

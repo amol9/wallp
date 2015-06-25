@@ -11,7 +11,7 @@ class ChangeSubcommand(Subcommand):
 	
 	@subcmd
 	def change(self, service=service_choices, query=None, color=None):
-		'''help: change the wallpaper
+		'''Change the wallpaper.
 		service: service name to get the wallpaper from
 		query: search term, specify multiple words by enclosing them in quotes
 		color: preferred color'''

@@ -3,6 +3,7 @@ import os
 import textwrap
 
 from mutils.misc import docstring
+from mutils.system import terminalsize
 
 
 class CommandHelpFormatter(HelpFormatter):
@@ -40,7 +41,8 @@ class CommandHelpFormatter(HelpFormatter):
 
 
 		col1 = 15
-		col2 = 65
+		terminal_width, _ = terminalsize.get_terminal_size()
+		col2 = terminal_width - 15
 		
 		def format_help_lines(lines):
 			out = ''
@@ -65,11 +67,13 @@ class CommandHelpFormatter(HelpFormatter):
 			out = ''
 			def wrap(text):
 				lines = []
-				if text is not None and len(text) > 0:
+				if text is not None and len(text) > 0 :
 					lines = textwrap.wrap(text, col2)
 				return lines
 
-			help_lines = wrap(helptext)
+			help_lines = []
+			for help_line in helptext.split('\n'):
+				help_lines += wrap(help_line.strip())
 
 			if choices is not None:
 				choices = 'choices: ' + ', '.join(choices)

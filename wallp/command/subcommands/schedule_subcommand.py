@@ -9,7 +9,7 @@ class ScheduleSubcommand(Subcommand):
 
 	@subcmd
 	def schedule(self):
-		'help: commands to schedule changing of wallpaper'
+		'Commands to schedule changing of wallpaper.'
 		pass
 
 
@@ -17,7 +17,7 @@ class ScheduleSubSubcommands(ScheduleSubcommand):
 
 	@subcmd
 	def add(self, frequency):
-		'''help: add schedule.
+		'''Add schedule.
 		frequency: time frequency for changing wallpaper'''
 
 		scheduler = Scheduler()
@@ -32,7 +32,7 @@ class ScheduleSubSubcommands(ScheduleSubcommand):
 
 	@subcmd
 	def remove(self):
-		'help: remove schedule.'
+		'Remove schedule.'
 
 		scheduler = Scheduler()
 		scheduler.remove()

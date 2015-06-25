@@ -1,6 +1,7 @@
 import inspect
 
 from .command import Command
+from mutils.misc import docstring
 
 
 def subcmd(func):
@@ -60,9 +61,7 @@ class Subcommand(Command):
 						raise SubcommandError('added subcommand %s again'%func.__name__)
 
 					funcdoc = func.__doc__ if func.__doc__ is not None else ''
-					help_strings = dict((name.strip(), value.strip()) for name, value in \
-							[line.split(':') for line in \
-							funcdoc.splitlines()])
+					help_strings = docstring.extract_help(func)
 
 					parser = self.subparsers.add_parser(func.__name__,
 							prog=self.parser.prog + ' ' + func.__name__,
