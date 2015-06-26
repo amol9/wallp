@@ -11,14 +11,15 @@ class Image(Base):
 	id = 		Column(Integer, primary_key=True)
 	type = 		Column(String(10))
 	filepath = 	Column(String(256))
-	artist = 	Column(String(50))
 	url = 		Column(String(512))
 	time = 		Column(Integer)
 	width = 	Column(Integer)
 	height = 	Column(Integer)
 	size = 		Column(Integer)
-	description = 	Column(String(256))
 	score = 	Column(Integer)
+	artist = 	Column(String(50))
+	description = 	Column(String(256))
+	context_url = 	Column(String(512))
 
 	trace = 	relationship('ImageTrace')
 

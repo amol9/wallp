@@ -208,6 +208,7 @@ class Client:
 
 		image_source = service.image_source
 		image.description = image_source.description
+		image.context_url = image_source.context_url
 		image.artist = image.artist
 
 		image.trace = service.image_trace

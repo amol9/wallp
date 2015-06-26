@@ -17,11 +17,13 @@ from .. import web
 from ..util import log
 from .service import IHttpService
 from .image_info_mixin import ImageInfoMixin
+from .image_urls_mixin import ImageUrlsMixin
+from .image_source import ImageSource
 from ..db import SearchTermList
 
 
 @implementer(IHttpService)
-class Google(ImageInfoMixin):
+class Google(ImageInfoMixin, ImageUrlsMixin):
 	name = 'google'
 	search_base_url = "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&"
 
@@ -30,11 +32,13 @@ class Google(ImageInfoMixin):
 
 
 	def get_image_url(self, query=None, color=None):
-		image_urls = self.search(query, color)
+		if self.image_urls_available():
+			image_url = self.select_url()
+			return image_url
 
-		image_url = choice(image_urls)
-		self.add_trace_step('selected random url', image_url)
-		log.debug('selected url: %s'%image_url)
+		self.search(query, color)
+		#self.add_urls(image_urls)
+		image_url = self.select_url()
 
 		return image_url
 
@@ -42,17 +46,20 @@ class Google(ImageInfoMixin):
 	def search(self, query, color):
 		if query is None:
 			query = SearchTermList().get_random()
+			self.add_trace_step('random search term', query)
 
 		if color is None:
 			color = choice(list(colors.keys()))
-		self.add_trace_step('preferred color', color)
+			self.add_trace_step('random color', color)
+		else:
+			self.add_trace_step('color', color)
 
 		params = {
-			'q': 		query,
-			'imgc': 	'color', 	# or gray
-			'imgcolor': 	color,
-			'rsz': 		8,
-			'imgsz': 	'xxlarge' 	# or xlarge, xxlarge, huge, large
+			'q'		: query,
+			'imgc'		: 'color', 	# or gray
+			'imgcolor'	: color,
+			'rsz'		: 8,
+			'imgsz'		: 'xxlarge' 	# or xlarge, xxlarge, huge, large
 		}
 
 		search_url = self.search_base_url + urlencode(params) + "&start=" + str(0)
@@ -68,10 +75,8 @@ class Google(ImageInfoMixin):
 			raise ServiceError()
 
 		image_urls = []
-
 		for r in results:
-			image_urls.append(r['url'])
-
-
-		return image_urls
+			self.add_url(r['url'], ImageSource(title=r['titleNoFormatting'], context_url=r['originalContextUrl']))
+			#image_urls.append(r['url'])
+		
 

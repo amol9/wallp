@@ -28,10 +28,11 @@ class ImgurError(Exception):
 class Imgur(ImageInfoMixin, ImageUrlsMixin):
 	name = 'imgur'
 
-	search_url = "http://imgur.com/search?"
-	search_result_link_prefix = "http://imgur.com"
-	imgur_base_url_regex = re.compile('https?://imgur.com/(.*)')
-	imgur_gallery_base_url = 'http://imgur.com/gallery/'
+	search_url 			= "http://imgur.com/search?"
+	search_result_link_prefix 	= "http://imgur.com"
+	imgur_base_url_regex 		= re.compile('https?://imgur.com/(.*)')
+	imgur_gallery_base_url 		= 'http://imgur.com/gallery/'
+	image_div_img_url_prefix 	= 'http:'
 
 	def __init__(self):
 		super(Imgur, self).__init__()
@@ -41,6 +42,10 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 
 
 	def get_image_url(self, query=None, color=None):
+		if self.image_urls_available():
+			image_url = self.select_url()
+			return image_url
+
 		image_url = None
 		search = album = False
 
@@ -51,19 +56,14 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 			search = choice([True, False])
 			album = not search
 
-		retry = Retry(retries=3, final_exc=ServiceError())
-		while retry.left():
-			try:
-				if search:
-					image_url = self.get_image_url_from_search(query)
-				elif album:
-					image_url = self.get_image_url_from_random_album()
-				retry.cancel()
-			except ImgurError as e:
-				log.error(str(e))
-				retry.retry()
+		try:
+			if search:
+				image_url = self.get_image_url_from_search(query)
+			elif album:
+				image_url = self.get_image_url_from_random_album()
+		except ImgurError as e:
+			log.error(str(e))
 
-		self.add_trace_step('selected url', image_url)
 		return image_url
 
 
@@ -71,7 +71,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		results = self.search(query)
 
 		page_url = self.search_result_link_prefix + choice(results)
-		self.add_trace_step('selected page from results', page_url)
+		self.add_trace_step('selected page', page_url)
 
 		log.debug('selected page url: ' + page_url)
 
@@ -101,11 +101,6 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 			url = self.get_url_from_gallery_link(page_url)
 		else:
 			url = self.get_url_from_direct_link(page_url)
-
-		log.debug('imgur: selected url = %s'%url)
-
-		if not url.startswith('http'):
-			url = 'http:' + url
 
 		return url
 
@@ -138,6 +133,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 
 		if len(image_urls) == 1 :				#single image found
 			log.debug('found 1 image on page')
+			self.add_trace_step('found one image', image_urls[0])
 			self._image_count = 1
 			return image_urls[0]
 
@@ -201,7 +197,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		for div in image_divs:
 			img = div.find('.//img')
 			if img is not None:
-				image_urls.append(img.attrib['src'])
+				image_urls.append(self.image_div_img_url_prefix + img.attrib['src'])
 
 		if len(image_urls) == 0 :
 			log.error('no images found on page')
@@ -225,7 +221,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 			for div in image_divs:
 				a = div.find('.//a')
 				if a is not None:
-					urls.append(a.attrib['href'])
+					urls.append(self.image_div_img_url_prefix + a.attrib['href'])
 
 		else:				#really big album
 			log.debug('really big album')
@@ -235,7 +231,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 			if matches is not None:
 				images_data = json.loads(matches[0])
 				for item in images_data['items']:
-					urls.append('//i.imgur.com/%s%s'%(item['hash'], item['ext']))
+					urls.append('http://i.imgur.com/%s%s'%(item['hash'], item['ext']))
 		
 		self.add_urls(urls)
 		return self.select_url()
@@ -244,6 +240,8 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 	def search(self, query):
 		if query is None:
 			query = SearchTermList().get_random()
+			self.add_trace_step('random search term', query)
+
 		qs = {
 			'q_size_px'	: 'med',
 			'q_size_mpx'	: 'med',
