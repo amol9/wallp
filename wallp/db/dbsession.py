@@ -1,10 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from os.path import exists
+import sys
 
 from . import *
 from ..globals import Const
 from .exc import DBError
+from ..util import log
 
 
 class DBSession():
@@ -18,10 +20,13 @@ class DBSession():
 			db_path = Const.db_path if db_path is None else db_path
 			if not create_db:
 				if not exists(db_path):
-					raise DBError('no db found')
+					print('no db found')
+					print('create a new database using \'wallp db reset\'')
+					sys.exit(1)
 
 			engine = create_engine('sqlite:///' + db_path, echo=Const.debug)
 			DBSession.session_class = sessionmaker(bind=engine)
+
 
 		if DBSession.instance is None:
 			DBSession.instance = DBSession.session_class()

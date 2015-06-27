@@ -27,7 +27,7 @@ def create_db():
 def start_log():
 	try:
 		if not db_exists():
-			choice = raw_input('Do you want to create a fresh db? [Y/n]:')
+			choice = raw_input('Do you want to create a fresh db? [Y/n]: ')
 			if choice in ['Y', 'y', '']:
 				create_db()
 

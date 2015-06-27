@@ -50,6 +50,12 @@ def exc_wrapped_call(func, *args, **kwargs):
 		raise DownloadError()
 
 
+def exc_wrapped(func):
+	def new_func(*args, **kwargs):
+		return exc_wrapped_call(func, *args, **kwargs)
+	return new_func
+
+
 def download(url, save_filepath=None, progress=True, nocache=False, open_file=None):
 	if not nocache and Const.cache_enabled:
 		data = WebCache().get(url)
@@ -114,6 +120,7 @@ def print_progress_ast():
 	prints('*')
 
 
+@exc_wrapped
 def get_subreddit_post_urls(subreddit, limit=10, query=None):
 	reddit = praw.Reddit(user_agent=Const.app_name, timeout=Const.page_timeout)
 
@@ -122,12 +129,11 @@ def get_subreddit_post_urls(subreddit, limit=10, query=None):
 			raise ServiceError('no subreddit and no query, not cool')
 		posts = reddit.search(query)
 	else:
-		sub = exc_wrapped_call(reddit.get_subreddit, subreddit)
+		sub = reddit.get_subreddit(subreddit)
 		if query is None:
-			posts = exc_wrapped_call(sub.get_hot, limit=limit)
+			posts = sub.get_hot(limit=limit)
 		else:
-			posts = exc_wrapped_call(sub.search, query)
-
-	urls = [p.url for p in posts]
-	return urls
+			posts = sub.search(query)
+	
+	return posts
 

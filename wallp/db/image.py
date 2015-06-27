@@ -18,7 +18,8 @@ class Image(Base):
 	size = 		Column(Integer)
 	score = 	Column(Integer)
 	artist = 	Column(String(50))
-	description = 	Column(String(256))
+	title =		Column(String(256))
+	description = 	Column(String(1024))
 	context_url = 	Column(String(512))
 
 	trace = 	relationship('ImageTrace')

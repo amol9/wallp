@@ -12,7 +12,7 @@ from ..util import log
 
 
 class ServiceInfo:
-	def __init__(self, service_class, enabled):
+	def __init__(self, service_class, enabled=False):
 		self.service_class = service_class
 		self.enabled = enabled
 
@@ -28,58 +28,66 @@ class NoEnabledServices(Exception):
 class _ServiceFactory():
 	def __init__(self):
 		self._services = {}
-		self.add(Bing.name, Bing)
-		self.add(Bitmap.name, Bitmap)
-		self.add(DeviantArt.name, DeviantArt)
-		self.add(Google.name, Google)
-		self.add(Imgur.name, Imgur)
-		self.add(Reddit.name, Reddit)
+		self.add(Bing)
+		self.add(Bitmap)
+		self.add(DeviantArt)
+		self.add(Google)
+		self.add(Imgur)
+		self.add(Reddit)
+
+		self._status_loaded = False
+
+
+	def add(self, service_class):
+		self._services[service_class.name] = ServiceInfo(service_class)
 
 	
-	def add(self, service_name, service_class):
+	def load_status(self):
+		if self._status_loaded:
+			return
 		config = Config()
-		enabled = False
-		try:
-			enabled = config.get(service_name + '.enabled')
-		except ConfigError as e:
-			log.error(str(e))
+		for service_name in self._services.keys():
+			try:
+				enabled = config.get(service_name + '.enabled')
+				self._services[service_name].enabled = enabled
+			except ConfigError as e:
+				log.error(str(e))
 
-		self._services[service_name] = ServiceInfo(service_class, enabled)
 
 
 	def get(self, service_name):
-		config = Config()
-		enabled = False
-		try:
-			enabled = config.get(service_name + '.enabled')
-		except ConfigError as e:
-			log.error(str(e))
-			raise ServiceDisabled()
+		self.load_status()
 
-		if not enabled:
-			raise ServiceDisabled()
-
-		service = self._services.get(service_name, None)
-		if service:
-			return service.service_class()
-		return None
+		service_info = self._services.get(service_name, None)
+		if service_info is not None:
+			if not service_info.enabled:
+				raise ServiceDisabled()
+			return service_info.service_class()
 
 
 	def get_random(self):
+		self.load_status()
+
 		enabled_services = [s for s in self._services.values() if s.enabled]
 		if len(enabled_services) == 0:
 			raise NoEnabledServices()
 
-		service = choice(enabled_services)
-		return service.service_class()
+		service_info = choice(enabled_services)
+		return service_info.service_class()
 
 
 	def get_all(self):
 		return list([(name, info.enabled) for (name, info) in  self._services.items()])
 
 
+	def get_service_names(self):
+		return self._services.keys()
+
+
 	services = property(get_all)
+	service_names = property(get_service_names)
 
 
 class ServiceFactory(Singleton):
 	classtype = _ServiceFactory
+

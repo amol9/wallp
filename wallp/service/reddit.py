@@ -9,6 +9,7 @@ from .service import IHttpService, ServiceError
 from ..db import SubredditList, Config
 from .image_info_mixin import ImageInfoMixin
 from .image_urls_mixin import ImageUrlsMixin
+from .image_context import ImageContext
 from ..web import func as webfunc
 
 
@@ -29,13 +30,15 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 		else:
 			self.add_trace_step('searched', query)
 
-		urls = webfunc.get_subreddit_post_urls(subreddit, limit=self._posts_limit, query=query)
-		self.add_urls(urls)
-		retry = Retry(retries=len(urls), final_exc=ServiceError())
+		posts = webfunc.get_subreddit_post_urls(subreddit, limit=self._posts_limit, query=query)
+		for p in posts:
+			self.add_url(p.url, ImageContext(artist=p.author.name, title=p.title, url=p.permalink))
 
-		log.debug('%d posts found'%len(urls))
+		retry = Retry(retries=self.image_count, final_exc=ServiceError())
+		log.debug('%d posts found'%self.image_count)
+
 		while retry.left():
-			url = self.select_url()
+			url = self.select_url(add_trace_step=False)
 			ext = url[url.rfind('.') + 1 : ]
 
 			if ext not in Const.image_extensions:
@@ -48,8 +51,8 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 					log.debug('not a direct link to image')
 					retry.retry()
 			else:
+				self.add_trace_step('selected url', url)
 				retry.cancel()
 
-		self.add_trace_step('selected url', url)
 		return url
 

@@ -7,7 +7,7 @@ from ...db import Config
 
 
 class EnableSubcommands(Subcommand, ListMixin):
-	service_choices = [n for n, _ in ServiceFactory().services]
+	service_choices = ServiceFactory().service_names
 	name_choices = Choices(ListMixin.list_choices + service_choices, default=None)
 	
 	@subcmd

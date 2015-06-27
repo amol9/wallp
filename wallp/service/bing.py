@@ -16,10 +16,12 @@ from . import IHttpService, ServiceError
 from ..desktop import get_desktop, get_standard_desktop_size
 from ..util import Retry
 from .image_info_mixin import ImageInfoMixin
+from .image_urls_mixin import ImageUrlsMixin
+from .image_context import ImageContext
 
 
 @implementer(IHttpService)
-class Bing(ImageInfoMixin):
+class Bing(ImageInfoMixin, ImageUrlsMixin):
 	name 		= 'bing'
 	image_list_url 	= 'http://www.bing.com/gallery/home/browsedata'
 	app_js_url 	= 'http://az615200.vo.msecnd.net/site/scripts/app.f21eb9ba.js'
@@ -34,12 +36,30 @@ class Bing(ImageInfoMixin):
 
 
 	def get_image_url(self, query=None, color=None):
-		image_names = self.get_image_names()
+		self.get_image_urls()
 
-		if image_names is None or len(image_names) == 0:
-			log.error('bing: no images found at %s'%image_list_url)
+		if self.image_count == 0:
+			log.error('bing: no images found at %s'%self.image_list_url)
 			raise ServiceError()
+		
+		retry = Retry(retries=10, final_exc=ServiceError())
 
+		while (retry.left()):		
+			image_url = self.select_url(add_trace_step=False)
+			if web.func.exists(image_url):
+				self.add_trace_step('selected url', image_url)
+				return image_url
+			retry.retry()
+
+
+	def get_nearest_size(self, width, height):
+		nwidth = min(self.valid_sizes, key=lambda p: abs(width - p[0]))[0]
+		nheight = min([(x, y) for (x, y) in self.valid_sizes if x == nwidth], key=lambda p: abs(height - p[1]))[1]
+
+		return (nwidth, nheight)
+
+
+	def get_image_urls(self):
 		server_url = self.get_image_server()
 
 		if server_url == None:
@@ -53,30 +73,6 @@ class Bing(ImageInfoMixin):
 		if not (width, height) in self.valid_sizes:
 			width, height = self.get_nearest_size(width, height)
 
-		retry = Retry(retries=3, final_exc=ServiceError())
-
-		while (retry.left()):		
-			image_name = image_names[randint(0, len(image_names) - 1)]
-			image_url = 'http:' + server_url + image_name + '_' + str(width) + 'x' + str(height) + '.' + ext
-			log.debug('bing image url: ' + image_url)
-
-			#save_filepath = joinpath(pictures_dir, basename) + '.' + ext
-
-			if web.func.exists(image_url):
-				return image_url
-			retry.retry()
-
-		return image_url
-
-
-	def get_nearest_size(self, width, height):
-		nwidth = min(self.valid_sizes, key=lambda p: abs(width - p[0]))[0]
-		nheight = min([(x, y) for (x, y) in self.valid_sizes if x == nwidth], key=lambda p: abs(height - p[1]))[1]
-
-		return (nwidth, nheight)
-
-
-	def get_image_names(self):
 		jsfile = web.func.get_page(self.image_list_url) 
 
 		data_regex = re.compile(".*browseData=({.*});.*")
@@ -85,7 +81,17 @@ class Bing(ImageInfoMixin):
 		if m:
 			data = m.group(1)
 			jdata = json.loads(data)
-			return jdata['imageNames']
+
+			for i in range(len(jdata['imageNames'])):
+				image_name = jdata['imageNames'][i]
+				image_url = 'http:' + server_url + image_name + '_' + str(width) + 'x' + str(height) + '.' + ext
+
+				desc = 'country    : %s\ntags       : %s\nholidays   : %s\
+					\nregion     : %s\ncolor      : %s\ncategories : %s'\
+					%(jdata['countries'][i], jdata['tags'][i], jdata['holidays'][i],
+					jdata['regions'][i], jdata['colors'][i], jdata['categories'][i])
+
+				self.add_url(image_url, ImageContext(description=desc))
 		
 		return None
 

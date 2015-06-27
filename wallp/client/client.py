@@ -206,10 +206,11 @@ class Client:
 
 		image.size = os.stat(wp_path).st_size
 
-		image_source = service.image_source
-		image.description = image_source.description
-		image.context_url = image_source.context_url
-		image.artist = image.artist
+		image_context = service.image_context
+		image.title = image_context.title
+		image.description = image_context.description[0: 1024] if image_context.description is not None else None
+		image.context_url = image_context.url
+		image.artist = image_context.artist
 
 		image.trace = service.image_trace
 

@@ -1,12 +1,12 @@
 
-from .image_source import ImageSource
+from .image_context import ImageContext
 from ..db import ImageTrace
 
 
 class ImageInfoMixin(object):
 	def __init__(self):
 		super(ImageInfoMixin, self).__init__()
-		self._image_source = ImageSource()
+		self._image_context = ImageContext()
 		self._image_trace = []
 		self._step = 1
 
@@ -20,14 +20,14 @@ class ImageInfoMixin(object):
 		self._image_trace += service.image_trace
 
 
-	def get_image_source(self):
-		return self._image_source
+	def get_image_context(self):
+		return self._image_context
 
 
 	def get_image_trace(self):
 		return self._image_trace
 
 
-	image_source = property(get_image_source)
+	image_context = property(get_image_context)
 	image_trace = property(get_image_trace)
 

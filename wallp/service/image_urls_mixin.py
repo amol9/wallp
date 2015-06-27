@@ -9,22 +9,26 @@ class ImageUrlsMixin(object):
 	def __init__(self):
 		super(ImageUrlsMixin, self).__init__()
 		self._image_urls = []
-		self._image_count = None
-		self._image_info = {}
+		self._image_contexts = {}
 
 	def add_urls(self, image_urls):
 		if len(image_urls) == 0:
 			raise ServiceError()
 		self._image_urls += image_urls
-		self._image_count = len(image_urls)
 
 
-	def add_url(self, image_url, image_source_info):
+	def add_url(self, image_url, image_context):
 		self._image_urls.append(image_url)
-		self._image_info[image_url] = image_source_info
+		self._image_contexts[image_url] = image_context
 
 
-	def select_url(self):
+	def get_image_count(self):
+		return len(self._image_urls)
+
+	image_count = property(get_image_count)
+
+
+	def select_url(self, add_trace_step=True):
 		if len(self._image_urls) == 0:
 			raise ServiceError()
 
@@ -39,11 +43,13 @@ class ImageUrlsMixin(object):
 			if dbfunc.image_url_seen(image_url):
 				continue
 			else:
-				self.add_trace_step('selected url', image_url)
-				log.debug('selected url: %s'%image_url)
-				self._image_source = self._image_info.get(image_url, None)
+				if add_trace_step:
+					self.add_trace_step('selected url', image_url)
+					log.debug('selected url: %s'%image_url)
+				image_context = self._image_contexts.get(image_url, None)
+				if image_context is not None:
+					self._image_context = image_context
 
-				import pdb; pdb.set_trace()
 				return image_url
 
 

@@ -18,7 +18,7 @@ from ..util import log
 from .service import IHttpService
 from .image_info_mixin import ImageInfoMixin
 from .image_urls_mixin import ImageUrlsMixin
-from .image_source import ImageSource
+from .image_context import ImageContext
 from ..db import SearchTermList
 
 
@@ -37,7 +37,6 @@ class Google(ImageInfoMixin, ImageUrlsMixin):
 			return image_url
 
 		self.search(query, color)
-		#self.add_urls(image_urls)
 		image_url = self.select_url()
 
 		return image_url
@@ -76,7 +75,6 @@ class Google(ImageInfoMixin, ImageUrlsMixin):
 
 		image_urls = []
 		for r in results:
-			self.add_url(r['url'], ImageSource(title=r['titleNoFormatting'], context_url=r['originalContextUrl']))
-			#image_urls.append(r['url'])
+			self.add_url(r['url'], ImageContext(title=r['titleNoFormatting'], url=r['originalContextUrl']))
 		
 

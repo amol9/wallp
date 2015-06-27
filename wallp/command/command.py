@@ -3,6 +3,7 @@ import sys
 from .exc import CommandError
 from .command_help_formatter import CommandHelpFormatter
 from .commandparser import CommandParser
+from ..db.exc import DBError
 
 
 class Command(object):
@@ -32,6 +33,9 @@ class Command(object):
 			subcmd_func = args.subcmd_func
 			subcmd_func.execute(args)
 		except CommandError as e:
+			sys.exit(1)
+		except DBError as e:
+			print(str(e))
 			sys.exit(1)
 
 		sys.exit(0)

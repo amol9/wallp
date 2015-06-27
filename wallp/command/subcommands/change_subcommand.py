@@ -7,7 +7,7 @@ from ...service import ServiceFactory
 
 
 class ChangeSubcommand(Subcommand):
-	service_choices = Choices([name for name, _ in ServiceFactory().services], opt=True)
+	service_choices = Choices(ServiceFactory().service_names, opt=True)
 	
 	@subcmd
 	def change(self, service=service_choices, query=None, color=None):

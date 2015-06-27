@@ -159,14 +159,16 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		a = etree.findall(".//p[@class='under-title-info']//a")
 		if len(a) > 0 :
 			href = a[0].attrib['href']
-			username = href[href.rfind('/') + 1 : ]
-			self._image_source.artist = username
+			start = href.rfind('/user/')
+			if start > -1:
+				username = href[start + 6 : ]
+				self._image_context.artist = username
 			return
 
 		a = etree.findall(".//div[@class='under-title-info']//a")
 		if len(a) > 0 :
 			username = a[0].text
-			self._image_source.artist = username
+			self._image_context.artist = username
 			return
 		log.debug('username not found')
 
@@ -175,7 +177,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		title_h1 = etree.findall('.//h1[@id=\'image-title\']')		#for gallery, direct link
 
 		if len(title_h1) > 0 :
-			self._image_source.title = title_h1[0].text
+			self._image_context.title = title_h1[0].text
 			return
 		log.debug('title h1 not found')
 

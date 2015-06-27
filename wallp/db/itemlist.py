@@ -72,8 +72,8 @@ class ItemList:
 			if not item.enabled:
 				seen += 1
 				item_offset += 1
-				if item_offset > count:		#wrap around
-					item_offset = 1
+				if item_offset > (count - 1):		#wrap around
+					item_offset = 0
 				continue
 
 			return getattr(item, self.column)
