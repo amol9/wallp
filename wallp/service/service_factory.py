@@ -54,7 +54,6 @@ class _ServiceFactory():
 				log.error(str(e))
 
 
-
 	def get(self, service_name):
 		self.load_status()
 

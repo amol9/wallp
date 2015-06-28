@@ -61,7 +61,7 @@ class CreateDB():
 
 
 	def insert_service_status(self, config):
-		for service_name in [name for name, _ in ServiceFactory().services]:
+		for service_name in ServiceFactory().service_names:
 			config.add(service_name + '.enabled', True, bool)
 
 

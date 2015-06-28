@@ -32,3 +32,10 @@ class DBSession():
 
 	def __getattr__(self, name):
 		return getattr(DBSession.instance, name)
+
+
+	def close(self):
+		self.instance.close()
+		DBSession.instance = None
+		DBSession.session_class = None
+

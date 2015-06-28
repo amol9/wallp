@@ -3,6 +3,7 @@ import os
 from ..subcommand import Subcommand, subcmd
 from ...globals import Const
 from ...db.create_db import CreateDB
+from ...db import DBSession
 
 
 class DbSubcommand(Subcommand):
@@ -23,6 +24,9 @@ class DbSubSubCommands(DbSubcommand):
 		choice = raw_input('Are you sure you want to reset the db? [y/N]: ')
 		if choice == 'y':
 			db_path = Const.db_path
+			dbsession = DBSession()
+			dbsession.close()
+
 			os.remove(db_path)
 			self.create_db()
 
