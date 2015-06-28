@@ -44,7 +44,7 @@ class ConfigSubcommands(Subcommand):
 		try:
 			r = func(*args)
 			return r
-		except ConfigError as e:
+		except (ConfigError, ValueError) as e:
 			print(str(e))
 			raise CommandError()
 

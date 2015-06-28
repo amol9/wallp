@@ -61,8 +61,8 @@ class NameValueSet(object):
 		vtype = eval(namevalue.type)
 
 		value = None
-		if vtype != str:
-			value = eval(namevalue.value)	#fix for bool
+		if vtype == bool:
+			value = bool(eval(namevalue.value))	#fix for bool
 		else:
 			value = namevalue.value
 
@@ -72,9 +72,9 @@ class NameValueSet(object):
 	def single_result(self, result):
 		'A single row of result expected.'
 
-		if len(result) == 0:
+		if len(result) == 0 :
 			raise NotFoundError()
-		elif len(result) > 0:
+		elif len(result) > 0 :
 			#do something to correct
 			pass
 
@@ -123,17 +123,26 @@ class NameValueSet(object):
 
 		if value is not None and type(value) != vtype:
 			try:
-				value = vtype(value)
+				if vtype == bool:
+					if value.lower() in ['true', 'yes']:
+						value = True
+					elif value.lower() in ['false', 'no']:
+						value = False
+					else:
+						raise ValueError('use true/false or yes/no')
+				else:
+					value = vtype(value)
 			except ValueError as e:
-				raise ValueError('value type does not match, expected: %s, got: %s'%(namevalue.type, type(value)))
+				raise e 
+				#ValueError('value type does not match, expected: %s, got: %s'%(namevalue.type, type(value).__name__))
 
-		namevalue.value = value		
+		namevalue.value = value	
 		self._dbsession.commit()
 
 
 	def split_name(self, name):
 		parts = name.split('.')
-		if len(parts) == 1:
+		if len(parts) == 1 :
 			group = ''
 			name = parts[0]
 		else:
@@ -151,7 +160,7 @@ class NameValueSet(object):
 		except ValueError as e:
 			exc_msg.append('name \'%s\' '%name + str(e))
 
-		if len(exc_msg) > 0:
+		if len(exc_msg) > 0 :
 			raise ValueError(os.linesep.join(exc_msg))
 
 		return group, name

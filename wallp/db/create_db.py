@@ -9,6 +9,7 @@ from . import SearchTerm, ImgurAlbum, Subreddit, Base, Config, GlobalVars
 from ..globals import Const
 from ..service import ServiceFactory
 from .dbsession import DBSession
+from ..version import __version__
 
 
 class CreateDBError(Exception):
@@ -51,7 +52,9 @@ class CreateDB():
 			globalvars_reader = reader(globalvars_csv)
 			globalvars = GlobalVars()
 			for row in globalvars_reader:
-				globalvars.add(row[0], eval(row[1]), row[2])
+				globalvars.add(row[0], eval(row[1].strip()), row[2].strip())
+
+		globalvars.add('app.version', __version__, 'str')
 
 	
 	def insert_default_config(self):
@@ -69,7 +72,7 @@ class CreateDB():
 		with open(joinpath(self._data_dir_abspath, 'config.csv'), 'r') as config_csv:
 			config_reader = reader(config_csv)
 			for row in config_reader:
-				config.add(row[0], eval(row[1]), row[2])
+				config.add(row[0], eval(row[1].strip()), row[2].strip())
 
 
 	def insert_imgur_data(self):
