@@ -77,6 +77,8 @@ class _ServiceFactory():
 
 
 	def get_all(self):
+		self.load_status()
+
 		return list([(name, info.enabled) for (name, info) in  self._services.items()])
 
 

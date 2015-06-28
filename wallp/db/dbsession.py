@@ -20,9 +20,7 @@ class DBSession():
 			db_path = Const.db_path if db_path is None else db_path
 			if not create_db:
 				if not exists(db_path):
-					print('no db found')
-					print('create a new database using \'wallp db reset\'')
-					sys.exit(1)
+					raise DBError('No database found.')
 
 			engine = create_engine('sqlite:///' + db_path, echo=Const.debug)
 			DBSession.session_class = sessionmaker(bind=engine)

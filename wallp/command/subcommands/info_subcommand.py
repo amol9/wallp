@@ -6,6 +6,8 @@ from mutils.system import terminalsize
 
 from ..subcommand import Subcommand, subcmd
 from ...db import func as dbfunc
+from ...db.exc import NotFoundError
+from ..exc import CommandError
 
 
 class InfoSubcommand(Subcommand):
@@ -18,7 +20,11 @@ class InfoSubcommand(Subcommand):
 
 		
 	def get_image_info(self):
-		image = dbfunc.get_current_wallpaper_image()
+		try:
+			image = dbfunc.get_current_wallpaper_image()
+		except NotFoundError as e:
+			print(None)
+			raise CommandError()
 		return image
 
 

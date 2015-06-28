@@ -18,4 +18,5 @@ class Const():
 	db_path 		= joinpath(data_dir, db_name)
 	page_timeout		= 10
 	default_server_port	= 40002
+	http_chunksize		= 50 * 1024
 

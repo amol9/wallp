@@ -17,7 +17,6 @@ class KeepSubcommand(Subcommand):
 	def keep(self, period):
 		'''Keep the wallpaper unchanged for a certain period of time.
 		period: time period'''
-		import pdb; pdb.set_trace()
 
 		try:
 			exp_period = self.keep_wallpaper(period)
@@ -49,7 +48,7 @@ class KeepSubcommand(Subcommand):
 			raise KeepError('bad time period: %s'%period)
 
 		num = int(match.group(1))
-		if num <= 0:
+		if num <= 0 :
 			raise KeepError('bad time period: %s'%period)
 		abbr_period = match.group(2)
 		tdarg = {}	

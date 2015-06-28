@@ -2,7 +2,6 @@ from io import StringIO, BytesIO
 import sys
 from functools import partial
 import socket
-import praw
 import requests
 
 from mutils.system import *
@@ -61,7 +60,7 @@ def download(url, save_filepath=None, progress=True, nocache=False, open_file=No
 		data = WebCache().get(url)
 		if data is not None:
 			print_progress_ast()
-			#if log.to_stdout(): print('')
+
 			if save_filepath is None:
 				if is_py3():
 					data = data.decode(encoding='utf-8')	
@@ -71,7 +70,7 @@ def download(url, save_filepath=None, progress=True, nocache=False, open_file=No
 					f.write(data)
 				return
 	
-	chunksize = 40000
+	chunksize = Const.http_chunksize
 	res = None
 
 	res = exc_wrapped_call(urlopen, url, timeout=Const.page_timeout)
@@ -92,7 +91,6 @@ def download(url, save_filepath=None, progress=True, nocache=False, open_file=No
 		out.write(buf)
 		chunk = res.read(chunksize)
 
-	#if log.to_stdout(): print('')
 	res.close()
 
 	if not nocache and Const.cache_enabled:
@@ -118,22 +116,4 @@ def print_progress_dot():
 
 def print_progress_ast():
 	prints('*')
-
-
-@exc_wrapped
-def get_subreddit_post_urls(subreddit, limit=10, query=None):
-	reddit = praw.Reddit(user_agent=Const.app_name, timeout=Const.page_timeout)
-
-	if subreddit is None:
-		if query is None:
-			raise ServiceError('no subreddit and no query, not cool')
-		posts = reddit.search(query)
-	else:
-		sub = reddit.get_subreddit(subreddit)
-		if query is None:
-			posts = sub.get_hot(limit=limit)
-		else:
-			posts = sub.search(query)
-	
-	return posts
 

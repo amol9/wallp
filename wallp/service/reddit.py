@@ -1,16 +1,17 @@
 from random import randint
 from os.path import join as joinpath
 from zope.interface import implementer
+import praw
 
 from ..util import log, Retry
-from .imgur import Imgur
+from .imgur import Imgur, ImgurError
 from ..globals import Const
 from .service import IHttpService, ServiceError
 from ..db import SubredditList, Config
 from .image_info_mixin import ImageInfoMixin
 from .image_urls_mixin import ImageUrlsMixin
 from .image_context import ImageContext
-from ..web import func as webfunc
+from ..web.func import exc_wrapped
 
 
 @implementer(IHttpService)
@@ -30,7 +31,7 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 		else:
 			self.add_trace_step('searched', query)
 
-		posts = webfunc.get_subreddit_post_urls(subreddit, limit=self._posts_limit, query=query)
+		posts = self.get_subreddit_posts(subreddit, limit=self._posts_limit, query=query)
 		for p in posts:
 			self.add_url(p.url, ImageContext(artist=p.author.name, title=p.title, url=p.permalink))
 
@@ -44,7 +45,11 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 			if ext not in Const.image_extensions:
 				if url.find('imgur.com') != -1:
 					imgur = Imgur()
-					url = imgur.get_image_url_from_page(url)
+					try:
+						url = imgur.get_image_url_from_page(url)
+					except ImgurError as e:
+						log.debug(str(e))
+						continue
 					self.add_trace_from(imgur)
 					retry.cancel()
 				else:
@@ -55,4 +60,22 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 				retry.cancel()
 
 		return url
+
+
+	@exc_wrapped
+	def get_subreddit_posts(self, subreddit, limit=10, query=None):
+		reddit = praw.Reddit(user_agent=Const.app_name, timeout=Const.page_timeout)
+
+		if subreddit is None:
+			if query is None:
+				raise ServiceError('no subreddit and no query, not cool')
+			posts = reddit.search(query)
+		else:
+			sub = reddit.get_subreddit(subreddit)
+			if query is None:
+				posts = sub.get_hot(limit=limit)
+			else:
+				posts = sub.search(query)
+		
+		return posts
 

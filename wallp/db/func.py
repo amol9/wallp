@@ -5,6 +5,7 @@ from .globalvars import GlobalVars
 from .dbsession import DBSession
 from .itemlist import ImgurAlbumList, SubredditList, SearchTermList
 from .image import Image
+from .exc import NotFoundError
 
 
 def update_wallpaper_score(delta):

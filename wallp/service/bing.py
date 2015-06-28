@@ -73,7 +73,8 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 		if not (width, height) in self.valid_sizes:
 			width, height = self.get_nearest_size(width, height)
 
-		jsfile = web.func.get_page(self.image_list_url) 
+		jsfile = web.func.get_page(self.image_list_url)
+		self.add_trace_step('fetched image list from bing gallery', None)
 
 		data_regex = re.compile(".*browseData=({.*});.*")
 		m = data_regex.match(jsfile)

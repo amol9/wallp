@@ -2,13 +2,18 @@ import sys
 
 from ..version import __version__
 from ..command import Command
-from .init import first_run, start_log
+from .init import first_run, start_log, InitError
+from ..db.exc import DBError
 
 
 #entry point
 def main():
-	first_run()
-	start_log()
+	try:
+		first_run()
+		start_log()
+	except (InitError, DBError) as e:
+		print(e)
+		sys.exit(1)
 
 	command = Command()
 	command.add_version(__version__)
