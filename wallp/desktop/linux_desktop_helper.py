@@ -3,7 +3,7 @@ import os
 import sys
 
 
-from mutils.system import sys_command
+from mutils.system import sys_command, is_windows
 
 from ..util.logger import log
 
@@ -82,6 +82,9 @@ def set_dbus_session_vars_if_cron():
 
 
 def uses_dbus(func):
+	if is_windows():
+		return func
+
 	def new_func(*args, **kwargs):
 		result = set_dbus_session_vars_if_cron()
 		if result:

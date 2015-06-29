@@ -85,6 +85,7 @@ class Client:
 		try:
 			keep_timeout = GlobalVars().get('keep_timeout')
 		except VarError as e:
+			print(e)
 			log.error(str(e))
 			return None
 			#return False
