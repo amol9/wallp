@@ -17,6 +17,9 @@ class GnomeDesktop(Desktop):
 		WPStyle.ZOOM : 		'zoom'
 	}
 
+	@staticmethod
+	def supports(gdmsession):
+		return gdmsession.startswith('ubuntu') or gdmsession.startswith('gnome')
 
 	@uses_dbus
 	def get_size(self):

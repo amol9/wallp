@@ -25,7 +25,7 @@ setup(
 	include_package_data	= True,
 	scripts			= ['ez_setup.py'],
 	entry_points 		= entry_points,
-	install_requires	= ['praw', 'mutils', 'sqlalchemy', 'zope.interface', 'mayloop'],
+	install_requires	= ['praw', 'mutils', 'sqlalchemy', 'zope.interface', 'mayloop', 'six'],
 	classifiers		= [
 					'Development Status :: 4 - Beta',
 					'Environment :: Console',

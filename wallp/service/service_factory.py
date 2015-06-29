@@ -82,7 +82,7 @@ class _ServiceFactory():
 
 
 	def get_service_names(self):
-		return self._services.keys()
+		return list(self._services.keys())
 
 
 	services = property(get_all)

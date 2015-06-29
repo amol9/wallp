@@ -32,7 +32,7 @@ class StandardDesktopSizes():
 
 
 	def nearest_larger(self, width, height):
-		nwidth = min(self.sizes, key=lambda p: sys.maxint if p[0] < width else abs(width - p[0]))[0]
+		nwidth = min(self.sizes, key=lambda p: sys.maxsize if p[0] < width else abs(width - p[0]))[0]
 		
 		if nwidth < width:
 			raise DesktopSizeException('no standard size larger than width %d'%width)

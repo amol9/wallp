@@ -1,4 +1,5 @@
 import os
+from six.moves import input
 
 from ..subcommand import Subcommand, subcmd
 from ...globals import Const
@@ -21,7 +22,7 @@ class DbSubSubCommands(DbSubcommand):
 		'''Reset the database.
 		**WARNING** all custom settings, image history, etc. will be lost.'''
 
-		choice = raw_input('Are you sure you want to reset the db? [y/N]: ')
+		choice = input('Are you sure you want to reset the db? [y/N]: ')
 		if choice == 'y':
 			db_path = Const.db_path
 			dbsession = DBSession()

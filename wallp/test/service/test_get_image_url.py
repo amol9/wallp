@@ -35,7 +35,7 @@ class TestGetImageUrl(TestCase):
 		url = service.get_image_url()
 
 		if self.interactive:
-			print url
+			print(url)
 			self.print_info(service.image_trace, service.image_context)
 
 		self.assertGreater(len(service.image_trace), 0)

@@ -13,7 +13,7 @@ from ..util.logger import log
 from .exc import DownloadError, TimeoutError
 
 if is_py3():
-	from urllib.error import HTTPError
+	from urllib.error import HTTPError, URLError
 	from urllib.request import urlopen
 else:
 	from urllib2 import HTTPError, urlopen, URLError

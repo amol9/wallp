@@ -46,7 +46,7 @@ class NameValueSet(object):
 		group, name = self.split_name(fullname)
 
 		if type(vtype) == type:
-			vtype = str(vtype)[7 : -2]	#e.g. "<type 'int'>" - extract the "int" part
+			vtype = vtype.__name__
 
 		namevalue = self.nvtype(group=group, name=name, value=value, type=vtype)
 		self._dbsession.add(namevalue)

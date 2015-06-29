@@ -33,6 +33,11 @@ class KdePlasmaDesktop(Desktop):
 		WPStyle.ZOOM : 		'5'
 	}
 
+	@staticmethod
+	def supports(gdmsession):
+		return gdmsession == 'kde-plasma'
+
+
 	@uses_dbus
 	def get_size(self):
 		return get_desktop_size()

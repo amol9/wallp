@@ -6,7 +6,7 @@ from ..exc import CommandError
 
 
 class LogSubcommand(Subcommand):
-	level_choices = Choices(log.levels.keys(), default='debug')
+	level_choices = Choices(list(log.levels.keys()), default='debug')
 
 	@subcmd
 	def log(self, filename, level=level_choices):

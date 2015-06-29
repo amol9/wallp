@@ -21,6 +21,11 @@ class WindowsDesktop(Desktop):
 		WPStyle.ZOOM : 		'10'
 	}
 
+	@staticmethod
+	def supports(gdmsession):
+		return False
+
+
 	def get_size(self):
 		user32 = ctypes.windll.user32
 		width = user32.GetSystemMetrics(0)

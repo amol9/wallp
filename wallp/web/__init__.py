@@ -1,3 +1,3 @@
 from . import webcache
-import exc
-import func
+from .exc import *
+from . import func

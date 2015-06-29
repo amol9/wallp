@@ -49,15 +49,17 @@ class Subcommand(Command):
 	def add_subcommand(self, subcmd_cls):
 		if self.subparsers is None:
 			self.subparsers = self.parser.add_subparsers(dest=self.__class__.__name__.lower())
-		
-		for member_name, member_val in inspect.getmembers(subcmd_cls):
-			if inspect.ismethod(member_val):
+
+		for member_name, member_val in inspect.getmembers(subcmd_cls, predicate=\
+		lambda x : inspect.ismethod(x) or inspect.isfunction(x)):
+
+			if True or inspect.ismethod(member_val):
 				func = member_val
 				if getattr(func, 'subcmd', None) is not None:
-					if not func.__name__ in func.im_class.__dict__.keys():
+					if not func.__name__ in subcmd_cls.__dict__.keys():
 						continue
 
-					if self.subparsers._name_parser_map.has_key(func.__name__):
+					if func.__name__ in self.subparsers._name_parser_map:
 						raise SubcommandError('added subcommand %s again'%func.__name__)
 
 					funcdoc = func.__doc__ if func.__doc__ is not None else ''

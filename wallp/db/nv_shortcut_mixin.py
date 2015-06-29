@@ -1,4 +1,4 @@
-from itertools import izip_longest
+from six.moves import zip_longest
 
 from .namevalueset import NameValueSet
 
@@ -64,7 +64,7 @@ class NVShortcutMixin(object):
 			if len(values) > len(shortcut.names):
 				raise ShortcutError('number of values > number of names')
 
-			for name, value in izip_longest(shortcut.names, values):
+			for name, value in zip_longest(shortcut.names, values):
 				if value is None:
 					value = shortcut.defaults[shortcut.names.index(name)]
 				NameValueSet.set(self, name, value)

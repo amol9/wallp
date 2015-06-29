@@ -1,5 +1,6 @@
 import os
 from os.path import exists
+from six.moves import input
 
 from ..db import Config, DBError, NotFoundError, ConfigError
 from ..db.create_db import CreateDB
@@ -31,7 +32,7 @@ def create_db():
 def start_log():
 	try:
 		if not db_exists():
-			choice = raw_input('Database not found.\nDo you want to create a fresh db? [Y/n]: ')
+			choice = input('Database not found.\nDo you want to create a fresh db? [Y/n]: ')
 			if choice in ['Y', 'y', '']:
 				create_db()
 			else:
