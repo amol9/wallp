@@ -5,12 +5,33 @@ wallp is a command line utility to download and set wallpapers. It works on Linu
 Following is the list of sources it currently supports:
 
 * reddit
-* bing
+* bing (gallery)
 * google
 * deviantart
 * imgur
 
 Also, it can generate single color bitmaps as wallpapers.
 
-By default, whenever it's run, it selects a source at random, selects a random image from the source, downloads it and sets it as a wallpaper. 
+By default, whenever run, it selects a source at random, selects a random image from the source, downloads it and sets it as a wallpaper.
+
+Basic usage: `>wallp`
+
+For more commands, see commands section.
+
+Supported platforms:
+
+* python 2.7 or python 3.x
+* Linux (Gnome or KDE Plasma)
+* Windows
+
+Features:
+
+* Schedule the change of wallpaper.
+* Specify search term for wallpaper.
+* Specify preferred color.
+* Enable / disable certain sources.
+* Editable database of subreddits, imgur albums, search terms to search wallpapers.
+* Make a wallpaper stick (no change) for a certain period of time.
+* Print detailed info on image, such as, source url, size, path, artist, description, etc.
+* Never repeats an image.
 

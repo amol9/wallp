@@ -1,13 +1,14 @@
 # get
 
-**wallp get name**
+**usage: wallp get name**
 
 Get the value of a setting.
 
  Argument	|
  ---------------|---------------------------------------------------------------------
  name		| Name of the setting.
-		| Use "all" to get a list of all settings and values. `wallp get all`
+		| Use "all" to get a list of all settings and values. 
+		| `>wallp get all`
 
 
 Following is the list of all settings and their default values:

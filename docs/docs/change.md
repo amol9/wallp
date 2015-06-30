@@ -1,6 +1,6 @@
 # change
 
-**wallp change [-s | --service] [-q | --query] [-c | --color]**
+**usage: wallp change [-s | --service] [-q | --query] [-c | --color]**
 
  Argument		|
  -----------------------|--------------------------------------------------------------------------------
@@ -13,4 +13,10 @@
 			| bitmap: Generates bitmap of the specified color. You can specify hex value of color starting with 0x.
 			| google: Searches images of that color.
 			| reddit / bing / imgur / deviantart: Not Used.
+
+`>wallp change -s reddit`
+
+`>wallp change -s google -q 'breaking bad' -c yellow`
+
+`>wallp change -s bitmap -c blue`
 

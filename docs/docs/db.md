@@ -14,7 +14,7 @@ Executes the given database command.
 
 **wallp db reset**
 
-You'll be asked to confirm the reset of the database. Upon confirmation, the database will be restored to default.
+You will be asked to confirm the reset of the database. Upon confirmation, the database will be restored to default.
 
 **Warning**
  All the information regarding downloaded images, enabled / disabled services, custom added albums, search terms, custom preferences will be lost.
@@ -25,7 +25,7 @@ You'll be asked to confirm the reset of the database. Upon confirmation, the dat
 **wallp db backup**
 
  Argument	|
- ---------------|
+ ---------------|------------------------------------------------------------------------------------------
  path		| File / directory path. If it is directory path, database will be copied to the directory.
 		| If it is filepath, database will be copied to the filepath.
 
