@@ -57,9 +57,8 @@ class WindowsDesktop(Desktop):
 		key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Control Panel\\Desktop', 0, winreg.KEY_SET_VALUE)
 		winreg.SetValueEx(key, 'WallpaperStyle', 0, winreg.REG_SZ, wp_style)
 
-		if style == 'tiled':
+		if style == WPStyle.TILED:
 			winreg.SetValueEx(key, 'TileWallpaper', 0, winreg.REG_SZ, '1')
 		else:
 			winreg.SetValueEx(key, 'TileWallpaper', 0, winreg.REG_SZ, '0')
-
 
