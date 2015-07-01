@@ -4,8 +4,9 @@ dev_addr: 0.0.0.0:8090
 
 pages:
 - 'index.md'
-- installation: 'install.md'
-- commands:
+- Installation: 'install.md'
+- Basic Usage: 'usage.md'
+- Commands:
         - change: 'change.md'
         - schedule: 'schedule.md'
         - info: 'info.md'

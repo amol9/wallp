@@ -2,6 +2,8 @@
 
 **usage: wallp change [-s | --service] [-q | --query] [-c | --color]**
 
+Change the wallpaper.
+
  Argument		|
  -----------------------|--------------------------------------------------------------------------------
  -s &#124; --service	| Name of the service to use to get / generate wallpaper image.

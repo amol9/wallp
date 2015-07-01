@@ -14,15 +14,13 @@ Also, it can generate single color bitmaps as wallpapers.
 
 By default, whenever run, it selects a source at random, selects a random image from the source, downloads it and sets it as a wallpaper.
 
-Basic usage: `>wallp`
-
-For more commands, see commands section.
 
 Supported platforms:
 
 * python 2.7 or python 3.x
 * Linux (Gnome or KDE Plasma)
 * Windows
+
 
 Features:
 

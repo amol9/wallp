@@ -2,63 +2,56 @@
 wallp
 =====
 
-This utility selects an online / offline source at random, gets a random image and sets it as a wallpaper.
+A command line utility to download or create an image and set it as a wallpaper.
+
+
+*wallp* is a command line utility to download and set wallpapers. It works on Linux(Gnome / KDE Plasma) and on Windows. It can select images from a variety of sources on the Internet. 
+
+Following is the list of sources it currently supports:
+
+* reddit
+* bing (gallery)
+* google
+* deviantart
+* imgur
+
+Also, it can generate single color bitmaps as wallpapers.
+
+By default, whenever run, it selects a source at random, selects a random image from the source, downloads it and sets it as a wallpaper.
+
+
+Supported platforms
+===================
+
+* python 2.7 or python 3.x
+* Linux (Gnome or KDE Plasma)
+* Windows
 
 
 Features
 ========
-* Supported platforms: Linux / Windows / Python 2.7 / Python 3.x.
-* Downloads images from various sources.
 
-  Online:
-    * reddit
-    * imgur
-    * bing (gallery)
-    * google images
-    * deviantart
+* Schedule the change of wallpaper.
+* Specify search term for wallpaper.
+* Specify preferred color.
+* Enable / disable certain sources.
+* Editable database of subreddits, imgur albums, search terms to search wallpapers.
+* Make a wallpaper stick (no change) for a certain period of time.
+* Print detailed info on image, such as, source url, size, path, artist, description, etc.
+* Never repeats an image.
 
-  Offline:
-    * bitmap (a single color bitmap is generated)
 
-* Allows scheduling of change of wallpaper, viz., every 5 minutes, every 1 hour, etc.
-* Can download image based on a query.  
+ReadTheDocs
+===========
+http://wallp.readthedocs.org/en/latest/
+
 
 Usage
 =====
-#. Change wallpaper by selecting a source at random::
+For basic usage, see: http://wallp.readthedocs.org/en/latest/usage
 
-	wallp
+For advanced usage, check out the commands in help docs.
 
-#. Query for "linux wallpapers" and set a random image as wallpaper from results::
-
-	wallp -s google -q "linux wallpapers"
-	wallp -s imgur -q "linux wallpapers"
-
-#. Set a plain blue colored bitmap as wallpaper::
-
-	wallp -s bitmap -c blue
-
-#. Schedule change of wallpaper:
-
-   every 5 minutes::
-
-	wallp -f 5m
-
-   every 1 hour::
-
-	wallp -f 1h
-
-   every 2 days::
-
-	wallp -f 2d
-
-   remove schedule::
-
-	wallp -f 0
-
-#. For more options, get help::
-
-	wallp -h
 
 Download
 ========
