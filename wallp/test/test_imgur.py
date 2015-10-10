@@ -13,17 +13,18 @@ from .db.util import create_db
 class TestImgur(TestCase):
 	args = []
 	db_path = 'test_imgur.db'
-	imgur_pages = [	('http://imgur.com/gallery/moboUHY', 1),
-			('http://imgur.com/gallery/BZFHk5l', 1),
-			('http://imgur.com/gallery/QKz1d', 3),
-			('http://imgur.com/a/SAjtQ', 6),
-			('http://imgur.com/gallery/THfdT', 18),
-			('http://imgur.com/gallery/K3bYZ', 67),
-			('http://imgur.com/gallery/wCBYO', 2163),
-			('http://imgur.com/gallery/hfHhb', 625),
-			('http://imgur.com/gallery/D3vya', 976),
-			('http://imgur.com/oGevSWm', 1)]
-			#('http://imgur.com/gallery/5vKwE', 20000)] fix: no truncated div, js load
+	imgur_pages = [	('http://imgur.com/gallery/moboUHY', 	1),
+			('http://imgur.com/gallery/BZFHk5l', 	1),
+			('http://imgur.com/gallery/QKz1d', 	3),
+			('http://imgur.com/a/SAjtQ', 		6),
+			('http://imgur.com/gallery/THfdT', 	18),
+			('http://imgur.com/gallery/K3bYZ', 	67),
+			('http://imgur.com/gallery/wCBYO', 	2163),
+			('http://imgur.com/gallery/hfHhb', 	625),
+			('http://imgur.com/gallery/D3vya', 	976),
+			('http://imgur.com/oGevSWm', 		1),
+			('http://imgur.com/gallery/0nCDJ', 	18)]
+			#('http://imgur.com/gallery/5vKwE', 	20000)] fix: no truncated div, js load
 
 
 	@classmethod
@@ -58,11 +59,11 @@ class TestImgur(TestCase):
 		for page in self.imgur_pages:
 			imgur = Imgur()
 			url = imgur.get_image_url_from_page(page[0])
-			self.assertIsNotNone(url)
-			self.assertTrue(url.startswith('http'), msg=url)
-			self.assertEqual(imgur._image_count, page[1])
 			self.validate_image_url(url)
-			print imgur._image_source
+
+			icount = imgur.get_image_count()
+			icount = 1 if icount == 1 else icount + 1
+			self.assertEqual(icount, page[1])
 
 
 	def test_search(self):
@@ -78,8 +79,7 @@ class TestImgur(TestCase):
 
 		for url in self.args:
 			try:
-				iurl, icount = imgur.get_image_url_from_page(url)
-				print('image count:', icount)
+				iurl = imgur.get_image_url_from_page(url)
 			except ServiceError as e:
 				print(str(e))
 
@@ -94,3 +94,4 @@ if __name__ == '__main__':
 			sys.argv.append('TestImgur.try_command_args')
 	
 	ut_main()
+

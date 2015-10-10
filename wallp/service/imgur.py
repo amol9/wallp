@@ -93,38 +93,9 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		if match is None:
 			raise ImgurError('invalid imgur url: %s'%page_url)
 
-		section = match.group(1)
-
-		if section.startswith('a/'):
-			url = self.get_url_from_full_album(page_url)
-		elif section.startswith('gallery'):
-			url = self.get_url_from_gallery_link(page_url)
-		else:
-			url = self.get_url_from_direct_link(page_url)
-
-		return url
-
-
-	def get_url_from_gallery_link(self, page_url):
-		image_div_path = './/div[@class=\'left main-image\']' 	+ \
-				 '/div[@class=\'panel\']' 		+ \
-				 '/div[@id=\'image\']' 			+ \
-				 '//div[@class=\'image textbox\']'
-
-		return self.get_url_from_link(page_url, image_div_path)
-
-
-	def get_url_from_direct_link(self, page_url):
-		image_div_path = './/div[@class=\'left main-image\']'	+ \
-				'/div[@class=\'panel\']' 		+ \
-				 '//div[@class=\'image textbox\']'
-
-		return self.get_url_from_link(page_url, image_div_path)
-
-
-	def get_url_from_link(self, page_url, image_div_path):
 		etree = self.get_etree(self.get_page_html(page_url))
 
+		image_div_path = './/div[@class=\'post-image\']'
 		image_divs = etree.findall(image_div_path)
 		
 		image_urls = self.get_urls_from_image_divs(image_divs)
@@ -134,51 +105,43 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		if len(image_urls) == 1 :				#single image found
 			log.debug('found 1 image on page')
 			self.add_trace_step('found one image', image_urls[0])
-			self._image_count = 1
+			self.add_url(image_urls[0], self._image_context)
 			return image_urls[0]
 
 		else:							#multiple images found
-			trunc_div = etree.find('.//div[@id=\'album-truncated\']')
+			trunc_div = etree.find(".//a[@class='post-loadall']")
 			if trunc_div == None or not self.get_full_album:		#don't get full album
 				self.add_urls(image_urls)
 				return self.select_url()
 
 			else:								#get full album
 				page_id = page_url[page_url.rfind('/') + 1 : ]
-				full_album_url = 'http://imgur.com/a/%s?gallery'%page_id
+				full_album_url = 'http://imgur.com/a/%s/layout/grid'%page_id
 
 				log.debug('imgur: getting full album, %s'%full_album_url)
 				return self.get_url_from_full_album(full_album_url)
 
-		return None, None
+		return None
 
 
 	def extract_username(self, etree):
 		username = None
 
-		a = etree.findall(".//p[@class='under-title-info']//a")
+		a = etree.findall(".//a[@class='post-account']")
 		if len(a) > 0 :
-			href = a[0].attrib['href']
-			start = href.rfind('/user/')
-			if start > -1:
-				username = href[start + 6 : ]
-				self._image_context.artist = username
+			self._image_context.artist = a[0].text.strip()
 			return
 
-		a = etree.findall(".//div[@class='under-title-info']//a")
-		if len(a) > 0 :
-			username = a[0].text
-			self._image_context.artist = username
-			return
 		log.debug('username not found')
 
 
 	def extract_title(self, etree):
-		title_h1 = etree.findall('.//h1[@id=\'image-title\']')		#for gallery, direct link
+		title_h1 = etree.findall(".//div[@id='post-title-container']/h1")
 
 		if len(title_h1) > 0 :
 			self._image_context.title = title_h1[0].text
 			return
+
 		log.debug('title h1 not found')
 
 
@@ -211,29 +174,16 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 	def get_url_from_full_album(self, full_album_url):
 		html = self.get_page_html(full_album_url)
 
-		layout_regex = re.compile("layout\s+:\s+\'g\'", re.M)
-		match = layout_regex.findall(html)
+		images_regex = re.compile("images\s+:\s+({.*})")
+		matches = images_regex.findall(html)
 
 		urls = []
-		if match is None:		#normal album
-			etree = self.get_etree(html)
-			image_divs = etree.findall('.//div[@class=\'left main\']/div[@class=\'panel\']'
-							'/div[@id=\'image-container\']//div[@class=\'image\']')
-
-			for div in image_divs:
-				a = div.find('.//a')
-				if a is not None:
-					urls.append(self.image_div_img_url_prefix + a.attrib['href'])
-
-		else:				#really big album
-			log.debug('really big album')
-			images_regex = re.compile("images\s+:\s+({.*})", re.M)
-			matches = images_regex.findall(html)
-
-			if matches is not None:
-				images_data = json.loads(matches[0])
-				for item in images_data['items']:
-					urls.append('http://i.imgur.com/%s%s'%(item['hash'], item['ext']))
+		if matches is not None and len(matches) == 1:
+			images_data = json.loads(matches[0])
+			for item in images_data['images']:
+				urls.append('http://i.imgur.com/%s%s'%(item['hash'], item['ext']))
+		else: 
+			raise ImgurError("cannot find images data on full album")
 		
 		self.add_urls(urls)
 		return self.select_url()
