@@ -18,3 +18,5 @@ pages:
         - get: 'get.md'
         - set: 'set.md'
         - db: 'db.md'
+- Change Log: 'changelog.md'
+
