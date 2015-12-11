@@ -14,9 +14,9 @@ from .exc import DownloadError, TimeoutError
 
 if is_py3():
 	from urllib.error import HTTPError, URLError
-	from urllib.request import urlopen
+	from urllib.request import urlopen, Request
 else:
-	from urllib2 import HTTPError, urlopen, URLError
+	from urllib2 import HTTPError, urlopen, URLError, Request
 
 
 def exists(url):
@@ -29,8 +29,8 @@ def exists(url):
 		return False
 
 
-def get_page(url, progress=True, nocache=False):
-	return download(url, progress=progress, nocache=nocache)
+def get_page(url, progress=True, nocache=False, headers=None):
+	return download(url, progress=progress, nocache=nocache, headers=headers)
 
 
 def exc_wrapped_call(func, *args, **kwargs):
@@ -55,7 +55,7 @@ def exc_wrapped(func):
 	return new_func
 
 
-def download(url, save_filepath=None, progress=True, nocache=False, open_file=None):
+def download(url, save_filepath=None, progress=True, nocache=False, open_file=None, headers=None):
 	if not nocache and Const.cache_enabled:
 		data = WebCache().get(url)
 		if data is not None:
@@ -73,7 +73,10 @@ def download(url, save_filepath=None, progress=True, nocache=False, open_file=No
 	chunksize = Const.http_chunksize
 	res = None
 
-	res = exc_wrapped_call(urlopen, url, timeout=Const.page_timeout)
+	if headers is None:
+		res = exc_wrapped_call(urlopen, url, timeout=Const.page_timeout)
+	else:
+		res = exc_wrapped_call(urlopen, Request(url, None, headers), timeout=Const.page_timeout)
 
 	out = None
 	if save_filepath == None:
