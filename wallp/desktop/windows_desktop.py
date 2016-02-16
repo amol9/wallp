@@ -1,6 +1,6 @@
 import ctypes
 
-from mutils.system import *
+from redlib.api.system import *
 
 from .desktop import Desktop
 from .wpstyle import WPStyle

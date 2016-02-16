@@ -3,7 +3,7 @@ import os
 import sys
 
 
-from mutils.system import sys_command, is_windows
+from redlib.api.system import sys_command, is_windows
 
 from ..util.logger import log
 

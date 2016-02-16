@@ -5,7 +5,7 @@ from zope.interface import implementer
 import tempfile
 import os
 
-from mutils.misc.colors import colors
+from redlib.api.colors import colorlist
 
 from ..util.logger import log
 from ..desktop import get_desktop
@@ -32,16 +32,16 @@ class Bitmap(ImageInfoMixin):
 		if color is not None:
 			self.add_trace_step('preferred color', color)
 			if not color.startswith('0x'):
-				c = colors.get(color)
+				c = colorlist.get(color)
 				if c is None:
 					print('no such color')
 					raise ServiceError()
 				color = c
 
 		else:
-			color = choice(list(colors.keys()))
+			color = choice(list(colorlist.keys()))
 			self.add_trace_step('random color', color)
-			color = colors[color]
+			color = colorlist[color]
 
 
 		fn, temp_file_path = tempfile.mkstemp()

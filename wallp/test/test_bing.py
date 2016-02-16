@@ -1,6 +1,6 @@
 from unittest import TestCase, main as ut_main, skip
 
-from mutils.system import *
+from redlib.api.system import *
 if is_py3():
 	from urllib.error import HTTPError
 	from urllib.request import urlopen

@@ -2,8 +2,8 @@ from random import choice
 import xml.etree.ElementTree as ET
 from zope.interface import implementer
 
-from mutils.system import *
-from mutils.html import HtmlStripper
+from redlib.api.system import *
+from redlib.api.web import HtmlStripper
 
 from .. import web
 from ..util.logger import log

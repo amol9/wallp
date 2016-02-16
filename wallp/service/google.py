@@ -1,4 +1,4 @@
-from mutils.system import *
+from redlib.api.system import *
 if is_py3():
 	from urllib.parse import urlencode, urlparse, parse_qs
 	from urllib.error import HTTPError
@@ -12,7 +12,7 @@ from random import choice
 from os.path import join as joinpath
 from zope.interface import implementer
 
-from mutils.html.parser import HtmlParser
+from redlib.api.web import HtmlParser
 
 from ..web import func as webfunc
 from ..util import log

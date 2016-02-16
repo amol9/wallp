@@ -1,6 +1,6 @@
 
-from mutils.system import get_scheduler, FrequencyError, PlatformError, frequency_help
-from mutils.misc import docstring
+from redlib.api.system import get_scheduler, FrequencyError, PlatformError, frequency_help
+from redlib.api.misc import trim_docstring
 
 from ..globals import Const
 
@@ -10,7 +10,7 @@ class SchedulerError(Exception):
 
 
 class Scheduler:
-	frequency_help = docstring.trim(frequency_help)
+	frequency_help = trim_docstring(frequency_help)
 
 	def __init__(self):
 		try:
@@ -35,7 +35,7 @@ class Scheduler:
 			r = self._sys_scheduler.schedule(freq, cmd, taskname)
 			print('schedule creation %s..'%('succeeded' if r else 'failed'))
 		except FrequencyError as e:
-			help = docstring.trim(self._sys_scheduler.parse.__doc__)
+			help = trim_docstring(self._sys_scheduler.parse.__doc__)
 			raise SchedulerError('scheduler error: ' + str(e) + '\n' + help)
 
 

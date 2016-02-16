@@ -1,5 +1,5 @@
 
-from mutils.system import sys_command
+from redlib.api.system import sys_command
 
 from .desktop import Desktop
 from .wpstyle import WPStyle

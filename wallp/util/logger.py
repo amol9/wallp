@@ -1,7 +1,7 @@
 import sys
 import logging
 
-from mutils.system import is_py3
+from redlib.api.system import is_py3
 
 class Logger():
 	if is_py3():

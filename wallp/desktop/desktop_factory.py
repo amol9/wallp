@@ -1,6 +1,6 @@
 import os
 
-from mutils.system import *
+from redlib.api.system import *
 
 from ..util.logger import log
 from . import Desktop

@@ -3,7 +3,7 @@ import dbus
 from time import sleep
 from tempfile import NamedTemporaryFile
 
-from mutils.system import sys_command
+from redlib.api.system import sys_command
 
 from ..util.logger import log
 from .desktop import Desktop

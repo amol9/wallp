@@ -10,7 +10,7 @@ class ImageUrlsMixin(object):
 		super(ImageUrlsMixin, self).__init__()
 		self._image_urls 	= []
 		self._image_contexts 	= {}
-		self._image_context 	= None
+		#self._image_context 	= None
 
 
 	def add_urls(self, image_urls):

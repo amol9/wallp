@@ -6,8 +6,9 @@ import os
 import re
 from datetime import datetime, timedelta
 
-from mutils.system import *
-from mutils.image.imageinfo import get_image_info
+from redlib.api.system import *
+from redlib.api.image import get_image_info
+from redlib.api.prnt import prints
 
 from ..service import ServiceFactory, ServiceDisabled, NoEnabledServices, ServiceError, IHttpService, IImageGenService
 from ..util.retry import Retry
@@ -138,7 +139,7 @@ class Client:
 				log.error('%s: unknown service or service is disabled'%self._service_name)
 				raise GetImageError()
 
-		prints('[%s]'%service.name)
+		prints('[%s] '%service.name)
 		log.debug('\nusing %s..'%service.name)
 
 		return service

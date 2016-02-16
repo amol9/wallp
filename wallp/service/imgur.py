@@ -4,8 +4,8 @@ from random import choice
 from os.path import join as joinpath
 from zope.interface import implementer
 
-from mutils.system import *
-from mutils.html.parser import HtmlParser
+from redlib.api.system import *
+from redlib.api.web import HtmlParser
 
 from ..web import func as webfunc
 from ..util import log, Retry

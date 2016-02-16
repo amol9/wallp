@@ -4,7 +4,8 @@ from functools import partial
 import socket
 import requests
 
-from mutils.system import *
+from redlib.api.system import *
+from redlib.api.prnt import prints
 
 from ..globals import Const
 from .webcache import WebCache
@@ -114,9 +115,9 @@ def download(url, save_filepath=None, progress=True, nocache=False, open_file=No
 
 
 def print_progress_dot():
-	prints('.')
+	prints('. ')
 
 
 def print_progress_ast():
-	prints('*')
+	prints('* ')
 
