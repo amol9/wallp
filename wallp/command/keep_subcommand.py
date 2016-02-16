@@ -2,9 +2,9 @@ import re
 from datetime import timedelta
 from time import time
 
-from ..subcommand import Subcommand, subcmd
-from ...db import GlobalVars
-from ..exc import CommandError
+from redcmd.api import Subcommand, subcmd, CommandError
+
+from ..db import GlobalVars
 
 
 class KeepError(Exception):
@@ -69,3 +69,4 @@ class KeepSubcommand(Subcommand):
 		return '%d %s'%(num, period_map[abbr_period][0 : -1 if num == 1 else None])
 
 	keep.__extrahelp__ = keep_wallpaper.__doc__
+

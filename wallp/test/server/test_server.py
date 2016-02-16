@@ -38,7 +38,7 @@ class TestServer(TestCase):
 			global scheduled_task_placeholder
 			server_instance._scheduler._apscheduler.add_job(server_instance._change_wp.execute, 'interval', **int_arg)
 
-			print 'added job for test'
+			print('added job for test')
 
 		Server.setup_job = new_setup_job
 
@@ -50,7 +50,7 @@ class TestServer(TestCase):
 			global scheduled_task_placeholder
 			server_instance._scheduler._apscheduler.add_job(server_instance._change_wp.execute, 'date', run_date=d)
 
-			print 'added job for test'
+			print('added job for test')
 
 		WallpServer.setup_job = new_setup_job
 

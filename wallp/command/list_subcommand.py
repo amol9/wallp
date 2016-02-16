@@ -1,15 +1,14 @@
 
-from mutils.misc import colors
+from redlib.api.prnt import print_colorlist
+from redcmd.api import Subcommand, subcmd, Arg
 
-from ..subcommand import Subcommand, subcmd, Choices
-from ...service import ServiceFactory 
+from ..service import ServiceFactory 
 
 
-class ListSubcommand(Subcommand):
-	list_choices = Choices(['colors', 'services'], default=None)
+class ListSubcommand(Subcommand):	
 
 	@subcmd
-	def list(self, list_name=list_choices):
+	def list(self, list_name=Arg(choices=['colors', 'services'], default=None)):
 		'''Print built-in lists.
 		list_name: name of the list'''
 
@@ -20,7 +19,7 @@ class ListSubcommand(Subcommand):
 
 
 	def list_colors(self):
-		colors.print_names()
+		print_colorlist()
 
 
 	def list_services(self):

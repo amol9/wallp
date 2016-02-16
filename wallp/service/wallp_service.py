@@ -60,13 +60,11 @@ class WallpService(Service):
 
 	def update_frequency(self):
 		frequency = self._wallp_client.get_frequency()
-		print 'freq', frequency
 		#extract frequency and store it, db
 
 
 	def has_image_changed(self):
 		last_change = self._wallp_client.get_last_change()
-		print 'last change' , last_change
 		#get last change from db and compare
 
 		return True
@@ -109,7 +107,6 @@ class WallpService(Service):
 		recvd_size = os.stat(image_path).st_size
 		if recvd_size != expected_size:
 			raise SizeError('received image size mismatch, expected: %d, received: %d'%(expected_size, recvd_size))
-		print 'image ok'
 
 
 	def retry_image(self):

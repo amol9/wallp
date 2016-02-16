@@ -16,7 +16,7 @@ class TestWallpService(TestCase):
 		try:
 			wp_service.get_image()
 		except ServiceException:
-			print 'service exception'
+			print('service exception')
 			self.fail()
 
 
@@ -47,7 +47,7 @@ class TestWallpService(TestCase):
 			while not exc_queue.empty():
 				f.write(exc_queue.get() + '\n\n')
 
-		print 'all %d threads finished, failed: %d'%(n, exceptions[0])
+		print('all %d threads finished, failed: %d'%(n, exceptions[0]))
 
 
 if __name__ == '__main__':

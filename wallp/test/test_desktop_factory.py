@@ -7,7 +7,7 @@ class TestDesktopFactory(TestCase):
 
 	def test_get_desktop(self):
 		d = get_desktop()
-		print type(d)
+		print(type(d))
 
 
 if __name__ == '__main__':

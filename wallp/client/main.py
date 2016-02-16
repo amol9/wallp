@@ -1,9 +1,11 @@
 import sys
 
+from redcmd.api import commandline_execute
+
 from ..version import __version__
-from ..command import Command
 from .init import first_run, start_log, InitError
 from ..db.exc import DBError
+from ..command import all_subcommands
 
 
 #entry point
@@ -15,8 +17,9 @@ def main():
 		print(e)
 		sys.exit(1)
 
-	command = Command()
-	command.add_version(__version__)
-	command.set_default_subcommand('change')
-	command.execute()
+	commandline_execute(	prog='wallp',
+				description='A command line utility to download and set wallpapers from various sources.',
+				version=__version__,
+				_to_hyphen=True,
+				default_subcommand='change')
 

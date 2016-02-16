@@ -1,17 +1,17 @@
 
-from ..subcommand import Subcommand, subcmd, Choices, PositionalArg
+from redcmd.api import Subcommand, subcmd, Arg, CommandError
+
 from .list_mixin import ListMixin
-from ...service import ServiceFactory
-from ..exc import CommandError
-from ...db import Config
+from ..service import ServiceFactory
+from ..db import Config
 
 
 class EnableSubcommands(Subcommand, ListMixin):
 	service_choices = ServiceFactory().service_names
-	name_choices = Choices(ListMixin.list_choices + service_choices, default=None)
+	name_choices = ListMixin.list_choices + service_choices
 	
 	@subcmd
-	def enable(self, name=name_choices, item=PositionalArg(nargs='?')):
+	def enable(self, name=Arg(choices=name_choices, default=None), item=Arg(pos=True, nargs='?')):
 		'''Enable a service or an item in a list.
 		name: name of the service or value of an item in a list
 		item: item to be enabled, (not needed if name is a service)'''
@@ -20,7 +20,7 @@ class EnableSubcommands(Subcommand, ListMixin):
 
 
 	@subcmd
-	def disable(self, name=name_choices, item=PositionalArg(nargs='?')):
+	def disable(self, name=Arg(choices=name_choices, default=None), item=Arg(pos=True, nargs='?')):
 		'''Disable a service or an item in a list.
 		name: name of the service or value of an item in a list
 		item: item to be disabled, (not needed if name is a service)'''

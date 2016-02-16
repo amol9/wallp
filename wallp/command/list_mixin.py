@@ -1,7 +1,8 @@
 
-from ...db import func as dbfunc
-from ...db.exc import NotFoundError
-from ..exc import CommandError
+from redcmd.api import CommandError
+
+from ..db import func as dbfunc
+from ..db.exc import NotFoundError
 
 
 class ListMixin:

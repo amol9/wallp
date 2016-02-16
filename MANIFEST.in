@@ -1,1 +1,2 @@
 include wallp/db/data/*.csv
+recursive-exclude vlc_ctrl/test *

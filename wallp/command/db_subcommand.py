@@ -1,10 +1,11 @@
 import os
 from six.moves import input
 
-from ..subcommand import Subcommand, subcmd
-from ...globals import Const
-from ...db.create_db import CreateDB
-from ...db import DBSession
+from redcmd.api import Subcommand, subcmd
+
+from ..globals import Const
+from ..db.create_db import CreateDB
+from ..db import DBSession
 
 
 class DbSubcommand(Subcommand):

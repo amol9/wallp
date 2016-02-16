@@ -26,15 +26,15 @@ class TestLinuxDesktopHelper(TestCase):
 		gdmsession = log.get_testresult()[1]
 		display = log.get_testresult()[2]
 
-		print 'DBUS_SESSION_BUS_ADDRESS: ', dbus_addr
+		print('DBUS_SESSION_BUS_ADDRESS: ' + dbus_addr)
 		self.assertIsNotNone(dbus_addr)
 		self.assertRegexpMatches(dbus_addr, 'unix:abstract=/tmp/dbus-\w+')
 
-		print 'GDMSESSION: ', gdmsession
+		print('GDMSESSION: ' + gdmsession)
 		self.assertIsNotNone(gdmsession)
 		self.assertTrue(gdmsession in ['ubuntu', 'gnome', 'kde-plasma'])
 
-		print 'DISPLAY: ', display
+		print('DISPLAY: ' + display)
 		self.assertIsNotNone(display)
 		self.assertTrue(len(display) > 0)
 

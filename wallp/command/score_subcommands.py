@@ -1,6 +1,7 @@
 
-from ..subcommand import Subcommand, subcmd
-from ...db import func as dbfunc
+from redcmd.api import Subcommand, subcmd
+
+from ..db import func as dbfunc
 
 
 class ScoreSubcommands(Subcommand):
@@ -22,5 +23,4 @@ class ScoreSubcommands(Subcommand):
 		except LikeError as e:
 			print(str(e))
 			raise CommandError()
-
 

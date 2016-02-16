@@ -1,8 +1,8 @@
 import os
 
-from ..subcommand import Subcommand, subcmd
-from ...util import Scheduler, SchedulerError
-from ..exc import CommandError
+from redcmd.api import Subcommand, subcmd, CommandError
+
+from ..util import Scheduler, SchedulerError
 
 
 class ScheduleSubcommand(Subcommand):

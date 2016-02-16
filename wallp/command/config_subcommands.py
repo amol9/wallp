@@ -1,12 +1,13 @@
 import os
 
-from ..subcommand import Subcommand, subcmd
-from ...db import Config, ConfigError
-from ..exc import CommandError
-from ...globals import Const
+from redcmd.api import Subcommand, subcmd, CommandError
+
+from ..db import Config, ConfigError
+from ..globals import Const
 
 
 class ConfigSubcommands(Subcommand):
+
 	def __init__(self, parser):
 		super(ConfigSubcommands, self).__init__(parser)
 		self.add_config_shortcuts()
@@ -33,8 +34,8 @@ class ConfigSubcommands(Subcommand):
 	@subcmd
 	def set(self, name, value):
 		'''Assign a value to a setting.
-		name: name of the setting.
-		value: value of the setting'''
+		name: 	name of the setting.
+		value: 	value of the setting'''
 
 		config = Config()
 		self.config_call(config.set, name, value)

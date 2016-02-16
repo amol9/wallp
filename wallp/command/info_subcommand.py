@@ -2,12 +2,11 @@ from datetime import datetime
 import os
 import textwrap
 
-from mutils.system import terminalsize
+from redlib.api.system import get_terminal_size
+from redcmd.api import Subcommand, subcmd, CommandError
 
-from ..subcommand import Subcommand, subcmd
-from ...db import func as dbfunc
-from ...db.exc import NotFoundError
-from ..exc import CommandError
+from ..db import func as dbfunc
+from ..db.exc import NotFoundError
 
 
 class InfoSubcommand(Subcommand):
@@ -31,7 +30,7 @@ class InfoSubcommand(Subcommand):
 	def print_info(self):
 		image = self.get_image_info()
 		col1 = 20
-		col2 = terminalsize.get_terminal_size()[0] - col1 - 3
+		col2 = get_terminal_size()[0] - col1 - 3
 
 		def wrap(text):
 			lines = []
