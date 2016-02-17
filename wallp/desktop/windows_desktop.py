@@ -1,8 +1,9 @@
 import ctypes
 
 from redlib.api.system import *
+from zope.interface import implementer
 
-from .desktop import Desktop
+from .desktop import Desktop, DesktopError
 from .wpstyle import WPStyle
 
 
@@ -11,6 +12,7 @@ if is_windows():
 	else: import _winreg as winreg
 
 
+#@implementer(IDesktop)
 class WindowsDesktop(Desktop):
 	wp_styles = {
 		WPStyle.NONE : 		'0',
@@ -50,7 +52,7 @@ class WindowsDesktop(Desktop):
 		
 
 	def set_wallpaper_style(self, style):
-		wp_style = self.wp_styles.get(style)
+		wp_style = self.wp_styles.get(int(style))
 		if wp_style is None:
 			wp_style = self.wp_styles['none']
 
@@ -61,4 +63,12 @@ class WindowsDesktop(Desktop):
 			winreg.SetValueEx(key, 'TileWallpaper', 0, winreg.REG_SZ, '1')
 		else:
 			winreg.SetValueEx(key, 'TileWallpaper', 0, winreg.REG_SZ, '0')
+
+
+	def get_wallpaper(self):
+		raise DesktopError('not implemented for windows')
+
+
+	def get_wallpaper_style(self):
+		raise DesktopError('not implemented for windows')
 

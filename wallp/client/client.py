@@ -16,7 +16,8 @@ from ..util.logger import log
 from ..db import Image
 from .. import web
 from ..globals import Const
-from ..desktop import desktop_factory, DesktopError, get_desktop, WPStyle
+from ..desktop import desktop_factory, DesktopError, get_desktop
+from ..desktop.wpstyle import WPStyle, compute_style
 from ..server.protocol import WPState
 from mayloop.transport.pipe_connection import PipeConnection
 from ..db import func as dbfunc, GlobalVars, VarError
@@ -55,9 +56,9 @@ class Client:
 			filepath, im_width, im_height, image_id = self.get_image()
 
 			dt = get_desktop()
-			style = self.compute_wp_style(im_width, im_height, *dt.get_size())
+			wp_style = compute_style(im_width, im_height, *dt.get_size())
 
-			dt.set_wallpaper(filepath, style=style)
+			dt.set_wallpaper(filepath, style=wp_style)
 
 			globalvars = GlobalVars()
 			try:
@@ -218,38 +219,3 @@ class Client:
 		image.save()
 		return image.id
 
-
-	def compute_wp_style(self, im_width, im_height, dt_width, dt_height):
-		assert type(im_width) == int
-		assert type(im_height) == int
-
-		log.debug('image: width=%d, height=%d'%(im_width, im_height))
-		log.debug('desktop: width=%d, height=%d'%(dt_width, dt_height))
-
-		style = None
-		buf = None
-
-		if im_width < 5 and im_height < 5:
-			style = WPStyle.TILED
-		else:
-			same_ar = False
-			dt_ar = float(dt_width) / dt_height
-			im_ar = float(im_width) / im_height
-			
-			if abs(dt_ar - im_ar) < 0.01:
-				same_ar = True	
-
-			wr = float(im_width) / dt_width
-			hr = float(im_height) / dt_height
-
-			if (wr >= 0.9) and (hr >= 0.9):
-				style = WPStyle.SCALED if same_ar else WPStyle.ZOOM
-			elif (wr < 0.9) or (hr < 0.9):
-				style = WPStyle.CENTERED
-			else:
-				style = WPStyle.SCALED if same_ar else WPStyle.ZOOM 
-
-		log.debug('style: %s'%WPStyle.to_string(style))
-
-		return style
-	

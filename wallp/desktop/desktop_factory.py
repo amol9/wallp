@@ -1,11 +1,10 @@
 import os
 
-from redlib.api.system import *
+from redlib.api.system import sys_command, CronDBus, CronDBusError, is_linux, is_windows
 
 from ..util.logger import log
 from . import Desktop
 from .windows_desktop import WindowsDesktop
-from .linux_desktop_helper import uses_dbus
 from . import gnome_desktop
 
 
@@ -21,8 +20,10 @@ def load_optional_module(module, package=None, err_msg=None):
 load_optional_module('.kde_plasma_desktop', package='wallp.desktop', err_msg='KDE Plasma will not be supported.')
 
 
-@uses_dbus
 def get_desktop():
+	crondbus = CronDBus(vars=['GDMSESSION', 'DISPLAY'])
+	crondbus.setup()
+
 	if is_linux():
 		gdmsession = os.environ.get('GDMSESSION', None)
 		if gdmsession is None:

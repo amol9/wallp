@@ -8,7 +8,7 @@ from redlib.api.system import sys_command, is_windows
 from ..util.logger import log
 
 
-def is_cron_session():
+'''def is_cron_session():
 	return not os.isatty(sys.stdin.fileno())
 
 
@@ -92,10 +92,9 @@ def uses_dbus(func):
 		else:
 			log.debug('failed to set gnome session bus address')
 			return None
-	return new_func
+	return new_func'''
 
 
-@uses_dbus
 def get_desktop_size():
 	xinfo = rc = None
 	width = height = None

@@ -3,12 +3,13 @@ import dbus
 from time import sleep
 from tempfile import NamedTemporaryFile
 
-from redlib.api.system import sys_command
+from redlib.api.system import sys_command, CronDBus, CronDBusError
+from zope.interface import implementer
 
 from ..util.logger import log
-from .desktop import Desktop
+from .desktop import Desktop, DesktopError
 from .wpstyle import WPStyle
-from .linux_desktop_helper import get_desktop_size, uses_dbus
+from .linux_desktop_helper import get_desktop_size
 
 
 #js execution + xdotool approach used from: http://blog.zx2c4.com/699 (Jason A. Donenfeld)
@@ -23,6 +24,7 @@ wallpaperposition values:
 5: 'Scaled, keep proportions'
 '''
 
+#@implementer(IDesktop)
 class KdePlasmaDesktop(Desktop):
 	wp_styles = {
 		WPStyle.NONE : 		'1',
@@ -38,7 +40,15 @@ class KdePlasmaDesktop(Desktop):
 		return gdmsession == 'kde-plasma'
 
 
-	@uses_dbus
+	def __init__(self):
+		self._crondbus = CronDBus(vars=['GDMSESSION', 'DISPLAY'])
+		self._crondbus.setup()
+
+
+	def __del__(self):
+		self._crondbus.remove()
+
+
 	def get_size(self):
 		return get_desktop_size()
 
@@ -60,7 +70,6 @@ class KdePlasmaDesktop(Desktop):
 		return js
 
 
-	@uses_dbus
 	def execute_js(self, js):
 		plasma_app = dbus.SessionBus().get_object('org.kde.plasma-desktop', '/App')
 		plasma_app_iface = dbus.Interface(plasma_app, 'local.PlasmaApp')
@@ -81,12 +90,12 @@ class KdePlasmaDesktop(Desktop):
 		style_code = None
 
 		if style is None:
-			style_code = self.wp_styles['none']
-		elif style not in self.wp_styles.keys():
-			log.warning('wallpaper style %s is not supported, setting to none'%style)
-			style_code = self.wp_styles['none']
+			style_code = self.wp_styles[WPStyle.NONE]
+		#elif style not in self.wp_styles.keys():
+		#	log.warning('wallpaper style %s is not supported, setting to none'%style)
+		#	style_code = self.wp_styles['none']
 		else:
-			style_code = self.wp_styles[style]
+			style_code = self.wp_styles.get(int(style))
 
 		return style_code
 
@@ -101,4 +110,12 @@ class KdePlasmaDesktop(Desktop):
 		style_code = self.get_style_code(style)	
 		js = self.make_js(None, style_code)
 		self.execute_js(js)
+
+
+	def get_wallpaper(self):
+		raise DesktopError('not implemented for kde plasma')
+
+
+	def get_wallpaper_style(self):
+		raise DesktopError('not implemented for kde plasma')
 
