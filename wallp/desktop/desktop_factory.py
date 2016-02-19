@@ -21,10 +21,10 @@ load_optional_module('.kde_plasma_desktop', package='wallp.desktop', err_msg='KD
 
 
 def get_desktop():
-	crondbus = CronDBus(vars=['GDMSESSION', 'DISPLAY'])
-	crondbus.setup()
-
 	if is_linux():
+		crondbus = CronDBus(vars=['GDMSESSION', 'DISPLAY'])
+		crondbus.setup()
+
 		gdmsession = os.environ.get('GDMSESSION', None)
 		if gdmsession is None:
 			log.error('could not read environment variable: GDMSESSION')

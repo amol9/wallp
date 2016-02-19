@@ -46,8 +46,6 @@ class StyleSubSubcommands(StyleSubcommand):
 
 		filepath = self.exc_desktop_call('get_wallpaper')
 		_, im_width, im_height = get_image_info(None, filepath=filepath)
-		print 'filepath: ', filepath
-		print 'image info: ', im_width, im_height
 		dt_width, dt_height = self.exc_desktop_call('get_size')
 
 		wp_style = compute_style(im_width, im_height, dt_width, dt_height)
