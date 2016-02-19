@@ -4,7 +4,6 @@ from time import sleep
 from tempfile import NamedTemporaryFile
 
 from redlib.api.system import sys_command, CronDBus, CronDBusError
-from zope.interface import implementer
 
 from ..util.logger import log
 from .desktop import Desktop, DesktopError
@@ -24,7 +23,6 @@ wallpaperposition values:
 5: 'Scaled, keep proportions'
 '''
 
-#@implementer(IDesktop)
 class KdePlasmaDesktop(Desktop):
 	wp_styles = {
 		WPStyle.NONE : 		'1',

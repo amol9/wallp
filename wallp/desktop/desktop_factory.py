@@ -4,8 +4,9 @@ from redlib.api.system import sys_command, CronDBus, CronDBusError, is_linux, is
 
 from ..util.logger import log
 from . import Desktop
-from .windows_desktop import WindowsDesktop
 from . import gnome_desktop
+if is_windows():
+	from .windows_desktop import WindowsDesktop
 
 
 def load_optional_module(module, package=None, err_msg=None):

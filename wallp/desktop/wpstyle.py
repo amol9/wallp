@@ -1,5 +1,6 @@
 
 from ..util.logger import log
+from ..db.config import Config
 
 
 class WPStyleError(Exception):
@@ -39,17 +40,23 @@ class WPStyle:
 		return self._style
 
 
-def compute_style(im_width, im_height, dt_width, dt_height):
-	assert type(im_width) == int
-	assert type(im_height) == int
+	#def __eq__(self, other):
+	#	return self._style == other._style
 
+
+def compute_style(im_width, im_height, dt_width, dt_height):
 	log.debug('image: width=%d, height=%d'%(im_width, im_height))
 	log.debug('desktop: width=%d, height=%d'%(dt_width, dt_height))
 
 	style = None
+	tiled_size = Config().get('style.tiled_size')
 
-	if im_width < 5 and im_height < 5:
+	if im_width == dt_width and im_height == dt_height:
+		style = WPStyle(WPStyle.CENTERED)
+
+	elif im_width <= tiled_size and im_height <= tiled_size:
 		style = WPStyle(WPStyle.TILED)
+
 	else:
 		dt_ar = float(dt_width) / dt_height
 		im_ar = float(im_width) / im_height

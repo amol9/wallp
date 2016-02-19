@@ -1,6 +1,5 @@
 
 from redlib.api.system import sys_command, CronDBus, CronDBusError
-from zope.interface import implementer
 
 from .desktop import Desktop, DesktopError
 from .wpstyle import WPStyle
@@ -8,7 +7,6 @@ from ..util.logger import log
 from .linux_desktop_helper import get_desktop_size
 
 
-#@implementer(IDesktop)
 class GnomeDesktop(Desktop):
 	wp_styles = {
 		WPStyle.NONE : 		'none',
@@ -69,7 +67,7 @@ class GnomeDesktop(Desktop):
 		_, op = sys_command(cmd)
 
 		style_name = op.strip()[1 : -1]
-		style = dict([(v, k) for (k, v) in self.wp_styles.iteritems()]).get(style_name, None)
+		style = dict([(v, k) for (k, v) in self.wp_styles.items()]).get(style_name, None)
 
 		return WPStyle(style)
 		

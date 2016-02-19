@@ -40,9 +40,8 @@ class StyleSubSubcommands(StyleSubcommand):
 
 
 	@subcmd
-	def compute(self):
+	def auto(self):
 		'Compute and set wallpaper style automatically.'
-		#get image path, get its size, compute style and set it
 
 		filepath = self.exc_desktop_call('get_wallpaper')
 		_, im_width, im_height = get_image_info(None, filepath=filepath)

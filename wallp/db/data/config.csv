@@ -4,3 +4,4 @@ server.host,		None,		str
 server.port,		None,		int
 client.logfile,		'stdout',	str
 client.loglevel,	40,		int
+style.tiled_size	100,		int

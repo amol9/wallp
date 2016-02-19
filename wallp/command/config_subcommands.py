@@ -8,8 +8,8 @@ from ..globals import Const
 
 class ConfigSubcommands(Subcommand):
 
-	def __init__(self, parser):
-		super(ConfigSubcommands, self).__init__(parser)
+	def __init__(self):
+		#super(ConfigSubcommands, self).__init__(parser)
 		self.add_config_shortcuts()
 
 	

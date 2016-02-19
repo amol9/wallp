@@ -1,7 +1,5 @@
 from abc import ABCMeta, abstractmethod
 
-#from zope.interface import Interface
-
 
 class DesktopError(Exception):
 	pass
