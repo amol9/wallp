@@ -1,7 +1,9 @@
 import os
+import re
 import dbus
 from time import sleep
 from tempfile import NamedTemporaryFile
+from os.path import exists, expanduser
 
 from redlib.api.system import sys_command, CronDBus, CronDBusError
 
@@ -32,6 +34,8 @@ class KdePlasmaDesktop(Desktop):
 		WPStyle.STRETCHED : 	'0',
 		WPStyle.ZOOM : 		'5'
 	}
+
+	plasma_desktop_config_file = '~/.kde/share/config/plasma-desktop-appletsrc'
 
 	@staticmethod
 	def supports(gdmsession):
@@ -81,7 +85,9 @@ class KdePlasmaDesktop(Desktop):
 		xdo_cmd = "xdotool search --name \"Desktop Shell Scripting Console\" " + \
 				"windowsize 200 200 key \"ctrl+e\" key \"ctrl+w\" windowminimize"
 
-		rc, _ = sys_command(xdo_cmd, supress_output=True)
+		rc, _ = sys_command(xdo_cmd, suppress_output=True)
+		if rc == 127:
+			log.error('xdotool not found, it is needed to automate the desktop shell scripting console')
 
 
 	def get_style_code(self, style):
@@ -89,9 +95,6 @@ class KdePlasmaDesktop(Desktop):
 
 		if style is None:
 			style_code = self.wp_styles[WPStyle.NONE]
-		#elif style not in self.wp_styles.keys():
-		#	log.warning('wallpaper style %s is not supported, setting to none'%style)
-		#	style_code = self.wp_styles['none']
 		else:
 			style_code = self.wp_styles.get(int(style))
 
@@ -111,9 +114,26 @@ class KdePlasmaDesktop(Desktop):
 
 
 	def get_wallpaper(self):
-		raise DesktopError('not implemented for kde plasma')
+		return self.get_plasma_desktop_config_setting('userswallpaper')
+
+
+	def get_plasma_desktop_config_setting(self, name):
+		config_file = expanduser(self.plasma_desktop_config_file)
+
+		if not exists(config_file):
+			raise DesktopError('config file %s not found'%config_file)
+
+		with open(config_file, 'r') as f:
+			re_setting = re.compile(".*?%s=(.*?)$"%name, re.M | re.S)
+
+			match = re_setting.match(f.read())
+			if match is None:
+				raise DesktopError('config setting %s not found'%name)
+
+			return match.group(1)
 
 
 	def get_wallpaper_style(self):
-		raise DesktopError('not implemented for kde plasma')
+		style = self.get_plasma_desktop_config_setting('wallpaperposition')
+		return WPStyle(dict([(v, k) for (k, v) in self.wp_styles.items()]).get(style, None))
 

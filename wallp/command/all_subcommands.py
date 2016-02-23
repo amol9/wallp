@@ -8,6 +8,6 @@ from . import keep_subcommand
 from . import list_subcommand
 from . import log_subcommand
 from . import schedule_subcommand
-from . import score_subcommands
+#from . import score_subcommands
 from . import style_subcommands
 

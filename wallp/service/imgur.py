@@ -28,7 +28,7 @@ class ImgurError(Exception):
 class Imgur(ImageInfoMixin, ImageUrlsMixin):
 	name = 'imgur'
 
-	search_url 			= "http://imgur.com/search?"
+	search_url 			= "http://imgur.com/search/score/all?"
 	search_result_link_prefix 	= "http://imgur.com"
 	imgur_base_url_regex 		= re.compile('https?://imgur.com/(.*)')
 	imgur_gallery_base_url 		= 'http://imgur.com/gallery/'
@@ -204,6 +204,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		url = self.search_url + urlencode(qs)
 		res = webfunc.get_page(url)
 
+		import pdb; pdb.set_trace()
 		link_regex = re.compile("<a.*?class=\"image-list-link\".*?href=\"(.*?)\"")
 		matches = link_regex.findall(res)
 
