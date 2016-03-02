@@ -3,6 +3,11 @@ import logging
 
 from redlib.api.system import is_py3
 
+
+def msg_empty(msg):
+		return msg is None or len(str(msg)) == 0
+
+
 class Logger():
 	if is_py3():
 		levels = dict([(k.lower(), v) for (k, v) in logging._nameToLevel.items() if v != 0])
@@ -35,20 +40,24 @@ class Logger():
 	def to_stdout(self):
 		return self._to_stdout
 
-
+	
 	def debug(self, msg):
+		if msg_empty(msg): return
 		self._log.debug(msg)
 
 
 	def info(self, msg):
+		if msg_empty(msg): return
 		self._log.info(msg)
 
 
 	def warning(self, msg):
+		if msg_empty(msg): return
 		self._log.warning(msg)
 
 
 	def error(self, msg):
+		if msg_empty(msg): return
 		self._log.error(msg)
 
 

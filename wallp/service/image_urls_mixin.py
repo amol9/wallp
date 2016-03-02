@@ -54,7 +54,7 @@ class ImageUrlsMixin(object):
 
 				return image_url
 
-
+		raise ServiceError('no unseen image urls found')
 
 	def image_urls_available(self):
 		return self._image_urls is not None and len(self._image_urls) > 0

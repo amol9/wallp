@@ -154,7 +154,10 @@ class Client:
 				f = None
 				try:
 					image_url = service.get_image_url(query=query, color=color)
-						
+					
+					if image_url is None:
+						raise ServiceError()
+
 					ext = image_url[image_url.rfind('.') + 1 : ]
 					fn, temp_image_path = tempfile.mkstemp()
 					f = os.fdopen(fn, 'r+b')

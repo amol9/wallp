@@ -28,7 +28,7 @@ setup(
 	include_package_data	= True,
 	scripts			= ['ez_setup.py', 'rc_setup.py', 'wp_setup.py'],
 	entry_points 		= entry_points,
-	install_requires	= ['praw', 'sqlalchemy', 'zope.interface', 'mayloop', 'six', 'redcmd>=1.1.3', 'redlib>=1.1.2'],
+	install_requires	= ['praw', 'sqlalchemy', 'zope.interface', 'mayloop', 'six', 'redcmd>=1.1.3', 'redlib>=1.1.2', 'giraf'],
 	classifiers		= [
 					'Development Status :: 4 - Beta',
 					'Environment :: Console',
