@@ -49,7 +49,7 @@ class ImageUrlsMixin(object):
 			else:
 				if add_trace_step:
 					self.add_trace_step('selected url', image_url)
-					log.debug('selected url: %s'%image_url)
+
 				self._image_context = self._image_contexts.get(image_url, None)
 
 				return image_url

@@ -178,3 +178,7 @@ class NameValueSet(object):
 		if c_regex.match(value) is None:
 			raise ValueError(regex.err_msg)
 
+
+	def commit(self):
+		self._dbsession.commit()
+

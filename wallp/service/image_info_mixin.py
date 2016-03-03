@@ -1,6 +1,7 @@
 
 from .image_context import ImageContext
 from ..db import ImageTrace
+from ..util import log
 
 
 class ImageInfoMixin(object):
@@ -11,8 +12,9 @@ class ImageInfoMixin(object):
 		self._step = 1
 
 
-	def add_trace_step(self, name, data):
+	def add_trace_step(self, name, data, log_debug=True):
 		self._image_trace.append(ImageTrace(step=self._step, name=name, data=data))
+		log.debug(name + ': ' + data)
 		self._step += 1
 
 

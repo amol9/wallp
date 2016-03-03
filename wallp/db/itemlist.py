@@ -45,6 +45,10 @@ class ItemList:
 			self._dbsession.commit()
 
 
+	def commit(self):
+		self._dbsession.commit()
+
+
 	def validate(self, value):
 		if value is None:
 			raise ValueError('value none')
@@ -108,6 +112,11 @@ class ItemList:
 			pass
 
 		return result[0]
+
+	def exists(self, value):
+		column_type = getattr(self.itemtype, self.column)
+		result = self._dbsession.query(self.itemtype).filter(column_type == value).all()
+		return len(result) > 0
 
 
 class ImgurAlbumList(ItemList):
