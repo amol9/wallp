@@ -37,12 +37,13 @@ class KeepError(Exception):
 
 
 class Client:
-	def __init__(self, service_name=None, query=None, color=None, transport=None):
+	def __init__(self, service_name=None, query=None, color=None, transport=None, service_params=None):
 		self._service_name = service_name
 		self._query = query
 		self._color = color
 		assert type(transport) == PipeConnection if transport is not None else True
 		self._transport = transport
+		self._service_params = service_params
 
 
 	def change_wallpaper(self):
@@ -105,7 +106,7 @@ class Client:
 			service = self.get_service()
 						
 			try:
-				temp_image_path, ext, image_url = self.get_image_to_temp_file(service, self._query, self._color)
+				temp_image_path, ext, image_url = self.get_image_to_temp_file(service, self._query, self._color, self._service_params)
 				wp_path = self.move_temp_file(temp_image_path, ext)
 				image_type, image_width, image_height = get_image_info(None, filepath=wp_path)
 				image_id = self.save_image_info(service, wp_path, image_url, image_type, image_width, image_height)
@@ -146,14 +147,17 @@ class Client:
 		return service
 
 
-	def get_image_to_temp_file(self, service, query, color):
+	def get_image_to_temp_file(self, service, query, color, service_params):
 		image_url = None
 		if IHttpService.providedBy(service):
 			retry = Retry(retries=1, final_exc=ServiceError())
 			while retry.left():
 				f = None
 				try:
-					image_url = service.get_image_url(query=query, color=color)
+					if service_params is not None:
+						image_url = service.get_image_url(query=query, color=color, params=service_params)
+					else:
+						image_url = service.get_image_url(query=query, color=color)
 					
 					if image_url is None:
 						raise ServiceError()

@@ -14,8 +14,21 @@ from ..db import Config, ImgurAlbumList, SearchTermList
 from ..desktop.desktop_factory import get_desktop
 
 
+class ImgurParams(ServiceParams):
+		
+	def __init__(self, query=None, method=ImgurMethod.random, image_size=ImageSize.medium, pages=1, username=None):
+		self.query	= query
+		self.method	= method
+		self.image_size	= image_size
+		self.username	= username
+		self.pages	= pages
+
+
 class ImgurError(Exception):
 	pass
+
+
+ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])
 
 
 @implementer(IHttpService)
@@ -27,44 +40,49 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		super(Imgur, self).__init__()
 		self._imgur = GImgur()
 
+		dt = get_desktop()
+		dw, dh = dt.get_size()
+		mw, mh = 0.9 * dw, 0.9 * dh
 
-	def get_image_url(self, query=None, color=None):
+		self.min_size = lambda w, h : w >= mw and h >= mh 
+
+
+	def get_image_url(self, query=None, color=None, params=None):
 		if self.image_urls_available():
 			image_url = self.select_url()
 			return image_url
 
 		image_url = None
-		search = album = False
+		method = None
 
-		if query is not None:
-			search = True
-			album = False
+		if params is not None and params.method != ImgurMethod.random:
+			method = params.method
+		elif query is not None:
+			method = ImgurMethod.search
 		else:
-			search = choice([True, False])
-			album = not search
+			method = choice(ImgurMethod)
 
+		return self.map_call(query, method)
+
+
+	def map_call(self, query, method):
 		try:
-			if search:
-				image_url = self.get_image_url_from_search(query)
-			elif album:
-				image_url = self.get_image_url_from_random_album()
+			if method == ImgurMethod.search:
+				return self.search(query)
+			elif method == ImgurMethod.random_album:
+				return self.random_album()
+			elif method == ImgurMethod.wallpaper_album:
+				return self.wallpaper_album()
+			elif method == ImgurMethod.favorite:
+				return self.favorite()
+			else:
+				raise ImgurError('invalid imgur method')
 		except ImgurError as e:
-			log.error(str(e))
-			raise ServiceError(e)
-
-		return image_url
+			log.error(e)
+			raise ServiceError()
 
 
-	def get_image_url_from_search(self, query):
-		self.search(query)
-		image_url = self.select_url()
-
-		log.debug('found %d urls, selected url: %s'%(self.image_count, image_url))
-
-		return image_url
-
-
-	def get_image_url_from_random_album(self):
+	def random_album(self):
 		album_list = ImgurAlbumList()
 		album = None
 
@@ -85,6 +103,10 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 
 				retry.retry()
 
+		return self.get_url_from_album(album)
+
+
+	def get_url_from_album(self, album):
 		image_url = choice([i['link'] for i in album.images if i.get('link', None) is not None])
 
 		self._image_context.title	= album.title
@@ -106,10 +128,6 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		self.add_trace_step('searched imgur', query)
 		log.debug('searched for: %s'%query)
 
-		dt = get_desktop()
-		dw, dh = dt.get_size()
-		mw, mh = 0.9 * dw, 0.9 * dh
-
 		for r in result:
 			ga = lambda f : getattr(r, f, None)
 			drop_ext = lambda u : u[0 : u.rfind('.')]
@@ -119,4 +137,24 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 
 			image_context =  ImageContext(title=ga('title'), description=ga('description'), artist=ga('account_url'),url=drop_ext(ga('link')))
 			self.add_url(ga('link'), image_context)
+
+		log.debug('got %d results'%self.image_count)
+		return self.select_url()
+
+
+	def favorite(self, query):
+		# get favorites (may be filtered)
+
+		# add urls
+
+
+	def wallpaper_albums(self, query):
+		# search for: wallpaper, album
+
+		# add results to db
+
+		# random album
+
+		# ad urls
+
 
