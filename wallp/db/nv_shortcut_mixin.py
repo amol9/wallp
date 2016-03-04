@@ -35,14 +35,19 @@ class NVShortcutMixin(object):
 
 			shortcut = self._shortcuts[name]
 			values = []
+			max_name_len = 25
+
 			for name in shortcut.names:
 				value = NameValueSet.get(self, name)
 				values.append(value)
 
+				if len(name) > max_name_len:
+					max_name_len = len(name)
+
 			if shortcut.print_fmt:
 				output = ''
 				for i in range(len(shortcut.names)):
-					output += '{0:<25}: {1}'.format(shortcut.names[i], values[i])
+					output += ('{0:<%d}: {1}'%(max_name_len + 1)).format(shortcut.names[i], values[i])
 					output += shortcut.sep if i != len(shortcut.names) - 1 else ''
 				print(output)
 				return ''
@@ -62,7 +67,7 @@ class NVShortcutMixin(object):
 
 			values = value.split(shortcut.sep)
 			if len(values) > len(shortcut.names):
-				raise ShortcutError('number of values > number of names')
+				raise NVShortcutError('number of values > number of names')
 
 			for name, value in zip_longest(shortcut.names, values):
 				if value is None:

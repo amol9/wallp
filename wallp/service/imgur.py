@@ -11,9 +11,10 @@ from .service import IHttpService, ServiceError
 from .image_info_mixin import ImageInfoMixin
 from .image_urls_mixin import ImageUrlsMixin
 from .image_context import ImageContext
-from ..db import Config, ImgurAlbumList, SearchTermList, ConfigError, NotFoundError
+from ..db import ImgurAlbumList, SearchTermList, ConfigError
 from ..desktop.desktop_factory import get_desktop
 from .service_params import ServiceParams
+from .config_mixin import ConfigMixin
 
 
 ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])
@@ -21,12 +22,17 @@ ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpape
 
 class ImgurParams(ServiceParams):
 		
-	def __init__(self, query=None, method=ImgurMethod.random, image_size=ImageSize.medium, pages=1, username=None):
-		self.query	= query
-		self.method	= method
-		self.image_size	= image_size
-		self.username	= username
-		self.pages	= pages
+	def __init__(self, query=None, method=ImgurMethod.random, image_size=ImageSize.medium, pages=1, username=None, newest=False,
+			favorite=False, query_type=QueryType.all, gallery_type=None):
+		self.query		= query
+		self.method		= method
+		self.image_size		= image_size
+		self.username		= username
+		self.pages		= pages
+		self.newest		= newest
+		self.favorite		= favorite
+		self.query_type		= query_type
+		self.gallery_type	= gallery_type
 
 
 class ImgurError(Exception):
@@ -34,13 +40,13 @@ class ImgurError(Exception):
 
 
 @implementer(IHttpService)
-class Imgur(ImageInfoMixin, ImageUrlsMixin):
+class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 	name = 'imgur'
-
 
 	def __init__(self):
 		super(Imgur, self).__init__()
 		self._imgur = GImgur()
+		self._album_list = ImgurAlbumList()
 
 		dt = get_desktop()
 		dw, dh = dt.get_size()
@@ -88,12 +94,11 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 
 
 	def random_album(self):
-		album_list = ImgurAlbumList()
 		album = None
 
 		retry = Retry(retries=3, final_exc=ImgurError())
 		while retry.left():
-			album_url = album_list.get_random()
+			album_url = self._album_list.get_random()
 			self.add_trace_step('selected random album', album_url)
 		
 			album = self.get_album_from_url(album_url)
@@ -103,7 +108,8 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 			else:
 				retry.retry()
 
-		return self.get_url_from_album(album)
+		self.process_album(album)
+		return self.select_url()
 
 
 	def get_album_from_url(self, album_url):
@@ -115,13 +121,13 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		except GImgurError as e:
 			log.error(e)
 			if e.err_type == ImgurErrorType.not_found:
-				album_list.disable(album_url)
+				self._album_list.disable(album_url)
 				log.debug('disabled album: %s'%album_url)
 
 		return album
 
 
-	def get_url_from_album(self, album):
+	def process_album(self, album):
 		image_ok = lambda i : i.get('link', None) is not None and\
 				i.get('width', None) >= self.min_size[0] and i.get('height', None) >= self.min_size[1]
 
@@ -129,14 +135,9 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 		if len(url_list) == 0:
 			raise ImgurError('no usable image urls found')
 
-		image_url = choice(url_list)
-
-		self._image_context.title	= album.title
-		self._image_context.description = album.description
-		self._image_context.artist	= album.account_url
-		self._image_context.url		= album.link
-
-		return image_url
+		image_context = ImageContext(title=album.title, description=album.description, artist=album.account_url, url=album.link)
+		for u in url_list:
+			self.add_url(u, image_context)
 
 	
 	def search(self):
@@ -150,68 +151,129 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin):
 
 		self.add_trace_step('searched imgur', query)
 
-		self.process_result(result)
-		return self.select_url()
+		return self.process_result(result)
 
 
 	def process_result(self, result):
+		images = []
+		albums = []
+
 		for r in result:
-			ga = lambda f : getattr(r, f, None)
-			drop_ext = lambda u : u[0 : u.rfind('.')]
+			if type(r) == GalleryType.image.value:
+				ga = lambda f : getattr(r, f, None)
+				drop_ext = lambda u : u[0 : u.rfind('.')]
+				if ga('link') is None:
+					continue
 
-			if ga('link') is None:
-				continue
+				image_context =  ImageContext(title=ga('title'), description=ga('description'),
+						artist=ga('account_url'),url=drop_ext(ga('link')))
+				images.append((ga('link'), image_context))
+			else:
+				albums.append(r.link)
 
-			image_context =  ImageContext(title=ga('title'), description=ga('description'), artist=ga('account_url'),url=drop_ext(ga('link')))
-			self.add_url(ga('link'), image_context)
+		log.debug('got %d results'%(len(images) + len(albums)))
 
-		log.debug('got %d results'%self.image_count)
+		def choose_from_images():
+			for i in images:
+				self.add_url(i[0], i[1])
 
+		def choose_from_albums():
+			album_url = choice(albums)
+			album = self.get_album_from_url(album_url)
+			self.process_album(album)
+
+		if len(images) > 0 and len(albums) > 0:
+			ch = choice([True, False])
+			if ch:
+				choose_from_images()
+			else:
+				choose_from_albums()
+		elif len(images) > 0:
+			choose_from_images()
+		elif len(albums) > 0:
+			choose_from_albums()
+		else:
+			raise ImgurError('no images found')
+
+		return self.select_url()
+		
 
 	def favorite(self):
-		result = self._imgur.gallery_favorites(self._params.username, query=self._params.query, query_type=QueryType.all,
-				gallery_type=GalleryType.image, pages=self._params.pages, animated=False, min_size=self.min_size)
+		username = self._params.username
+		if username is None:
+			try:
+				username = self.config_get('username')
+			except ConfigError as e:
+				log.error(e)
+				raise ImgurError('cannot get favorite without username')
+		else:
+			self.config_set('username', username)
 
-		self.process_result(result)
-		return self.select_url()
+		result = self._imgur.gallery_favorites(username, query=self._params.query, query_type=self._params.query_type,
+				gallery_type=self._params.gallery_type, pages=self._params.pages, animated=False, min_size=self.min_size)
 
+		return self.process_result(result)
 
 
 	def wallpaper_album(self):
-		config = Config()
+		if self._params.query is not None:
+			self._params.query += ' wallpaper'
+		else:
+			self._params.query = 'wallpaper'
+
+		self._params.query_type = QueryType.all
+		self._params.gallery_type = GalleryType.album
+
+		if self._params.favorite:
+			return self.wallpaper_album_from_favorites()
+		else:
+			return self.wallpaper_album_from_search()
+
+
+	def wallpaper_album_from_favorites(self):
+		return self.favorite()
+
+
+	def wallpaper_album_from_search(self):
 		page = None
 
-		try:
-			page = config.get('imgur.wallpaper_search_page')
-		except (NotFoundError, ConfigError):
+		if self._params.query == 'wallpaper':
+			try:
+				page = self.config_get('wallpaper_search_page')
+			except ConfigError:
+				page = 0
+				self.config_add('wallpaper_search_page', page, int)
+		else:
 			page = 0
-			config.add('imgur.wallpaper_search_page', page, int)
-			config.commit()
 
 		retry = Retry(retries=3, delay=1, exp_bkf=False)
 
 		while retry.left():
-			result = self._imgur.search('wallpaper', query_type=QueryType.all, gallery_type=GalleryType.album, start_page=page)
-			album_list = ImgurAlbumList()
+			result = self._imgur.search(self._params.query, query_type=self._params.query_type,
+					gallery_type=self._params.gallery_type, start_page=page)
 
 			found_new = False
 			album_urls = []
 			for r in result:
-				if not album_list.exists(r.link):
-					album_list.add(r.link, True)
+				if not self._album_list.exists(r.link):
+					self._album_list.add(r.link, True)
 					found_new = True
 					album_urls.append(r.link)
 					log.debug('found new wallpaper album: %s'%r.link)
 
 			if found_new:
-				album_list.commit()
-				album = self.get_album_from_url(choice(album_urls))
-				return self.get_url_from_album(album)
+				self._album_list.commit()
+				album_url = choice(album_urls)
+				self.add_trace_step('selected random album', album_url)
+				album = self.get_album_from_url(album_url)
+				self.process_album(album)
+				return self.select_url()
 			else:
 				page += 1
 				retry.retry()
 
-		config.set('imgur.wallpaper_search_page', (page + 1) % 100)
-		config.commit()
+		if self._params.query == 'wallpaper':
+			self.config_set('wallpaper_search_page', (page + 1) % 100)
 		return self.random_album()
 
+#todo: refactor, store fav wallpaper albums, add trace steps

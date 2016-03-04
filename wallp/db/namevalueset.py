@@ -29,6 +29,7 @@ class INameValueSet(Interface):
 	def set(fullname, value):
 		'Set value.'
 
+
 @implementer(INameValueSet)
 class NameValueSet(object):
 	group_regex 	= Regex('[a-zA-Z].*|^$', 'must start with a letter')
