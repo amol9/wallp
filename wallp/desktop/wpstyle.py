@@ -1,6 +1,7 @@
 
 from ..util.logger import log
 from ..db.config import Config
+from ..util.printer import printer
 
 
 class WPStyleError(Exception):
@@ -46,7 +47,9 @@ class WPStyle:
 
 def compute_style(im_width, im_height, dt_width, dt_height):
 	log.debug('image: width=%d, height=%d'%(im_width, im_height))
+	printer.printf('image dimensions', '%dx%d'%(im_width, im_height), verbosity=3)
 	log.debug('desktop: width=%d, height=%d'%(dt_width, dt_height))
+	printer.printf('desktop dimensions', '%dx%d'%(dt_width, dt_height), verbosity=3)
 
 	style = None
 	tiled_size = Config().get('style.tiled_size')
@@ -69,7 +72,8 @@ def compute_style(im_width, im_height, dt_width, dt_height):
 		else:
 			style = WPStyle(WPStyle.CENTERED)
 
-	log.debug('style: %s'%style)
+	log.debug('calculated style: %s'%style)
+	printer.printf('wallpaper style', str(style), verbosity=3)
 
 	return style
 

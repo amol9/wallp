@@ -21,6 +21,7 @@ from .image_info_mixin import ImageInfoMixin
 from .image_urls_mixin import ImageUrlsMixin
 from .image_context import ImageContext
 from ..db import SearchTermList
+from ..util.printer import printer
 
 
 @implementer(IHttpService)
@@ -54,7 +55,7 @@ class Google(ImageInfoMixin, ImageUrlsMixin):
 		if color is not None and not color in self.colors:
 			log.error('%s is not a supported color for google image search. please choose from: %s'%(color, ', '.join(self.colors)))
 			raise ServiceError()
-		else:
+		elif color is not None:
 			self.add_trace_step('color', color)
 
 		params = {
@@ -70,10 +71,11 @@ class Google(ImageInfoMixin, ImageUrlsMixin):
 		}
 
 		search_url = self.search_base_url + urlencode(params)
-		response = webfunc.get_page(search_url, headers = {'User-Agent': self.user_agent})
-		self.add_trace_step('searched google', query)
+		response = webfunc.get_page(search_url, msg='searching google images', headers = {'User-Agent': self.user_agent})
+		#self.add_trace_step('searched google', query)
 
 		self.extract_results(response)
+		printer.printf('result', '%d images'%self.image_count, verbosity=2)
 		
 		
 	def extract_results(self, response):

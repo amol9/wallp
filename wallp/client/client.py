@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 from redlib.api.system import *
 from redlib.api.image import get_image_info
-from redlib.api.prnt import prints
+from redlib.api.prnt import prints, format_size
 
 from ..service import ServiceFactory, ServiceDisabled, NoEnabledServices, ServiceError, IHttpService, IImageGenService
 from ..util.retry import Retry
@@ -22,6 +22,7 @@ from ..server.protocol import WPState
 from mayloop.transport.pipe_connection import PipeConnection
 from ..db import func as dbfunc, GlobalVars, VarError
 from wallp.db.create_db import CreateDB
+from ..util.printer import printer
 
 
 class GetImageError(Exception):
@@ -128,11 +129,13 @@ class Client:
 		if self._service_name == None:
 			try:
 				service = ServiceFactory().get_random()
+				printer.printf('selected random source', service.name)
 			except NoEnabledServices as e:
 				raise GetImageError('all services disabled')
 		else:
 			try:
 				service = ServiceFactory().get(self._service_name)
+				printer.printf('selected source', service.name)
 			except ServiceDisabled as e:
 				log.error('%s is disabled'%self._service_name)
 				raise GetImageError()
@@ -141,7 +144,6 @@ class Client:
 				log.error('%s: unknown service or service is disabled'%self._service_name)
 				raise GetImageError()
 
-		prints('[%s] '%service.name)
 		log.debug('\nusing %s..'%service.name)
 
 		return service
@@ -166,7 +168,10 @@ class Client:
 					fn, temp_image_path = tempfile.mkstemp()
 					f = os.fdopen(fn, 'r+b')
 
-					web.func.download(image_url, open_file=f)
+					cb = printer.printf('getting image', '?', progress=True, col_cb=True)
+					clc = lambda c : cb['col_cb'](2, format_size(c))
+					web.func.download(image_url, open_file=f, progress_cb=cb['progress_cb'],
+							progress_cp=cb['progress_cp'], content_length_cb=clc)
 					retry.cancel()
 
 				except web.exc.TimeoutError as e:

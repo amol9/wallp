@@ -15,6 +15,7 @@ from ..db import ImgurAlbumList, SearchTermList, ConfigError
 from ..desktop.desktop_factory import get_desktop
 from .service_params import ServiceParams
 from .config_mixin import ConfigMixin
+from ..util.printer import printer
 
 
 ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])
@@ -176,6 +177,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 				albums.append(r.link)
 				count += r.images_count
 
+		printer.printf('result', '%d images'%count, verbosity=2)
 		log.debug('got %d results'%count)
 
 		def choose_from_images():
