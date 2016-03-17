@@ -4,7 +4,7 @@ from random import choice
 
 from enum import Enum
 from zope.interface import implementer
-from giraf.api import Imgur as GImgur, ImgurError as GImgurError, QueryType, ImageSize, GalleryType, ImgurErrorType
+from giraf.api import Imgur as GImgur, ImgurError as GImgurError, QueryType, ImageSize, GalleryType, ImgurErrorType, Filter as GImgurFilter
 
 from ..util import log, Retry
 from .service import IHttpService, ServiceError
@@ -20,19 +20,23 @@ from .config_mixin import ConfigMixin
 ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])
 
 
-class ImgurParams(ServiceParams):
+class ImgurParams(ServiceParams, GImgurFilter):
 		
 	def __init__(self, query=None, method=ImgurMethod.random, image_size=ImageSize.medium, pages=1, username=None, newest=False,
-			favorite=False, query_type=QueryType.all, gallery_type=None):
-		self.query		= query
+			favorite=False, query_type=QueryType.all, gallery_type=None, animated=False):
+
+		GImgurFilter.__init__(self, query=query, image_size=image_size, pages=pages, query_type=query_type,
+				gallery_type=gallery_type, animated=animated)
+
+		#self.query		= query
 		self.method		= method
-		self.image_size		= image_size
+		#self.image_size		= image_size
 		self.username		= username
-		self.pages		= pages
+		#self.pages		= pages
 		self.newest		= newest
 		self.favorite		= favorite
-		self.query_type		= query_type
-		self.gallery_type	= gallery_type
+		#self.query_type		= query_type
+		#self.gallery_type	= gallery_type
 
 
 class ImgurError(Exception):
@@ -71,6 +75,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 
 
 	def map_call(self):
+		self._params.min_size = self.min_size
 		method = self._params.method
 		try:
 			if method == ImgurMethod.search:
@@ -141,15 +146,12 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 
 	
 	def search(self):
-		query = self._params.query
-		if query is None:
-			query = SearchTermList().get_random()
-			self.add_trace_step('random search term', query)
+		if self._params.query is None:
+			self._params.query = SearchTermList().get_random()
+			self.add_trace_step('selected random search term', self._params.query)
 
-		result = self._imgur.search(query, query_type=QueryType.all, image_size=ImageSize.medium, gallery_type=GalleryType.image,
-				pages=self._params.pages, animated=False, min_size=self.min_size)
-
-		self.add_trace_step('searched imgur', query)
+		result = self._imgur.search(self._params)
+		self.add_trace_step('searched imgur', self._params.query)
 
 		return self.process_result(result)
 
@@ -158,6 +160,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 		images = []
 		albums = []
 
+		count = 0
 		for r in result:
 			if type(r) == GalleryType.image.value:
 				ga = lambda f : getattr(r, f, None)
@@ -168,10 +171,12 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 				image_context =  ImageContext(title=ga('title'), description=ga('description'),
 						artist=ga('account_url'),url=drop_ext(ga('link')))
 				images.append((ga('link'), image_context))
+				count += 1
 			else:
 				albums.append(r.link)
+				count += r.images_count
 
-		log.debug('got %d results'%(len(images) + len(albums)))
+		log.debug('got %d results'%count)
 
 		def choose_from_images():
 			for i in images:
@@ -209,8 +214,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 		else:
 			self.config_set('username', username)
 
-		result = self._imgur.gallery_favorites(username, query=self._params.query, query_type=self._params.query_type,
-				gallery_type=self._params.gallery_type, pages=self._params.pages, animated=False, min_size=self.min_size)
+		result = self._imgur.gallery_favorites(username, self._params) 
 
 		return self.process_result(result)
 
@@ -242,15 +246,15 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 				page = self.config_get('wallpaper_search_page')
 			except ConfigError:
 				page = 0
-				self.config_add('wallpaper_search_page', page, int)
+				self.config_add('wallpaper_search_page', page)
 		else:
 			page = 0
 
 		retry = Retry(retries=3, delay=1, exp_bkf=False)
 
 		while retry.left():
-			result = self._imgur.search(self._params.query, query_type=self._params.query_type,
-					gallery_type=self._params.gallery_type, start_page=page)
+			self._params.start_page = page
+			result = self._imgur.search(self._params)
 
 			found_new = False
 			album_urls = []
@@ -276,4 +280,4 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 			self.config_set('wallpaper_search_page', (page + 1) % 100)
 		return self.random_album()
 
-#todo: refactor, store fav wallpaper albums, add trace steps
+#todo: refactor, store fav wallpaper albums, add trace steps, newest
