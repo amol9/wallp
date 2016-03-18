@@ -4,6 +4,7 @@ from os.path import join as joinpath
 from zope.interface import implementer
 import tempfile
 import os
+from time import time
 
 from redlib.api.colors import colorlist
 
@@ -30,12 +31,11 @@ class Bitmap(ImageInfoMixin):
 		width, height = 2, 2
 
 		if color is not None:
-			self.add_trace_step('preferred color', color)
+			self.add_trace_step('color', color)
 			if not color.startswith('0x'):
 				c = colorlist.get(color)
 				if c is None:
-					print('no such color')
-					raise ServiceError()
+					raise ServiceError('no such color')
 				color = c
 
 		else:
@@ -43,6 +43,8 @@ class Bitmap(ImageInfoMixin):
 			self.add_trace_step('random color', color)
 			color = colorlist[color]
 
+		
+		start_time = time()
 
 		fn, temp_file_path = tempfile.mkstemp()
 		f = os.fdopen(fn, 'wb')
@@ -56,7 +58,10 @@ class Bitmap(ImageInfoMixin):
 			raise ServiceError()
 
 		f.close()
-		self.add_trace_step('generated bitmap', None)
+
+		end_time = time()
+
+		self.add_trace_step('generated bitmap', '%.3fms'%((end_time - start_time) * 1000))
 
 		return temp_file_path
 

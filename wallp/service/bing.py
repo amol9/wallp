@@ -10,7 +10,7 @@ from random import randint
 from os.path import join as joinpath
 from zope.interface import implementer
 
-from .. import web
+from ..web.func import get, exists
 from ..util.logger import log
 from . import IHttpService, ServiceError
 from ..desktop import get_desktop, get_standard_desktop_size
@@ -46,7 +46,7 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 
 		while (retry.left()):		
 			image_url = self.select_url(add_trace_step=False)
-			if web.func.exists(image_url):
+			if exists(image_url):
 				self.add_trace_step('selected url', image_url)
 				return image_url
 			retry.retry()
@@ -73,8 +73,8 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 		if not (width, height) in self.valid_sizes:
 			width, height = self.get_nearest_size(width, height)
 
-		jsfile = web.func.get_page(self.image_list_url)
-		self.add_trace_step('fetched image list from bing gallery', None)
+		jsfile = get(self.image_list_url, msg='getting image list')
+		#self.add_trace_step('fetched image list from bing gallery', None)
 
 		data_regex = re.compile(".*browseData=({.*});.*")
 		m = data_regex.match(jsfile)
@@ -98,7 +98,7 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 
 
 	def get_image_server(self):
-		js = web.func.get_page(self.app_js_url)
+		js = get(self.app_js_url, msg='getting server list')
 
 		server_url_regex = re.compile(".*(\/\/.*?\.vo\.msecnd\.net\/files\/).*", re.M | re.S)
 		m = server_url_regex.match(js)

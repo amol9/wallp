@@ -13,10 +13,15 @@ class ImageInfoMixin(object):
 		self._step = 1
 
 
-	def add_trace_step(self, name, data, log_debug=True):
+	def add_trace_step(self, name, data, log_debug=True, printer_print=True):
 		self._image_trace.append(ImageTrace(step=self._step, name=name, data=data))
-		log.debug(name + (': ' + data) if data is not None else '')
-		printer.printf(name, data if data is not None else '')
+
+		if log_debug:
+			log.debug(name + (': ' + data) if data is not None else '')
+
+		if printer_print:
+			printer.printf(name, data if data is not None else '')
+
 		self._step += 1
 
 

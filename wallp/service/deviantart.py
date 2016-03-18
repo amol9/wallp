@@ -5,7 +5,7 @@ from zope.interface import implementer
 from redlib.api.system import *
 from redlib.api.web import HtmlStripper
 
-from .. import web
+from ..web.func import get
 from ..util.logger import log
 from .service import IHttpService, ServiceError
 from ..desktop import get_desktop, get_standard_desktop_size
@@ -36,7 +36,7 @@ class DeviantArt(ImageInfoMixin, ImageUrlsMixin):
 			return image_url
 
 		search_url = self.get_search_url(query)
-		response = web.func.get_page(search_url)
+		response = get(search_url, msg='searching deviantart')
 	
 		self.get_image_url_list(response)
 		
@@ -61,7 +61,7 @@ class DeviantArt(ImageInfoMixin, ImageUrlsMixin):
 
 		url = self.rss_url_base + urlencode(params)
 		log.info('da rss url: ' + url)
-		self.add_trace_step('searched deviantart', query)
+		#self.add_trace_step('searched deviantart', query)
 
 		return url
 

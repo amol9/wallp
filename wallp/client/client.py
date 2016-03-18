@@ -14,7 +14,7 @@ from ..service import ServiceFactory, ServiceDisabled, NoEnabledServices, Servic
 from ..util.retry import Retry
 from ..util.logger import log
 from ..db import Image
-from .. import web
+from ..web.func import get, HttpError
 from ..globals import Const
 from ..desktop import desktop_factory, DesktopError, get_desktop
 from ..desktop.wpstyle import WPStyle, compute_style
@@ -61,6 +61,7 @@ class Client:
 			wp_style = compute_style(im_width, im_height, *dt.get_size())
 
 			dt.set_wallpaper(filepath, style=wp_style)
+			printer.printf('wallpaper changed', '', verbosity=2)
 
 			globalvars = GlobalVars()
 			try:
@@ -168,18 +169,12 @@ class Client:
 					fn, temp_image_path = tempfile.mkstemp()
 					f = os.fdopen(fn, 'r+b')
 
-					cb = printer.printf('getting image', '?', progress=True, col_cb=True)
-					clc = lambda c : cb['col_cb'](2, format_size(c))
-					web.func.download(image_url, open_file=f, progress_cb=cb['progress_cb'],
-							progress_cp=cb['progress_cp'], content_length_cb=clc)
+					get(image_url, open_file=f, msg='getting image')
 					retry.cancel()
 
-				except web.exc.TimeoutError as e:
-					log.error(str(e))
-					retry.retry()
-
-				except web.exc.DownloadError as e:
-					log.error(str(e))
+				except HttpError as e:
+					log.error(e)
+					printer.printf('error', str(e))
 					retry.retry()
 
 				finally:

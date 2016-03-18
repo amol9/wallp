@@ -71,7 +71,7 @@ class Google(ImageInfoMixin, ImageUrlsMixin):
 		}
 
 		search_url = self.search_base_url + urlencode(params)
-		response = webfunc.get_page(search_url, msg='searching google images', headers = {'User-Agent': self.user_agent})
+		response = webfunc.get(search_url, msg='searching google images', headers = {'User-Agent': self.user_agent})
 		#self.add_trace_step('searched google', query)
 
 		self.extract_results(response)
