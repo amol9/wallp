@@ -9,6 +9,7 @@ from ..util.printer import printer
 http_global_options = GlobalOptions(cache_dir=Const.cache_dir, chunksize=Const.http_chunksize, timeout=30)
 httprequest = HttpRequest(global_options=http_global_options)
 
+
 def get(url, save_filepath=None, open_file=None, callbacks=None, msg=None, headers=None, max_content_length=None):
 	roptions = RequestOptions(save_filepath=save_filepath, open_file=open_file, headers=headers, max_content_length=max_content_length)
 
