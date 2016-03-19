@@ -1,17 +1,23 @@
 from random import randint
 from os.path import join as joinpath
+import re
+
 from zope.interface import implementer
 import praw
+from requests.exceptions import HTTPError
+from giraf.api import Imgur as GImgur, ImgurError as GImgurError
 
 from ..util import log, Retry
-from .imgur import Imgur, ImgurError
 from ..globals import Const
 from .service import IHttpService, ServiceError
 from ..db import SubredditList, Config
 from .image_info_mixin import ImageInfoMixin
 from .image_urls_mixin import ImageUrlsMixin
 from .image_context import ImageContext
-from ..web.func import exc_wrapped
+
+
+class RedditError(Exception):
+	pass
 
 
 @implementer(IHttpService)
@@ -21,13 +27,14 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 	def __init__(self):
 		super(Reddit, self).__init__()
 		self._posts_limit = Config().get('reddit.posts_limit')
+		self._imgur = GImgur()
 
 
 	def get_image_url(self, query=None, color=None):
 		subreddit = None
 		if query is None:
 			subreddit = SubredditList().get_random()
-			self.add_trace_step('subreddit', subreddit)
+			self.add_trace_step('random subreddit', subreddit)
 		else:
 			self.add_trace_step('searched', query)
 
@@ -44,13 +51,11 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 
 			if ext not in Const.image_extensions:
 				if url.find('imgur.com') != -1:
-					imgur = Imgur()
 					try:
-						url = imgur.get_image_url_from_page(url)
-					except ImgurError as e:
+						url = self.get_imgur_image_url(url)
+					except RedditError as e:
 						log.debug(str(e))
 						continue
-					self.add_trace_from(imgur)
 					retry.cancel()
 				else:
 					log.debug('not a direct link to image')
@@ -62,20 +67,45 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 		return url
 
 
-	@exc_wrapped
+	def get_imgur_image_id(self, post_url):
+		image_id_regex = re.compile(".*/([a-zA-Z0-9]{7})([^a-zA-Z0-9].*|$)")
+
+		match = image_id_regex.match(post_url)
+		if match is None:
+			raise RedditError('not a valid imgur post url')
+
+		image_id = match.group(1)
+		return image_id
+		
+
+	def get_imgur_image_url(self, post_url):
+		image_id = self.get_imgur_image_id(post_url)
+
+		try:
+			i = self._imgur.get_image(image_id)
+			return i.link
+		except (GImgurError, AttributeError) as e:
+			raise RedditError(str(e))
+
+
 	def get_subreddit_posts(self, subreddit, limit=10, query=None):
 		reddit = praw.Reddit(user_agent=Const.app_name, timeout=Const.page_timeout)
 
-		if subreddit is None:
-			if query is None:
-				raise ServiceError('no subreddit and no query, not cool')
-			posts = reddit.search(query)
-		else:
-			sub = reddit.get_subreddit(subreddit)
-			if query is None:
-				posts = sub.get_hot(limit=limit)
+		try:
+			if subreddit is None:
+				if query is None:
+					raise ServiceError('no subreddit and no query, not cool')
+				posts = reddit.search(query)
 			else:
-				posts = sub.search(query)
+				sub = reddit.get_subreddit(subreddit)
+				if query is None:
+					posts = sub.get_hot(limit=limit)
+				else:
+					posts = sub.search(query)
+		except HTTPError as e:
+			log.error(e)
+			printer.printf('error', str(e))
+			raise ServiceError()
 		
 		return posts
 

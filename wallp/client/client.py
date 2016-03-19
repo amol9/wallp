@@ -13,7 +13,7 @@ from redlib.api.prnt import prints, format_size
 from ..service import ServiceFactory, ServiceDisabled, NoEnabledServices, ServiceError, IHttpService, IImageGenService
 from ..util.retry import Retry
 from ..util.logger import log
-from ..db import Image
+from ..db import Image, Config
 from ..web.func import get, HttpError
 from ..globals import Const
 from ..desktop import desktop_factory, DesktopError, get_desktop
@@ -21,7 +21,6 @@ from ..desktop.wpstyle import WPStyle, compute_style
 from ..server.protocol import WPState
 from mayloop.transport.pipe_connection import PipeConnection
 from ..db import func as dbfunc, GlobalVars, VarError
-from wallp.db.create_db import CreateDB
 from ..util.printer import printer
 
 
@@ -105,9 +104,8 @@ class Client:
 		retry = Retry(retries=3, final_exc=GetImageError())
 
 		while retry.left():
-			service = self.get_service()
-						
 			try:
+				service = self.get_service()
 				temp_image_path, ext, image_url = self.get_image_to_temp_file(service, self._query, self._color, self._service_params)
 				wp_path = self.move_temp_file(temp_image_path, ext)
 				image_type, image_width, image_height = get_image_info(None, filepath=wp_path)
@@ -116,7 +114,9 @@ class Client:
 				retry.cancel()
 
 			except ServiceError as e:
-				log.error('unable to get image from %s'%service.name)
+				log.error(e)
+				printer.printf('error', str(e))
+
 				if self._service_name is not None:
 					retry.cancel()
 				else:
@@ -153,7 +153,7 @@ class Client:
 	def get_image_to_temp_file(self, service, query, color, service_params):
 		image_url = None
 		if IHttpService.providedBy(service):
-			retry = Retry(retries=1, final_exc=ServiceError())
+			retry = Retry(retries=3, final_exc=ServiceError())
 			while retry.left():
 				f = None
 				try:
@@ -169,7 +169,7 @@ class Client:
 					fn, temp_image_path = tempfile.mkstemp()
 					f = os.fdopen(fn, 'r+b')
 
-					get(image_url, open_file=f, msg='getting image')
+					get(image_url, open_file=f, msg='getting image', max_content_length=Config().get('image.max_size'))
 					retry.cancel()
 
 				except HttpError as e:

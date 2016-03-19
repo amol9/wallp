@@ -29,15 +29,10 @@ class ImgurParams(ServiceParams, GImgurFilter):
 		GImgurFilter.__init__(self, query=query, image_size=image_size, pages=pages, query_type=query_type,
 				gallery_type=gallery_type, animated=animated)
 
-		#self.query		= query
 		self.method		= method
-		#self.image_size		= image_size
 		self.username		= username
-		#self.pages		= pages
 		self.newest		= newest
 		self.favorite		= favorite
-		#self.query_type		= query_type
-		#self.gallery_type	= gallery_type
 
 
 class ImgurError(Exception):
@@ -50,7 +45,11 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 
 	def __init__(self):
 		super(Imgur, self).__init__()
-		self._imgur = GImgur()
+		try:
+			self._imgur = GImgur()
+		except GImgurError as e:
+			raise ServiceError(str(e))
+
 		self._album_list = ImgurAlbumList()
 
 		dt = get_desktop()
@@ -149,7 +148,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 	def search(self):
 		if self._params.query is None:
 			self._params.query = SearchTermList().get_random()
-			self.add_trace_step('selected random search term', self._params.query)
+			self.add_trace_step('random search term', self._params.query)
 
 		result = self._imgur.search(self._params)
 		self.add_trace_step('searched imgur', self._params.query)
@@ -162,6 +161,9 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 		albums = []
 
 		count = 0
+		cb = printer.printf('results', '%d'%count, verbosity=2, col_cb=True)
+		update_result_count = lambda c : cb.col_cb(2, str(c))
+
 		for r in result:
 			if type(r) == GalleryType.image.value:
 				ga = lambda f : getattr(r, f, None)
@@ -176,8 +178,9 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 			else:
 				albums.append(r.link)
 				count += r.images_count
+			update_result_count(count)
 
-		printer.printf('result', '%d images'%count, verbosity=2)
+		cb.col_update_cp()
 		log.debug('got %d results'%count)
 
 		def choose_from_images():
@@ -281,5 +284,6 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 		if self._params.query == 'wallpaper':
 			self.config_set('wallpaper_search_page', (page + 1) % 100)
 		return self.random_album()
+
 
 #todo: refactor, store fav wallpaper albums, add trace steps, newest

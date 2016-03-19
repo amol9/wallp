@@ -18,7 +18,7 @@ class Printer:
 		if data is not None and data != '':
 			sep = ':'
 
-		if not progress:
+		if not progress and not col_cb:
 			self._cp.printf(msg, sep, data, '')
 		else:
 			cb = self._cp.printf(msg, sep, data, '', progress_col=3, col_cb=col_cb)		# return progress callback and complete functions

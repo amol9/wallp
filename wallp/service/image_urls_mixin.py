@@ -11,6 +11,7 @@ class ImageUrlsMixin(object):
 		self._image_urls 	= []
 		self._image_contexts 	= {}
 		#self._image_context 	= None
+		self._seen_count	= 0
 
 
 	def add_urls(self, image_urls):
@@ -45,6 +46,7 @@ class ImageUrlsMixin(object):
 			del self._image_urls[rindex]
 
 			if dbfunc.image_url_seen(image_url):
+				self._seen_count += 1
 				continue
 			else:
 				if add_trace_step:
@@ -56,6 +58,7 @@ class ImageUrlsMixin(object):
 
 		raise ServiceError('no unseen image urls found')
 
+
 	def image_urls_available(self):
-		return self._image_urls is not None and len(self._image_urls) > 0
-		i	
+		return self._image_urls is not None and ((len(self._image_urls) - self._seen_count) > 0)
+
