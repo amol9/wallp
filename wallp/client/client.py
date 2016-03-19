@@ -135,8 +135,8 @@ class Client:
 				raise GetImageError('all services disabled')
 		else:
 			try:
+				printer.printf('selected source', self._service_name)
 				service = ServiceFactory().get(self._service_name)
-				printer.printf('selected source', service.name)
 			except ServiceDisabled as e:
 				log.error('%s is disabled'%self._service_name)
 				raise GetImageError()

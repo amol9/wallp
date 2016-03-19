@@ -89,7 +89,7 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 
 
 	def get_subreddit_posts(self, subreddit, limit=10, query=None):
-		reddit = praw.Reddit(user_agent=Const.app_name, timeout=Const.page_timeout)
+		reddit = praw.Reddit(user_agent=Const.app_name, timeout=Config().get('http.timeout'))
 
 		try:
 			if subreddit is None:

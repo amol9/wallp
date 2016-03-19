@@ -1,10 +1,8 @@
 from redlib.api.system import *
 if is_py3():
 	from urllib.parse import urlencode, urlparse, parse_qs
-	from urllib.error import HTTPError
 else:
 	from urllib import urlencode
-	from urllib2 import HTTPError
 	from urlparse import urlparse, parse_qs
 
 import json
@@ -14,7 +12,7 @@ from zope.interface import implementer
 
 from redlib.api.web import HtmlParser
 
-from ..web import func as webfunc
+from ..web.func import get, HttpError
 from ..util import log
 from .service import IHttpService, ServiceError
 from .image_info_mixin import ImageInfoMixin
@@ -71,8 +69,12 @@ class Google(ImageInfoMixin, ImageUrlsMixin):
 		}
 
 		search_url = self.search_base_url + urlencode(params)
-		response = webfunc.get(search_url, msg='searching google images', headers = {'User-Agent': self.user_agent})
-		#self.add_trace_step('searched google', query)
+
+		try:
+			response = get(search_url, msg='searching google images', headers = {'User-Agent': self.user_agent})
+		except HttpError as e:
+			log.error(e)
+			raise ServiceError(str(e))
 
 		self.extract_results(response)
 		printer.printf('result', '%d images'%self.image_count, verbosity=2)

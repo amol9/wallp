@@ -5,7 +5,7 @@ from zope.interface import implementer
 from redlib.api.system import *
 from redlib.api.web import HtmlStripper
 
-from ..web.func import get
+from ..web.func import get, HttpError
 from ..util.logger import log
 from .service import IHttpService, ServiceError
 from ..desktop import get_desktop, get_standard_desktop_size

@@ -21,7 +21,7 @@ class Printer:
 		if not progress and not col_cb:
 			self._cp.printf(msg, sep, data, '')
 		else:
-			cb = self._cp.printf(msg, sep, data, '', progress_col=3, col_cb=col_cb)		# return progress callback and complete functions
+			cb = self._cp.printf(msg, sep, data, '', progress_col=3, col_cb=col_cb)
 			
 			progress_cb = cb.progress_cb
 			progress_cp = cb.progress_cp

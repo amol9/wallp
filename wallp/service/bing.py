@@ -10,7 +10,7 @@ from random import randint
 from os.path import join as joinpath
 from zope.interface import implementer
 
-from ..web.func import get, exists
+from ..web.func import get, exists, HttpError
 from ..util.logger import log
 from . import IHttpService, ServiceError
 from ..desktop import get_desktop, get_standard_desktop_size
@@ -73,8 +73,7 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 		if not (width, height) in self.valid_sizes:
 			width, height = self.get_nearest_size(width, height)
 
-		jsfile = get(self.image_list_url, msg='getting image list')
-		#self.add_trace_step('fetched image list from bing gallery', None)
+		jsfile = self.get(self.image_list_url, 'getting image list')
 
 		data_regex = re.compile(".*browseData=({.*});.*")
 		m = data_regex.match(jsfile)
@@ -98,7 +97,7 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 
 
 	def get_image_server(self):
-		js = get(self.app_js_url, msg='getting server list')
+		js = self.get(self.app_js_url, 'getting server list')
 
 		server_url_regex = re.compile(".*(\/\/.*?\.vo\.msecnd\.net\/files\/).*", re.M | re.S)
 		m = server_url_regex.match(js)
@@ -107,4 +106,12 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 			url = m.group(1)
 			return url
 		return None
+
+
+	def get(self, url, msg):
+		try:
+			get(url, msg=msg)
+		except HttpError as e:
+			log.error(e)
+			raise ServiceError(str(e))
 
