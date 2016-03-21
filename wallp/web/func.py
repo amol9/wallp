@@ -11,8 +11,9 @@ http_global_options = GlobalOptions(cache_dir=Const.cache_dir, chunksize=Const.h
 httprequest = HttpRequest(global_options=http_global_options)
 
 
-def get(url, save_filepath=None, open_file=None, callbacks=None, msg=None, headers=None, max_content_length=None):
-	roptions = RequestOptions(save_filepath=save_filepath, open_file=open_file, headers=headers, max_content_length=max_content_length)
+def get(url, save_filepath=None, open_file=None, callbacks=None, msg=None, headers=None, max_content_length=None, save_to_temp_file=False):
+	roptions = RequestOptions(save_filepath=save_filepath, open_file=open_file, headers=headers,
+			save_to_temp_file=save_to_temp_file, max_content_length=max_content_length)
 
 	if msg is not None:
 		cb = printer.printf(msg, '?', progress=True, col_cb=True)

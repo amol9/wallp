@@ -7,24 +7,22 @@ else:
 
 import json
 from random import choice
-from os.path import join as joinpath
-from zope.interface import implementer
 
 from redlib.api.web import HtmlParser
 
-from ..web.func import get, HttpError
 from ..util import log
-from .service import IHttpService, ServiceError
-from .image_info_mixin import ImageInfoMixin
-from .image_urls_mixin import ImageUrlsMixin
 from .image_context import ImageContext
 from ..db import SearchTermList
 from ..util.printer import printer
+from .source import SourceError, SourceParams
+from .base_source import BaseSource
 
 
-@implementer(IHttpService)
-class Google(ImageInfoMixin, ImageUrlsMixin):
-	name = 'google'
+class Google(BaseSource):
+	name 	= 'google'
+	online	= True
+	db	= False
+	gen	= False
 
 	search_base_url = "https://www.google.com/search?tbm=isch&"
 	colors 		= ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown']
@@ -34,30 +32,30 @@ class Google(ImageInfoMixin, ImageUrlsMixin):
 		super(Google, self).__init__()
 
 
-	def get_image_url(self, query=None, color=None):
+	def get_image(self, params=None):
 		if self.image_urls_available():
 			image_url = self.select_url()
 			return image_url
 
-		self.search(query, color)
-		image_url = self.select_url()
+		self.search(params)
+		self.http_get_image_to_temp_file()
 
-		return image_url
+		return self._response
 
 
-	def search(self, query, color):
-		if query is None:
-			query = SearchTermList().get_random()
-			self.add_trace_step('random search term', query)
+	def search(self, params):
+		if params.query is None:
+			params.query = SearchTermList().get_random()
+			self.add_trace_step('random search term', params.query)
 
-		if color is not None and not color in self.colors:
-			log.error('%s is not a supported color for google image search. please choose from: %s'%(color, ', '.join(self.colors)))
+		if params.color is not None and not params.color in self.colors:
+			log.error('%s is not a supported color for google image search. please choose from: %s'%(params.color, ', '.join(self.colors)))
 			raise ServiceError()
-		elif color is not None:
-			self.add_trace_step('color', color)
+		elif params.color is not None:
+			self.add_trace_step('color', params.color)
 
-		params = {
-			'as_q'		: query,
+		q_params = {
+			'as_q'		: params.query,
 			'as_st'		: 'y',
 			'as_epq'	: '',
 			'as_oq'		: '',
@@ -65,16 +63,12 @@ class Google(ImageInfoMixin, ImageUrlsMixin):
 			'cr'		: '',
 			'as_sitesearch' : '',
 			'safe'		: 'active',
-			'tbs'		: 'isz:lt,islt:xga' + ',ic:specific,isc:%s'%color if color is not None else ''
+			'tbs'		: 'isz:lt,islt:xga' + ',ic:specific,isc:%s'%params.color if params.color is not None else ''
 		}
 
-		search_url = self.search_base_url + urlencode(params)
+		search_url = self.search_base_url + urlencode(q_params)
 
-		try:
-			response = get(search_url, msg='searching google images', headers = {'User-Agent': self.user_agent})
-		except HttpError as e:
-			log.error(e)
-			raise ServiceError(str(e))
+		response = self.http_get(search_url, msg='searching google images', headers={'User-Agent': self.user_agent})
 
 		self.extract_results(response)
 		printer.printf('result', '%d images'%self.image_count, verbosity=2)

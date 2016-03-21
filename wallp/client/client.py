@@ -10,7 +10,7 @@ from redlib.api.system import *
 from redlib.api.image import get_image_info
 from redlib.api.prnt import prints, format_size
 
-from ..service import ServiceFactory, ServiceDisabled, NoEnabledServices, ServiceError, IHttpService, IImageGenService
+from ..service import ServiceFactory, ServiceDisabled, NoEnabledServices, ServiceError
 from ..util.retry import Retry
 from ..util.logger import log
 from ..db import Image, Config
@@ -110,7 +110,7 @@ class Client:
 				wp_path = self.move_temp_file(temp_image_path, ext)
 				image_type, image_width, image_height = get_image_info(None, filepath=wp_path)
 				image_id = self.save_image_info(service, wp_path, image_url, image_type, image_width, image_height)
-
+						# save only after set wallpaper succeeds
 				retry.cancel()
 
 			except ServiceError as e:
