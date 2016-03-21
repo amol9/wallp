@@ -11,4 +11,5 @@ from . import schedule_subcommand
 #from . import score_subcommands
 from . import style_subcommands
 from . import source_subcommands
+from . import favorite_subcommand
 

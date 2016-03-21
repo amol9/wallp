@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
 
 from . import Base, DBSession
@@ -21,6 +21,7 @@ class Image(Base):
 	title =		Column(String(256))
 	description = 	Column(String(1024))
 	context_url = 	Column(String(512))
+	favorite =	Column(Boolean, default=False)
 
 	trace = 	relationship('ImageTrace')
 

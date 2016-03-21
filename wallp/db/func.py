@@ -8,7 +8,7 @@ from .image import Image
 from .exc import NotFoundError
 
 
-def update_wallpaper_score(delta):
+def get_wallpaper_image():
 	globalvars = GlobalVars()
 	image_id = globalvars.get('current_wallpaper_image')
 
@@ -22,7 +22,10 @@ def update_wallpaper_score(delta):
 		raise LikeError('wallpaper image not found')
 
 	image = result[0]
+	return image
 
+
+def update_image_score(image, delta):
 	if image.score is not None:
 		image.score += delta
 	else:
@@ -34,11 +37,25 @@ def update_wallpaper_score(delta):
 
 
 def like_wallpaper():
-	return update_wallpaper_score(1)
+	image = get_wallpaper_image()
+	return update_image_score(image, 1)
 
 
 def dislike_wallpaper():
-	return update_wallpaper_score(-1)
+	image = get_wallpaper_image()
+	return update_image_score(image, -1)
+
+
+def favorite_wallpaper():
+	image = get_wallpaper_image()
+	image.favorite = True
+	dbsession.commit()
+
+
+def unfavorite_wallpaper():
+	image = get_wallpaper_image()
+	image.favorite = False
+	dbsession.commit()
 
 
 def get_last_change_time():
