@@ -6,6 +6,8 @@ from .google import Google
 from .reddit import Reddit
 from .bitmap import Bitmap
 from .deviantart import DeviantArt
+from .favorites import Favorites
+
 from ..db import Config, ConfigError
 from ..db.singleton import Singleton
 from ..util import log
@@ -34,6 +36,7 @@ class _ServiceFactory():
 		self.add(Google)
 		self.add(Imgur)
 		self.add(Reddit)
+		self.add(Favorites)
 
 		self._status_loaded = False
 

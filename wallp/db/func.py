@@ -1,11 +1,16 @@
 from datetime import timedelta
 from time import time
+from random import choice
 
 from .globalvars import GlobalVars
 from .dbsession import DBSession
 from .itemlist import ImgurAlbumList, SubredditList, SearchTermList
 from .image import Image
 from .exc import NotFoundError
+
+
+class FavoriteError(Exception):
+	pass
 
 
 def get_wallpaper_image():
@@ -15,8 +20,7 @@ def get_wallpaper_image():
 	if image_id is None:
 		raise LikeError('no wallpaper set')
 
-	dbsession = DBSession()
-	result = dbsession.query(Image).filter(Image.id == image_id).all()
+	result = DBSession().query(Image).filter(Image.id == image_id).all()
 
 	if len(result) == 0:
 		raise LikeError('wallpaper image not found')
@@ -31,7 +35,7 @@ def update_image_score(image, delta):
 	else:
 		image.score = delta
 
-	dbsession.commit()
+	DBSession().commit()
 
 	return image.score
 
@@ -48,14 +52,31 @@ def dislike_wallpaper():
 
 def favorite_wallpaper():
 	image = get_wallpaper_image()
+
+	if image.favorite:
+		raise FavoriteError('image already favorited')
+
 	image.favorite = True
-	dbsession.commit()
+	DBSession().commit()
+
+
+def get_random_favorite():
+	result = DBSession().query(Image).filter(Image.favorite==True).all()
+
+	if len(result) == 0:
+		raise FavoriteError('no favorites found')
+
+	return choice(result)
 
 
 def unfavorite_wallpaper():
 	image = get_wallpaper_image()
+
+	if not image.favorite:
+		raise FavoriteError('image not a favorite')
+
 	image.favorite = False
-	dbsession.commit()
+	DBSession().commit()
 
 
 def get_last_change_time():
@@ -78,7 +99,6 @@ def get_current_wallpaper_image():
 
 
 def image_url_seen(image_url):
-	dbsession = DBSession()
-	count = dbsession.query(Image).filter(Image.url == image_url).count()
+	count = DBSession().query(Image).filter(Image.url == image_url).count()
 
 	return count > 0

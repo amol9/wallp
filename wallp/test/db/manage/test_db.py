@@ -23,12 +23,11 @@ class TestDB(TestCase):
 		self.assertTrue(exists(dest_db_path))
 
 
-	# WARNING: this will try to upgrade the live wallp db
 	def test_upgrade_wallp_db(self):
 		db = DB()
 
-		db.backup()
-		db.upgrade(self.script_location, '/home/amol/.wallp/21mar.db', 'head')
+		bkp_db_path = db.backup()
+		db.upgrade(self.script_location, bkp_db_path, 'head')
 
 
 if __name__ == '__main__':

@@ -93,3 +93,15 @@ class ImgurSubSubcommands(ImgurSubcommand):
 			log.error(str(e))
 			raise CommandError()
 
+
+class FavoritesSubcommand(SourceSubcommand):
+
+	@subcmd
+	def favorites(self):
+		try:
+			client = Client(service_name='favorites')
+			client.change_wallpaper()
+		except ChangeWPError as e:
+			print(e)
+			raise CommandError()
+

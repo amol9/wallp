@@ -80,7 +80,7 @@ class Client:
 			log.error(str(e))
 			if self._transport is not None:
 				self._transport.write_blocking(WPState.ERROR)
-			raise ChangeWPError()
+			raise ChangeWPError(str(e))
 
 		if is_py3(): print('')
 
@@ -121,7 +121,7 @@ class Client:
 					retry.cancel()
 				else:
 					retry.retry()
-				raise GetImageError()
+				raise GetImageError(str(e))
 
 		return wp_path, image_width, image_height, image_id
 
@@ -162,8 +162,12 @@ class Client:
 					else:
 						image_url = service.get_image_url(query=query, color=color)
 					
+					saved_image = getattr(service, 'saved_image', None)
+					if saved_image is not None:
+						image_url = saved_image.url
+
 					if image_url is None:
-						raise ServiceError()
+						raise ServiceError('no image url')
 
 					ext = image_url[image_url.rfind('.') + 1 : ]
 					fn, temp_image_path = tempfile.mkstemp()
@@ -203,11 +207,11 @@ class Client:
 
 
 	def save_image_info(self, service, wp_path, image_url, image_type, image_width, image_height):
-		image = Image()
-
-		image.url = image_url
-		image.filepath = wp_path
-		image.time = int(time())
+		saved_image = getattr(service, 'saved_image', None)
+		if saved_image is not None:
+			image = saved_image
+		else:
+			image = Image()
 
 		image.type = image_type
 		image.width = image_width
@@ -215,13 +219,19 @@ class Client:
 
 		image.size = os.stat(wp_path).st_size
 
-		image_context = service.image_context
-		image.title = image_context.title
-		image.description = image_context.description[0: 1024] if image_context.description is not None else None
-		image.context_url = image_context.url
-		image.artist = image_context.artist
+		image.filepath = wp_path
+		image.time = int(time())
 
-		image.trace = service.image_trace
+		if saved_image is None:
+			image.url = image_url
+
+			image_context = service.image_context
+			image.title = image_context.title
+			image.description = image_context.description[0: 1024] if image_context.description is not None else None
+			image.context_url = image_context.url
+			image.artist = image_context.artist
+
+			image.trace = service.image_trace
 
 		image.save()
 		return image.id
