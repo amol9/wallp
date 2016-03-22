@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
 
-
 class Source:
 	__metaclass__ = ABCMeta
 
@@ -13,7 +12,13 @@ class Source:
 	def get_image(self, params=None):
 		pass
 
+
+class SourceError(Exception):
+	pass
+
+
 class SourceParams:
+	name = None
 
 	def __init__(self, query=None, color=None):
 		self.query	= query

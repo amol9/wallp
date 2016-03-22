@@ -11,11 +11,15 @@ from random import choice
 from redlib.api.web import HtmlParser
 
 from ..util import log
-from .image_context import ImageContext
+from ..service.image_context import ImageContext
 from ..db import SearchTermList
 from ..util.printer import printer
 from .source import SourceError, SourceParams
 from .base_source import BaseSource
+
+
+class GoogleParams(SourceParams):
+	name = 'google'
 
 
 class Google(BaseSource):
@@ -36,6 +40,9 @@ class Google(BaseSource):
 		if self.image_urls_available():
 			image_url = self.select_url()
 			return image_url
+
+		if params is None:
+			params = GoogleParams()
 
 		self.search(params)
 		self.http_get_image_to_temp_file()

@@ -7,18 +7,19 @@ from datetime import datetime, timedelta
 
 from redlib.api.system import *
 from redlib.api.image import get_image_info
-
-from ..util.retry import Retry
-from ..util.logger import log
-from ..db import Image, Config
-from ..globals import Const
-from ..desktop import DesktopError, get_desktop
-from ..desktop.wpstyle import WPStyle, compute_style
-from ..server.protocol import WPState
 from mayloop.transport.pipe_connection import PipeConnection
-from ..db import GlobalVars, VarError
-from ..util.printer import printer
-from ..source import SourceFactory, SourceDisabled, NoEnabledSources, SourceError
+
+from util.retry import Retry
+from util.logger import log
+from db import Image, Config
+from globals import Const
+from desktop import DesktopError, get_desktop
+from desktop.wpstyle import WPStyle, compute_style
+from server.protocol import WPState
+from db import GlobalVars, VarError
+from util.printer import printer
+from sources.source_factory import SourceFactory, SourceFactoryError
+from sources.source import SourceError, SourceParams
 
 
 # for outside of this module
@@ -33,31 +34,32 @@ class GetImageError(Exception):
 
 class Wallpaper:
 
-	def __init__(self, params=None):
-		self._params = params
+	def __init__(self, params=None, transport=None):
+		self._params = params if params is not None else SourceParams()
+		self._transport = None
 
 
 	def change(self):
 		self.check_keep_timeout()
 
-		transport = self._params.transport
+		transport = self._transport
 		try:
 			self.write_to_transport(WPState.CHANGING)
 
-			wp_image_path, image_url = self.get_image()
+			source, wp_image_path, image_url = self.get_image()
 			image_type, im_width, im_height = get_image_info(None, filepath=wp_image_path)
 
 			dt = get_desktop()
 			wp_style = compute_style(im_width, im_height, *dt.get_size())
 
-			dt.set_wallpaper(filepath, style=wp_style)
+			dt.set_wallpaper(wp_image_path, style=wp_style)
 			printer.printf('wallpaper changed', '', verbosity=2)
 
-			image_id = self.save_image_info(source, wp_path, image_url, image_type, image_width, image_height)
+			image_id = self.save_image_info(source, wp_image_path, image_url, image_type, im_width, im_height)
 			self.update_global_vars(image_id)
 
 			self.write_to_transport(WPState.READY)
-			self.write_to_transport(filepath)
+			self.write_to_transport(wp_image_path)
 		
 		except DesktopError as e:
 			log.error('error while changing wallpaper')
@@ -70,7 +72,7 @@ class Wallpaper:
 
 
 	def write_to_transport(self, msg):
-		transport = self._params.transport
+		transport = self._transport
 
 		if transport is not None:
 			transport.write_blocking(msg)
@@ -104,7 +106,7 @@ class Wallpaper:
 		while retry.left():
 			try:
 				source = self.get_source()
-				source_response = source.get_image()
+				source_response = source.get_image(params=self._params)
 
 				if source_response.temp_filepath is not None:
 					wp_image_path = self.move_temp_file(source_response.temp_filepath, source_response.ext)
@@ -123,14 +125,15 @@ class Wallpaper:
 				else:
 					retry.retry()
 
-		return wp_image_path, source_response.url
+		return source, wp_image_path, source_response.url
 
 
 	def get_source(self):
 		try:
 			source_factory = SourceFactory()
-			source = source_factory.get(self._params.source)
+			source = source_factory.get(self._params.name)
 			printer.printf('source', source.name)
+			return source
 		except SourceFactoryError as e:
 			log.error(e)
 			raise WallpaperError(str(e))
@@ -150,32 +153,29 @@ class Wallpaper:
 		return wp_path
 
 
-	def save_image_info(self, service, wp_path, image_url, image_type, image_width, image_height):
-		saved_image = getattr(service, 'saved_image', None)
-		if saved_image is not None:
-			image = saved_image
-		else:
-			image = Image()
+	def save_image_info(self, source, wp_path, image_url, image_type, image_width, image_height):
+		image = Image()
 
 		image.type = image_type
 		image.width = image_width
 		image.height = image_height
 
-		image.size = os.stat(wp_path).st_size
+		image.size = stat(wp_path).st_size
 
 		image.filepath = wp_path
 		image.time = int(time())
 
+		saved_image = None
 		if saved_image is None:
 			image.url = image_url
 
-			image_context = service.image_context
+			image_context = source.image_context
 			image.title = image_context.title
 			image.description = image_context.description[0: 1024] if image_context.description is not None else None
 			image.context_url = image_context.url
 			image.artist = image_context.artist
 
-			image.trace = service.image_trace
+			image.trace = source.image_trace
 
 		image.save()
 		return image.id

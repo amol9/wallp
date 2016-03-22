@@ -2,7 +2,6 @@ from random import choice
 
 from .bing import Bing
 from .imgur import Imgur
-from .google import Google
 from .reddit import Reddit
 from .bitmap import Bitmap
 from .deviantart import DeviantArt
@@ -33,7 +32,6 @@ class _ServiceFactory():
 		self.add(Bing)
 		self.add(Bitmap)
 		self.add(DeviantArt)
-		self.add(Google)
 		self.add(Imgur)
 		self.add(Reddit)
 		self.add(Favorites)

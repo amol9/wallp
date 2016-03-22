@@ -5,6 +5,8 @@ from redlib.api.py23 import enum_names, enum_attr
 from ..client import Client, ChangeWPError
 from ..util import log
 from ..service.imgur import Imgur, ImgurMethod, ImageSize, ImgurParams
+from ..sources.google import GoogleParams
+from ..wallpaper import Wallpaper, WallpaperError
 
 
 class SourceSubcommand(Subcommand):
@@ -104,4 +106,16 @@ class FavoritesSubcommand(SourceSubcommand):
 		except ChangeWPError as e:
 			print(e)
 			raise CommandError()
+
+
+class GoogleSubcommand(SourceSubcommand):
+
+	@subcmd
+	def google(self, query=None, color=None):
+		gp = GoogleParams(query=query, color=color)
+		try:
+			wp = Wallpaper(params=gp)
+			wp.change()
+		except WallpaperError as e:
+			print(e)
 
