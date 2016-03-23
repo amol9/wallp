@@ -1,8 +1,8 @@
 
+from redlib.api.misc import Singleton
 
 from .var import Var
 from .namevalueset import NameValueSet, NameError
-from .singleton import Singleton
 
 
 class VarError(NameError):

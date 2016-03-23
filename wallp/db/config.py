@@ -1,7 +1,9 @@
 
 from . import Setting
 from .namevalueset import NameValueSet, NameError
-from .singleton import Singleton
+
+from redlib.api.misc import Singleton
+
 from .nv_shortcut_mixin import NVShortcutMixin
 
 

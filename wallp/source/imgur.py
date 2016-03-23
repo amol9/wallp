@@ -265,7 +265,10 @@ class Imgur(BaseSource):
 			if found_new:
 				self._album_list.commit()
 				album_url = choice(album_urls)
+
+				printer.printf('new wallpaper albums', str(len(album_urls)))
 				self.add_trace_step('selected random album', album_url)
+
 				album = self.get_album_from_url(album_url)
 				self.process_album(album)
 				return

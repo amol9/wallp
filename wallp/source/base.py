@@ -33,3 +33,7 @@ class SourceResponse:
 		self.db_image		= db_image
 		self.temp_filepath 	= temp_filepath
 
+		self.im_type		= None
+		self.im_width		= None
+		self.im_height		= None
+

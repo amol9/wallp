@@ -6,7 +6,6 @@ from os import stat
 from datetime import datetime, timedelta
 
 from redlib.api.system import *
-from redlib.api.image import get_image_info
 from mayloop.transport.pipe_connection import PipeConnection
 
 from util.retry import Retry
@@ -46,18 +45,17 @@ class Wallpaper:
 		try:
 			self.write_to_transport(WPState.CHANGING)
 
-			source, source_response = self.get_image()
-			wp_image_path = self.move_temp_file(source_response)
+			source, src_res = self.get_image()
 
-			im_type, im_width, im_height = get_image_info(None, filepath=wp_image_path)
+			wp_image_path = self.move_temp_file(src_res)
 
 			dt = get_desktop()
-			wp_style = compute_style(im_width, im_height, *dt.get_size())
+			wp_style = compute_style(src_res.im_width, src_res.im_height, *dt.get_size())
 
 			dt.set_wallpaper(wp_image_path, style=wp_style)
 			printer.printf('wallpaper changed', '', verbosity=2)
 
-			image_id = self.save_image_info(source_response.db_image, source, wp_image_path, source_response.url, im_type, im_width, im_height)
+			image_id = self.save_image_info(source, wp_image_path, src_res)
 			self.update_global_vars(image_id)
 
 			self.write_to_transport(WPState.READY)
@@ -108,7 +106,7 @@ class Wallpaper:
 		while retry.left():
 			try:
 				source = self.get_source()
-				source_response = source.get_image(params=self._params)
+				src_res = source.get_image(params=self._params)
 				retry.cancel()
 
 			except SourceError as e:
@@ -121,7 +119,7 @@ class Wallpaper:
 					printer.printf('error', str(e))
 					retry.retry()
 
-		return source, source_response
+		return source, src_res
 
 
 	def get_source(self):
@@ -135,15 +133,15 @@ class Wallpaper:
 			raise WallpaperError(str(e))
 
 
-	def move_temp_file(self, source_response):
-		if source_response.filepath is not None:
-			return source_response.filepath
+	def move_temp_file(self, src_res):
+		if src_res.filepath is not None:
+			return src_res.filepath
 
 		dirpath = get_pictures_dir() if not Const.debug else '.'
-		wp_path = joinpath(dirpath, Const.wallpaper_basename + '.' + source_response.ext)
+		wp_path = joinpath(dirpath, Const.wallpaper_basename + '.' + src_res.ext)
 
 		try:
-			shutil.move(source_response.temp_filepath, wp_path)
+			shutil.move(src_res.temp_filepath, wp_path)
 		except (IOError, OSError) as e:
 			log.error(str(e))
 			raise GetImageError(str(e))
@@ -151,23 +149,23 @@ class Wallpaper:
 		return wp_path
 
 
-	def save_image_info(self, db_image, source, wp_path, image_url, image_type, image_width, image_height):
-		if db_image is None:
+	def save_image_info(self, source, wp_path, src_res):
+		if src_res.db_image is None:
 			image = Image()
 		else:
 			image = db_image
 
-		image.type = image_type
-		image.width = image_width
-		image.height = image_height
+		image.type = src_res.im_type
+		image.width = src_res.im_width
+		image.height = src_res.im_height
 
 		image.size = stat(wp_path).st_size
 
 		image.filepath = wp_path
 		image.time = int(time())
 
-		if db_image is None:
-			image.url = image_url
+		if src_res.db_image is None:
+			image.url = src_res.url
 
 			image_context = source.image_context
 			image.title = image_context.title

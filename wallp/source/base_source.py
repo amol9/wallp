@@ -1,5 +1,6 @@
 
 from redlib.api.misc import Retry
+from redlib.api.image import get_image_info
 
 from .base import Source, SourceResponse, SourceError
 from ..service.image_info_mixin import ImageInfoMixin
@@ -9,6 +10,10 @@ from ..db.config import Config
 from ..util.logger import log
 from ..util.printer import printer
 from ..service.config_mixin import ConfigMixin
+
+
+class ImageError(Exception):
+	pass
 
 
 class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
@@ -31,6 +36,7 @@ class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 
 	def http_get_image_to_temp_file(self):	
 		retry = Retry(retries=3, final_exc=SourceError('could not get image from source'))
+		r = self._response
 
 		while retry.left():
 			try:
@@ -39,25 +45,29 @@ class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 				if image_url is None:
 					raise SourceError('no image url')
 
-				ext = image_url[image_url.rfind('.') + 1 : ]
-
-				temp_image_path = get(image_url, msg='getting image', max_content_length=Config().get('image.max_size'),
+				temp_filepath = get(image_url, msg='getting image', max_content_length=Config().get('image.max_size'),
 						save_to_temp_file=True)
+
+				r.im_type, r.im_width, r.im_height = self.get_image_info(temp_filepath)
+
+				ext = image_url[image_url.rfind('.') + 1 : ]
+				r.url, r.temp_filepath, r.ext = image_url, temp_filepath, ext
 
 				retry.cancel()
 
-			except HttpError as e:
+			except (HttpError, ImageError) as e:
 				log.error(e)
 				printer.printf('error', str(e))
 				retry.retry()
 
-		self._response.url 		= image_url
-		self._response.temp_filepath 	= temp_image_path
-		self._response.ext 		= ext
-
-		return self._response
+		return r
 
 
+	def get_image_info(self, filepath):
+		im_type, im_width, im_height = get_image_info(None, filepath=filepath)
 
-
+		if im_width < 1 or im_height < 1:
+			raise ImageError('bad image data')
+	
+		return im_type, im_width, im_height
 
