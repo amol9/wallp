@@ -6,6 +6,9 @@ from ..util import log
 from ..service import ServiceFactory
 
 
+__all__ = ['ChangeSubcommand']
+
+
 class ChangeSubcommand(Subcommand):
 	
 	@subcmd

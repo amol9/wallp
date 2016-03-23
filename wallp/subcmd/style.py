@@ -9,6 +9,9 @@ from ..desktop.desktop_factory import get_desktop
 from ..desktop.desktop import Desktop, DesktopError
 
 
+__all__ = ['StyleSubcommand']
+
+
 class StyleSubcommand(Subcommand):
 
 	@subcmd

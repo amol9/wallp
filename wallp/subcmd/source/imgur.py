@@ -1,20 +1,13 @@
 
-from redcmd.api import Subcommand, subcmd, Arg, CommandError
+from redcmd.api import subcmd, Arg, CommandError
 from redlib.api.py23 import enum_names, enum_attr
 
-from ..client import Client, ChangeWPError
+from .base import SourceSubcommand
 from ..util import log
-from ..service.imgur import Imgur, ImgurMethod, ImageSize, ImgurParams
-from ..sources.google import GoogleParams
-from ..wallpaper import Wallpaper, WallpaperError
+from ..sources.imgur import Imgur, ImgurMethod, ImageSize, ImgurParams
 
 
-class SourceSubcommand(Subcommand):
-
-	@subcmd
-	def source(self):
-		'Select source for wallpaper.'
-		pass
+__all__ = ['ImgurSubcommand']
 
 
 class ImgurSubcommand(SourceSubcommand):
@@ -84,38 +77,4 @@ class ImgurSubSubcommands(ImgurSubcommand):
 
 		service_params = ImgurParams(method=ImgurMethod.favorite, query=self._query, username=username, newest=newest, pages=self._pages)
 		self.change_wallpaper(service_params=service_params)
-
-
-	def change_wallpaper(self, service_params=None):
-		client = Client(service_name='imgur', service_params=service_params)
-
-		try:
-			client.change_wallpaper()
-		except ChangeWPError as e:
-			log.error(str(e))
-			raise CommandError()
-
-
-class FavoritesSubcommand(SourceSubcommand):
-
-	@subcmd
-	def favorites(self):
-		try:
-			client = Client(service_name='favorites')
-			client.change_wallpaper()
-		except ChangeWPError as e:
-			print(e)
-			raise CommandError()
-
-
-class GoogleSubcommand(SourceSubcommand):
-
-	@subcmd
-	def google(self, query=None, color=None):
-		gp = GoogleParams(query=query, color=color)
-		try:
-			wp = Wallpaper(params=gp)
-			wp.change()
-		except WallpaperError as e:
-			print(e)
-
+	

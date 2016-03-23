@@ -8,6 +8,9 @@ from ..db.create_db import CreateDB
 from ..db import DBSession
 
 
+__all__ = ['DbSubcommand']
+
+
 class DbSubcommand(Subcommand):
 
 	@subcmd

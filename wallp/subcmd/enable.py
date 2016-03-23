@@ -6,6 +6,9 @@ from ..service import ServiceFactory
 from ..db import Config
 
 
+__all__ = ['EnableSubcommands']
+
+
 class EnableSubcommands(Subcommand, ListMixin):
 	service_choices = ServiceFactory().service_names
 	name_choices = ListMixin.list_choices + service_choices

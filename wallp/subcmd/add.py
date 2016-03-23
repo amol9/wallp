@@ -4,6 +4,9 @@ from redcmd.api import Subcommand, subcmd, Arg
 from .list_mixin import ListMixin
 
 
+__all__ = ['AddSubcommand']
+
+
 class AddSubcommand(Subcommand, ListMixin):
 
 	@subcmd

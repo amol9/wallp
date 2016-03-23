@@ -7,6 +7,9 @@ from redcmd.api import Subcommand, subcmd, CommandError
 from ..db import GlobalVars
 
 
+__all__ = ['KeepSubcommand']
+
+
 class KeepError(Exception):
 	pass
 

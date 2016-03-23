@@ -5,6 +5,9 @@ from redcmd.api import Subcommand, subcmd, Arg
 from ..service import ServiceFactory 
 
 
+__all__ = ['ListSubcommand']
+
+
 class ListSubcommand(Subcommand):	
 
 	@subcmd

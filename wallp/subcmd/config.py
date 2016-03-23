@@ -6,6 +6,9 @@ from ..db import Config, ConfigError
 from ..globals import Const
 
 
+__all__ = ['ConfigSubcommands']
+
+
 class ConfigSubcommands(Subcommand):
 
 	def __init__(self):

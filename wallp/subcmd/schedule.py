@@ -5,6 +5,9 @@ from redcmd.api import Subcommand, subcmd, CommandError
 from ..util import Scheduler, SchedulerError
 
 
+__all__ = ['ScheduleSubcommand']
+
+
 class ScheduleSubcommand(Subcommand):
 
 	@subcmd

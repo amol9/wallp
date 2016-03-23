@@ -9,6 +9,9 @@ from ..db import func as dbfunc
 from ..db.exc import NotFoundError
 
 
+__all__ = ['InfoSubcommand']
+
+
 class InfoSubcommand(Subcommand):
 
 	@subcmd

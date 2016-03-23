@@ -5,6 +5,9 @@ from ..util import log
 from ..db import Config
 
 
+__all__ = ['LogSubcommand']
+
+
 class LogSubcommand(Subcommand):
 
 	@subcmd
