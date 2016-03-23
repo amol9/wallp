@@ -3,8 +3,8 @@ from redcmd.api import subcmd, Arg, CommandError
 from redlib.api.py23 import enum_names, enum_attr
 
 from .base import SourceSubcommand
-from ..util import log
-from ..sources.imgur import Imgur, ImgurMethod, ImageSize, ImgurParams
+from ...util import log
+from ...source.imgur import Imgur, ImgurMethod, ImageSize, ImgurParams
 
 
 __all__ = ['ImgurSubcommand']
@@ -14,7 +14,7 @@ class ImgurSubcommand(SourceSubcommand):
 
 	@subcmd
 	def imgur(self):
-		'Get new wallpaper image from imgur.com.'
+		'imgur.com.'
 		pass
 
 
@@ -36,7 +36,8 @@ class ImgurSubSubcommands(ImgurSubcommand):
 	def random(self):
 		'Get wallpaper using a random method (random album / favorites / wallpaper album / search).'
 
-		self.change_wallpaper()
+		ip = ImgurParams()
+		self.change_wallpaper(ip)
 
 
 	@subcmd(add=[query, pages])
@@ -45,17 +46,17 @@ class ImgurSubSubcommands(ImgurSubcommand):
 
 		image_size:	preferred image size'''
 
-		service_params = ImgurParams(method=ImgurMethod.search, query=self._query, image_size=enum_attr(ImageSize, image_size),
+		ip = ImgurParams(method=ImgurMethod.search, query=self._query, image_size=enum_attr(ImageSize, image_size),
 				pages=self._pages)
-		self.change_wallpaper(service_params=service_params)
+		self.change_wallpaper(ip)
 
 
 	@subcmd
 	def random_album(self):
 		'Select a random album from list.'
 
-		service_params = ImgurParams(method=ImgurMethod.random_album)
-		self.change_wallpaper(service_params=service_params)
+		ip = ImgurParams(method=ImgurMethod.random_album)
+		self.change_wallpaper(ip)
 
 
 	@subcmd(add=[query])
@@ -64,8 +65,8 @@ class ImgurSubSubcommands(ImgurSubcommand):
 
 		favorite: select wallpaper album from user favorites'''
 
-		service_params = ImgurParams(method=ImgurMethod.wallpaper_album, query=self._query, favorite=favorite)
-		self.change_wallpaper(service_params=service_params)
+		ip = ImgurParams(method=ImgurMethod.wallpaper_album, query=self._query, favorite=favorite)
+		self.change_wallpaper(ip)
 
 	
 	@subcmd(add=[query, pages])
@@ -75,6 +76,6 @@ class ImgurSubSubcommands(ImgurSubcommand):
 		username:	needed when getting favorites
 		newest:		prefer latest favorited images'''
 
-		service_params = ImgurParams(method=ImgurMethod.favorite, query=self._query, username=username, newest=newest, pages=self._pages)
-		self.change_wallpaper(service_params=service_params)
+		ip = ImgurParams(method=ImgurMethod.favorite, query=self._query, username=username, newest=newest, pages=self._pages)
+		self.change_wallpaper(ip)
 	

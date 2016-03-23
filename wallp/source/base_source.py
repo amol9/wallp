@@ -1,20 +1,22 @@
 
 from redlib.api.misc import Retry
 
-from .source import Source, SourceResponse, SourceError
+from .base import Source, SourceResponse, SourceError
 from ..service.image_info_mixin import ImageInfoMixin
 from ..service.image_urls_mixin import ImageUrlsMixin
 from ..web.func import get, HttpError
 from ..db.config import Config
 from ..util.logger import log
 from ..util.printer import printer
+from ..service.config_mixin import ConfigMixin
 
 
-class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin):
+class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 	
 	def __init__(self):
 		ImageInfoMixin.__init__(self)
 		ImageUrlsMixin.__init__(self)
+		ConfigMixin.__init__(self)
 
 		self._response = SourceResponse()
 
@@ -42,7 +44,6 @@ class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin):
 				temp_image_path = get(image_url, msg='getting image', max_content_length=Config().get('image.max_size'),
 						save_to_temp_file=True)
 
-				print 'temp path', temp_image_path
 				retry.cancel()
 
 			except HttpError as e:
@@ -53,6 +54,8 @@ class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin):
 		self._response.url 		= image_url
 		self._response.temp_filepath 	= temp_image_path
 		self._response.ext 		= ext
+
+		return self._response
 
 
 

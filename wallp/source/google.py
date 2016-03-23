@@ -14,7 +14,7 @@ from ..util import log
 from ..service.image_context import ImageContext
 from ..db import SearchTermList
 from ..util.printer import printer
-from .source import SourceError, SourceParams
+from .base import SourceError, SourceParams
 from .base_source import BaseSource
 
 
@@ -75,6 +75,7 @@ class Google(BaseSource):
 
 		search_url = self.search_base_url + urlencode(q_params)
 
+		self.add_trace_step('search', params.query)
 		response = self.http_get(search_url, msg='searching google images', headers={'User-Agent': self.user_agent})
 
 		self.extract_results(response)

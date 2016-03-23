@@ -4,7 +4,7 @@ from redlib.api.misc import Singleton
 
 from ..db import Config, ConfigError
 from ..util import log
-from .source import Source
+from .base import Source
 from .all_sources import *
 
 
@@ -24,8 +24,6 @@ class _SourceFactory():
 			cls = Source
 
 		for subcls in cls.__subclasses__():
-			print 'source class: %s'%subcls
-
 			if subcls.name is not None:
 				self.add(subcls)
 			self.add_all_sources(cls=subcls)

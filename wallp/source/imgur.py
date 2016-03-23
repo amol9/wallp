@@ -3,25 +3,23 @@ import json
 from random import choice
 
 from enum import Enum
-from zope.interface import implementer
 from giraf.api import Imgur as GImgur, ImgurError as GImgurError, QueryType, ImageSize, GalleryType, ImgurErrorType, Filter as GImgurFilter
 
 from ..util import log, Retry
-from .service import IHttpService, ServiceError
-from .image_info_mixin import ImageInfoMixin
-from .image_urls_mixin import ImageUrlsMixin
-from .image_context import ImageContext
+from ..service.image_context import ImageContext
 from ..db import ImgurAlbumList, SearchTermList, ConfigError
 from ..desktop.desktop_factory import get_desktop
-from .service_params import ServiceParams
-from .config_mixin import ConfigMixin
+from ..service.config_mixin import ConfigMixin
 from ..util.printer import printer
+from .base import SourceParams, SourceError, SourceResponse
+from .base_source import BaseSource
 
 
 ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])
 
 
-class ImgurParams(ServiceParams, GImgurFilter):
+class ImgurParams(SourceParams, GImgurFilter):
+	name = 'imgur'
 		
 	def __init__(self, query=None, method=ImgurMethod.random, image_size=ImageSize.medium, pages=1, username=None, newest=False,
 			favorite=False, query_type=QueryType.all, gallery_type=None, animated=False):
@@ -39,8 +37,7 @@ class ImgurError(Exception):
 	pass
 
 
-@implementer(IHttpService)
-class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
+class Imgur(BaseSource):
 	name = 'imgur'
 
 	def __init__(self):
@@ -48,7 +45,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 		try:
 			self._imgur = GImgur()
 		except GImgurError as e:
-			raise ServiceError(str(e))
+			raise SourceError(str(e))
 
 		self._album_list = ImgurAlbumList()
 
@@ -58,20 +55,17 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 		self.min_size = (mw, mh)
 
 
-	def get_image_url(self, query=None, color=None, params=None):
+	def get_image(self, params=None):
 		if self.image_urls_available():
-			image_url = self.select_url()
-			return image_url
+			return self.http_get_image_to_temp_file()
 
 		if params is None:
 			self._params = ImgurParams(query=query)
 		else:
 			self._params = params
 
-		if query is not None:
-			self._params.method = ImgurMethod.search
-
-		return self.map_call()
+		self.map_call()
+		return self.http_get_image_to_temp_file()	
 
 
 	def map_call(self):
@@ -90,7 +84,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 				return self.random()
 		except ImgurError as e:
 			log.error(e)
-			raise ServiceError()
+			raise SourceError()
 
 
 	def random(self):
@@ -114,7 +108,6 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 				retry.retry()
 
 		self.process_album(album)
-		return self.select_url()
 
 
 	def get_album_from_url(self, album_url):
@@ -151,7 +144,7 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 			self.add_trace_step('random search term', self._params.query)
 
 		result = self._imgur.search(self._params)
-		self.add_trace_step('searched imgur', self._params.query)
+		self.add_trace_step('search', self._params.query)
 
 		return self.process_result(result)
 
@@ -205,7 +198,6 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 		else:
 			raise ImgurError('no images found')
 
-		return self.select_url()
 		
 
 	def favorite(self):
@@ -276,14 +268,14 @@ class Imgur(ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 				self.add_trace_step('selected random album', album_url)
 				album = self.get_album_from_url(album_url)
 				self.process_album(album)
-				return self.select_url()
+				return
 			else:
 				page += 1
 				retry.retry()
 
 		if self._params.query == 'wallpaper':
 			self.config_set('wallpaper_search_page', (page + 1) % 100)
-		return self.random_album()
+			self.random_album()
 
 
 #todo: refactor, store fav wallpaper albums, add trace steps, newest

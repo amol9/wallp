@@ -18,8 +18,8 @@ from desktop.wpstyle import WPStyle, compute_style
 from server.protocol import WPState
 from db import GlobalVars, VarError
 from util.printer import printer
-from sources.source_factory import SourceFactory, SourceFactoryError
-from sources.source import SourceError, SourceParams
+from source.source_factory import SourceFactory, SourceFactoryError
+from source.base import SourceError, SourceParams
 
 
 # for outside of this module
@@ -46,8 +46,10 @@ class Wallpaper:
 		try:
 			self.write_to_transport(WPState.CHANGING)
 
-			source, wp_image_path, image_url = self.get_image()
-			image_type, im_width, im_height = get_image_info(None, filepath=wp_image_path)
+			source, source_response = self.get_image()
+			wp_image_path = self.move_temp_file(source_response)
+
+			im_type, im_width, im_height = get_image_info(None, filepath=wp_image_path)
 
 			dt = get_desktop()
 			wp_style = compute_style(im_width, im_height, *dt.get_size())
@@ -55,7 +57,7 @@ class Wallpaper:
 			dt.set_wallpaper(wp_image_path, style=wp_style)
 			printer.printf('wallpaper changed', '', verbosity=2)
 
-			image_id = self.save_image_info(source, wp_image_path, image_url, image_type, im_width, im_height)
+			image_id = self.save_image_info(source_response.db_image, source, wp_image_path, source_response.url, im_type, im_width, im_height)
 			self.update_global_vars(image_id)
 
 			self.write_to_transport(WPState.READY)
@@ -107,25 +109,19 @@ class Wallpaper:
 			try:
 				source = self.get_source()
 				source_response = source.get_image(params=self._params)
-
-				if source_response.temp_filepath is not None:
-					wp_image_path = self.move_temp_file(source_response.temp_filepath, source_response.ext)
-				else:
-					wp_image_path = source_response.filepath
-
 				retry.cancel()
 
 			except SourceError as e:
 				log.error(e)
-				printer.printf('error', str(e))
 
-				if self._params.source is not None:
+				if self._params.name is not None:
 					retry.cancel()
 					raise GetImageError(str(e))
 				else:
+					printer.printf('error', str(e))
 					retry.retry()
 
-		return source, wp_image_path, source_response.url
+		return source, source_response
 
 
 	def get_source(self):
@@ -139,22 +135,27 @@ class Wallpaper:
 			raise WallpaperError(str(e))
 
 
-	def move_temp_file(self, temp_path, ext):
+	def move_temp_file(self, source_response):
+		if source_response.filepath is not None:
+			return source_response.filepath
+
 		dirpath = get_pictures_dir() if not Const.debug else '.'
-		wp_path = joinpath(dirpath, Const.wallpaper_basename + '.' + ext)
+		wp_path = joinpath(dirpath, Const.wallpaper_basename + '.' + source_response.ext)
 
 		try:
-			shutil.move(temp_path, wp_path)
-		except IOError as e:
-			#handle move error, write to temp file error, disk full?
+			shutil.move(source_response.temp_filepath, wp_path)
+		except (IOError, OSError) as e:
 			log.error(str(e))
-			raise GetImageError()
+			raise GetImageError(str(e))
 
 		return wp_path
 
 
-	def save_image_info(self, source, wp_path, image_url, image_type, image_width, image_height):
-		image = Image()
+	def save_image_info(self, db_image, source, wp_path, image_url, image_type, image_width, image_height):
+		if db_image is None:
+			image = Image()
+		else:
+			image = db_image
 
 		image.type = image_type
 		image.width = image_width
@@ -165,8 +166,7 @@ class Wallpaper:
 		image.filepath = wp_path
 		image.time = int(time())
 
-		saved_image = None
-		if saved_image is None:
+		if db_image is None:
 			image.url = image_url
 
 			image_context = source.image_context
@@ -179,5 +179,4 @@ class Wallpaper:
 
 		image.save()
 		return image.id
-
 

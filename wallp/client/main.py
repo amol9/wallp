@@ -5,7 +5,7 @@ from redcmd.api import commandline_execute
 from ..version import __version__
 from .init import first_run, start_log, InitError
 from ..db.exc import DBError
-from ..command import all_subcommands
+from ..subcmd import all
 
 
 #entry point
