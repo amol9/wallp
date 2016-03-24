@@ -27,11 +27,12 @@ class SourceParams:
 
 class SourceResponse:
 
-	def __init__(self, url=None, filepath=None, db_image=None, temp_filepath=None):
+	def __init__(self, url=None, filepath=None, db_image=None, temp_filepath=None, ext=None):
 		self.url		= url
 		self.filepath		= filepath
 		self.db_image		= db_image
 		self.temp_filepath 	= temp_filepath
+		self.ext		= None
 
 		self.im_type		= None
 		self.im_width		= None

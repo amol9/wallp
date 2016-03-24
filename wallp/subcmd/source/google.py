@@ -12,7 +12,7 @@ class GoogleSubcommand(SourceSubcommand):
 
 	@subcmd
 	def google(self, query=None, color=None):
-		'Google images.'
+		'Google Images'
 
 		gp = GoogleParams(query=query, color=color)
 		self.change_wallpaper(gp)

@@ -1,7 +1,5 @@
 from struct import pack
 from random import choice
-from os.path import join as joinpath
-from zope.interface import implementer
 import tempfile
 import os
 from time import time
@@ -9,17 +7,21 @@ from time import time
 from redlib.api.colors import colorlist
 
 from ..util.logger import log
-from ..desktop import get_desktop
-from .service import IImageGenService, ServiceError
-from .image_info_mixin import ImageInfoMixin
+from .base import SourceError, SourceParams, SourceResponse
+from .base_source import BaseSource
 
 
-@implementer(IImageGenService)
-class Bitmap(ImageInfoMixin):
+class BitmapParams(SourceParams):
+	name = 'bitmap'
+
+	def __init__(self, color=None, width=None, height=None):
+		self.color = color
+
+
+class Bitmap(BaseSource):
 	name = 'bitmap'
 
 	def __init__(self, use_color_table=True):
-		self._use_color_table = use_color_table
 		super(Bitmap, self).__init__()
 
 
@@ -27,15 +29,17 @@ class Bitmap(ImageInfoMixin):
 		return 'bmp'
 
 
-	def get_image(self, query=None, color=None):
+	def get_image(self, params=None):
 		width, height = 2, 2
+
+		color = params.color
 
 		if color is not None:
 			self.add_trace_step('color', color)
 			if not color.startswith('0x'):
 				c = colorlist.get(color)
 				if c is None:
-					raise ServiceError('no such color')
+					raise SourceError('no such color')
 				color = c
 
 		else:
@@ -55,7 +59,7 @@ class Bitmap(ImageInfoMixin):
 			self.write_pixel_array(f, width, height, color)
 		except IOError as e:
 			log.error(str(e))
-			raise ServiceError()
+			raise SourceError()
 
 		f.close()
 
@@ -63,7 +67,10 @@ class Bitmap(ImageInfoMixin):
 
 		self.add_trace_step('generated bitmap', '%.3fms'%((end_time - start_time) * 1000))
 
-		return temp_file_path
+		r = SourceResponse()
+		r.im_type, r.im_width, r.im_height = self.get_image_info(temp_file_path)
+		r.temp_filepath, r.ext = temp_file_path, 'bmp'
+		return r
 
 
 	def write_bmp_header(self, bmpfile, pa_size):
