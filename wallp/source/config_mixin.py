@@ -23,3 +23,7 @@ class ConfigMixin(object):
 		self._config.add(self._prefix + name, value, type(value))
 		self._config.commit()
 
+
+	def config_get_other(self, name):
+		return self._config.get(name)
+

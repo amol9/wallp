@@ -1,5 +1,5 @@
 
-from ..db import SearchPage, SearchPageError
+from ..db.search_page import SearchPage, SearchPageError
 
 
 class SearchPageMixin(object):

@@ -14,6 +14,7 @@ from ..util.printer import printer
 from .base import SourceParams, SourceError, SourceResponse
 from .base_source import BaseSource
 from ..db.search_page import SearchPage, SearchPageError
+from ..db.config import Config
 
 
 ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])
@@ -26,7 +27,7 @@ class ImgurParams(SourceParams, GImgurFilter):
 			favorite=False, query_type=QueryType.all, gallery_type=None, animated=False):
 
 		GImgurFilter.__init__(self, query=query, image_size=image_size, pages=pages, query_type=query_type,
-				gallery_type=gallery_type, animated=animated)
+				gallery_type=gallery_type, animated=animated, max_filesize=Config().get('image.max_size'))
 
 		self.method		= method
 		self.username		= username
@@ -128,11 +129,12 @@ class Imgur(BaseSource):
 
 	def process_album(self, album):
 		image_ok = lambda i : i.get('link', None) is not None and\
-				i.get('width', None) >= self.min_size[0] and i.get('height', None) >= self.min_size[1]
+				i.get('width', None) >= self.min_size[0] and i.get('height', None) >= self.min_size[1] and\
+				(self._params.max_filesize is None or i.get('size', None) <= self._params.max_filesize)
 
 		url_list = [i['link'] for i in album.images if image_ok(i)]
-		if len(url_list) == 0:
-			raise ImgurError('no usable image urls found')
+		#if len(url_list) == 0:
+		#	raise ImgurError('no usable image urls found')
 
 		image_context = ImageContext(title=album.title, description=album.description, artist=album.account_url, url=album.link)
 		for u in url_list:
@@ -149,10 +151,14 @@ class Imgur(BaseSource):
 		retry = Retry(retries=3, exp_bkf=False)
 		page = self.search_page_get(self._params.query)
 
+		cb = printer.printf('results', '?', verbosity=2, col_cb=True)
+		update_result_count = lambda c, p : cb.col_cb(2, '%d (p %d)'%(c, p+1))
+
 		while retry.left():
 			self._params.start_page = page
 			result = self._imgur.search(self._params)
-			self.process_result(result)
+			count = self.process_result(result, print_progress=False)
+			update_result_count(count, page)
 
 			if self.image_count > 0:
 				retry.cancel()
@@ -164,14 +170,17 @@ class Imgur(BaseSource):
 				self.search_page_set(self._params.query, page)
 				retry.retry()
 
+		cb.col_update_cp()
 
-	def process_result(self, result):
+
+	def process_result(self, result, print_progress=True):
 		images = []
 		albums = []
 
 		count = 0
-		cb = printer.printf('results', '%d'%count, verbosity=2, col_cb=True)
-		update_result_count = lambda c : cb.col_cb(2, str(c))
+		if print_progress:
+			cb = printer.printf('results', '%d'%count, verbosity=2, col_cb=True)
+			update_result_count = lambda c : cb.col_cb(2, str(c))
 
 		for r in result:
 			if type(r) == GalleryType.image.value:
@@ -187,13 +196,16 @@ class Imgur(BaseSource):
 			else:
 				albums.append(r.link)
 				count += r.images_count
-			update_result_count(count)
+			if print_progress: update_result_count(count)
 
-		cb.col_update_cp()
+		if print_progress: cb.col_update_cp()
 		log.debug('got %d results'%count)
+		self.add_from_images_and_albums(images, albums)
+
+		return count
 
 
-	def add_from_images_and_albums(self, images, album):
+	def add_from_images_and_albums(self, images, albums):
 		def add_from_images():
 			for i in images:
 				self.add_url(i[0], i[1])

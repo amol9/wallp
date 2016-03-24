@@ -10,7 +10,8 @@ class SearchPageNum(Base):
 	id 	= Column(Integer, primary_key=True)
 	group 	= Column(String(20))
 	name 	= Column(String(40))
-	page   	= Column(Integer, default=0)
+	value   = Column(String(512))
+	type 	= Column(String(15))
 
 	__table_args__ = (UniqueConstraint('group', 'name'),)
 
