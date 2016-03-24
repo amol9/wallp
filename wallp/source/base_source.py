@@ -11,6 +11,7 @@ from ..util.logger import log
 from ..util.printer import printer
 from .config_mixin import ConfigMixin
 from .search_page_mixin import SearchPageMixin
+from ..db.itemlist import SearchTermList
 
 
 class ImageError(Exception):
@@ -72,4 +73,10 @@ class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin, SearchPage
 			raise ImageError('bad image data')
 	
 		return im_type, im_width, im_height
+
+
+	def get_random_query(self):
+		query = SearchTermList().get_random()
+		self.add_trace_step('random search', query)
+		return query
 

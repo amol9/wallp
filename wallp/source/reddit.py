@@ -2,26 +2,32 @@ from random import randint
 from os.path import join as joinpath
 import re
 
-from zope.interface import implementer
 import praw
 from requests.exceptions import HTTPError
 from giraf.api import Imgur as GImgur, ImgurError as GImgurError
 
 from ..util import log, Retry
 from ..globals import Const
-from .service import IHttpService, ServiceError
 from ..db import SubredditList, Config
-from .image_info_mixin import ImageInfoMixin
-from .image_urls_mixin import ImageUrlsMixin
 from .image_context import ImageContext
+from .base import SourceError, SourceParams
+from .base_source import BaseSource
+
+
+class RedditParams(SourceParams):
+	name = 'reddit'
+
+	def __init__(self, query=None, subreddit=None, limit=10):
+		self.query	= query
+		self.subreddit	= subreddit
+		self.limit	= limit
 
 
 class RedditError(Exception):
 	pass
 
 
-@implementer(IHttpService)
-class Reddit(ImageInfoMixin, ImageUrlsMixin):
+class Reddit(BaseSource):
 	name = 'reddit'
 
 	def __init__(self):
@@ -30,15 +36,36 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 		self._imgur = GImgur()
 
 
-	def get_image_url(self, query=None, color=None):
-		subreddit = None
-		if query is None:
-			subreddit = SubredditList().get_random()
-			self.add_trace_step('random subreddit', subreddit)
-		else:
-			self.add_trace_step('searched', query)
+	def get_image(self, params=None):
+		if self.image_urls_available():
+			return self.http_get_image_to_temp_file()
 
-		posts = self.get_subreddit_posts(subreddit, limit=self._posts_limit, query=query)
+		if params.query is None and params.subreddit is None:
+			params.subreddit = SubredditList().get_random()
+			self.add_trace_step('random subreddit', subreddit)
+
+		self._params = params
+		self.search()
+		return self.http_get_image_to_temp_file()
+
+
+	def search(self):
+		posts = self.get_posts()
+
+		for p in posts:
+			url = p.url
+			url = url[url.rfind('?') + 1 : ]
+			ext = url[url.rfind('.') + 1 : ]
+
+			if ext in Const.image_extensions:
+				self.add_url(p.url, ImageContext(artist=p.author.name, title=p.title, url=p.permalink))
+
+
+	def old_logic(self):
+		query = None
+		subreddit = None
+
+		posts = self.get_posts()
 		for p in posts:
 			self.add_url(p.url, ImageContext(artist=p.author.name, title=p.title, url=p.permalink))
 
@@ -88,7 +115,10 @@ class Reddit(ImageInfoMixin, ImageUrlsMixin):
 			raise RedditError(str(e))
 
 
-	def get_subreddit_posts(self, subreddit, limit=10, query=None):
+	def get_posts(self):
+		p = self._params
+		query, subreddit, limit = p.query, p.subreddit, p.limit
+
 		reddit = praw.Reddit(user_agent=Const.app_name, timeout=Config().get('http.timeout'))
 
 		try:
