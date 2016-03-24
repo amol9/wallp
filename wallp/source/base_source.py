@@ -3,13 +3,13 @@ from redlib.api.misc import Retry
 from redlib.api.image import get_image_info
 
 from .base import Source, SourceResponse, SourceError
-from ..service.image_info_mixin import ImageInfoMixin
-from ..service.image_urls_mixin import ImageUrlsMixin
+from .image_info_mixin import ImageInfoMixin
+from .image_urls_mixin import ImageUrlsMixin
 from ..web.func import get, HttpError
 from ..db.config import Config
 from ..util.logger import log
 from ..util.printer import printer
-from ..service.config_mixin import ConfigMixin
+from .config_mixin import ConfigMixin
 
 
 class ImageError(Exception):
@@ -35,7 +35,7 @@ class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
 
 
 	def http_get_image_to_temp_file(self):	
-		retry = Retry(retries=3, final_exc=SourceError('could not get image from source'))
+		retry = Retry(retries=3, exp_bkf=False, final_exc=SourceError('could not get image from source'))
 		r = self._response
 
 		while retry.left():

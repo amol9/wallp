@@ -153,7 +153,7 @@ class Wallpaper:
 		if src_res.db_image is None:
 			image = Image()
 		else:
-			image = db_image
+			image = src_res.db_image
 
 		image.type = src_res.im_type
 		image.width = src_res.im_width

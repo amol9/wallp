@@ -1,56 +1,54 @@
 from random import choice
 import xml.etree.ElementTree as ET
-from zope.interface import implementer
 
 from redlib.api.system import *
 from redlib.api.web import HtmlStripper
+from six.moves.urllib.parse import urlencode
 
-from ..web.func import get, HttpError
 from ..util.logger import log
-from .service import IHttpService, ServiceError
 from ..desktop import get_desktop, get_standard_desktop_size
-from .image_info_mixin import ImageInfoMixin
-from .image_urls_mixin import ImageUrlsMixin
 from .image_context import ImageContext
 from ..db import SearchTermList
-
-if is_py3():
-	from urllib.parse import urlencode
-else:
-	from urllib import urlencode
+from .base import SourceError, SourceParams
+from .base_source import BaseSource
 
 
-@implementer(IHttpService)
-class DeviantArt(ImageInfoMixin, ImageUrlsMixin):
+class DeviantArtParams(SourceParams):
 	name = 'deviantart'
+
+	def __init__(self, query=None):
+		self.query = query
+
+
+class DeviantArt(BaseSource):
+	name = 'deviantart'
+
 	rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&boost:popular&'
 	xmlns = {'media': 'http://search.yahoo.com/mrss/'}
 
-	def __init__(self):
-		super(DeviantArt, self).__init__()
 
-
-	def get_image_url(self, query=None, color=None):
+	def get_image(self, params=None):
 		if self.image_urls_available():
 			image_url = self.select_url()
 			return image_url
 
-		search_url = self.get_search_url(query)
-		response = get(search_url, msg='searching deviantart')
-	
-		self.get_image_url_list(response)
-		
-		image_url = self.select_url()
-		return image_url
+		self.search(params)
+		return self.http_get_image_to_temp_file()
 
 
-	def get_search_url(self, query):
-		if query is None:
-			query = SearchTermList().get_random()
-			self.add_trace_step('random search term', query)
+	def search(self, params):
+		if params.query is None:
+			params.query = SearchTermList().get_random()
+			self.add_trace_step('random search', params.query)
 		else:
-			self.add_trace_step('search term', query)
+			self.add_trace_step('search', params.query)
+
+		search_url = self.make_search_url(params.query)
+		response = self.http_get(search_url, msg='searching deviantart')
+		self.parse_search_response(response)
 	
+
+	def make_search_url(self, query):
 		params = {}
 		params['q'] = query
 
@@ -60,13 +58,12 @@ class DeviantArt(ImageInfoMixin, ImageUrlsMixin):
 		params['q'] += ' width:' + str(width) + ' height:' + str(height)
 
 		url = self.rss_url_base + urlencode(params)
-		log.info('da rss url: ' + url)
-		#self.add_trace_step('searched deviantart', query)
+		log.debug('deviantart rss url: ' + url)
 
 		return url
 
 
-	def get_image_url_list(self, xml):
+	def parse_search_response(self, xml):
 		rss = ET.fromstring(xml)
 
 		width, height = get_desktop().get_size()

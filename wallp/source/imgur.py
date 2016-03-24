@@ -6,10 +6,10 @@ from enum import Enum
 from giraf.api import Imgur as GImgur, ImgurError as GImgurError, QueryType, ImageSize, GalleryType, ImgurErrorType, Filter as GImgurFilter
 
 from ..util import log, Retry
-from ..service.image_context import ImageContext
+from .image_context import ImageContext
 from ..db import ImgurAlbumList, SearchTermList, ConfigError
 from ..desktop.desktop_factory import get_desktop
-from ..service.config_mixin import ConfigMixin
+from .config_mixin import ConfigMixin
 from ..util.printer import printer
 from .base import SourceParams, SourceError, SourceResponse
 from .base_source import BaseSource

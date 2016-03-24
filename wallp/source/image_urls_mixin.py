@@ -2,7 +2,7 @@ from random import randint
 
 from ..db import func as dbfunc
 from ..util import log
-from ..service import ServiceError
+from .base import SourceError
 
 
 class ImageUrlsMixin(object):
@@ -16,7 +16,7 @@ class ImageUrlsMixin(object):
 
 	def add_urls(self, image_urls):
 		if len(image_urls) == 0:
-			raise ServiceError()
+			raise SourceError()
 		self._image_urls += image_urls
 
 
@@ -35,7 +35,7 @@ class ImageUrlsMixin(object):
 	def select_url(self, add_trace_step=True):
 		if len(self._image_urls) == 0:
 			log.error('no image urls found')
-			raise ServiceError()
+			raise SourceError('no image urls found')
 
 		image_url = None
 
@@ -53,10 +53,9 @@ class ImageUrlsMixin(object):
 					self.add_trace_step('selected url', image_url)
 
 				self._image_context = self._image_contexts.get(image_url, None)
-
 				return image_url
 
-		raise ServiceError('no unseen image urls found')
+		raise SourceError('no unseen image urls found')
 
 
 	def image_urls_available(self):

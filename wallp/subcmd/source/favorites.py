@@ -12,7 +12,7 @@ class FavoritesSubcommand(SourceSubcommand):
 
 	@subcmd
 	def favorites(self):
-		'Select wallpaper image from favorites.'
+		'Get from favorites.'
 
 		fp = FavoritesParams()
 		self.change_wallpaper(fp)

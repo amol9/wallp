@@ -1,17 +1,11 @@
-from redlib.api.system import *
-if is_py3():
-	from urllib.parse import urlencode, urlparse, parse_qs
-else:
-	from urllib import urlencode
-	from urlparse import urlparse, parse_qs
-
 import json
 from random import choice
 
 from redlib.api.web import HtmlParser
+from six.moves.urllib.parse import urlencode, urlparse, parse_qs
 
 from ..util import log
-from ..service.image_context import ImageContext
+from .image_context import ImageContext
 from ..db import SearchTermList
 from ..util.printer import printer
 from .base import SourceError, SourceParams
