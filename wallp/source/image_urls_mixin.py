@@ -1,5 +1,8 @@
 from random import randint
 
+from redlib.api.misc import Retry
+
+from ..web.func import exists
 from ..db import func as dbfunc
 from ..util import log
 from .base import SourceError
@@ -10,8 +13,9 @@ class ImageUrlsMixin(object):
 		super(ImageUrlsMixin, self).__init__()
 		self._image_urls 	= []
 		self._image_contexts 	= {}
-		#self._image_context 	= None
 		self._seen_count	= 0
+
+		self._check_if_url_exists = False
 
 
 	def add_urls(self, image_urls):
@@ -40,25 +44,29 @@ class ImageUrlsMixin(object):
 			log.error('no image urls found')
 			raise SourceError('no image urls found')
 
-		image_url = None
+		if self._check_if_url_exists:
+			retry = Retry(retries=10, exp_bkf=False)
 
-		while len(self._image_urls) > 0:
-			rindex = randint(0, len(self._image_urls) - 1)
-			image_url = self._image_urls[rindex]
+			while retry.left():
+				image_url = self.select_random_url(add_trace_step=add_trace_step)
+				if exists(image_url):
+					return image_url
+				retry.retry()
+		else:
+			return self.select_random_url(add_trace_step=add_trace_step)
 
-			del self._image_urls[rindex]
 
-			if dbfunc.image_url_seen(image_url):
-				self._seen_count += 1
-				continue
-			else:
-				if add_trace_step:
-					self.add_trace_step('selected url', image_url)
+	def select_random_url(self, add_trace_step=True):
+		rindex = randint(0, len(self._image_urls) - 1)
+		image_url = self._image_urls[rindex]
 
-				self._image_context = self._image_contexts.get(image_url, None)
-				return image_url
+		del self._image_urls[rindex]
 
-		raise SourceError('no unseen image urls found')
+		if add_trace_step:
+			self.add_trace_step('selected url', image_url, overwrite=True)
+
+		self._image_context = self._image_contexts.get(image_url, None)
+		return image_url
 
 
 	def image_urls_available(self):

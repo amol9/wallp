@@ -1,28 +1,29 @@
-from redlib.api.system import *
-if is_py3():
-	from urllib.error import HTTPError
-else:
-	from urllib2 import HTTPError
-
 import re
 import json
 from random import randint
 from os.path import join as joinpath
 from zope.interface import implementer
 
+from redlib.api.misc import Retry
+
 from ..web.func import get, exists, HttpError
 from ..util.logger import log
-from . import IHttpService, ServiceError
 from ..desktop import get_desktop, get_standard_desktop_size
-from ..util import Retry
-from .image_info_mixin import ImageInfoMixin
-from .image_urls_mixin import ImageUrlsMixin
 from .image_context import ImageContext
+from .base import SourceError, SourceParams
+from .base_source import BaseSource
 
 
-@implementer(IHttpService)
-class Bing(ImageInfoMixin, ImageUrlsMixin):
+class BingParams(SourceParams):
+	name = 'bing'
+
+	def __init__(self):
+		pass
+
+
+class Bing(BaseSource):
 	name 		= 'bing'
+
 	image_list_url 	= 'http://www.bing.com/gallery/home/browsedata'
 	app_js_url 	= 'http://az615200.vo.msecnd.net/site/scripts/app.f21eb9ba.js'
 
@@ -33,23 +34,16 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 	
 	def __init__(self):
 		super(Bing, self).__init__()
+		self._check_if_url_exists = True
 
 
-	def get_image_url(self, query=None, color=None):
+	def get_image(self, params=None):
 		self.get_image_urls()
 
 		if self.image_count == 0:
-			log.error('bing: no images found at %s'%self.image_list_url)
-			raise ServiceError()
+			raise SourceError('no images found at %s'%self.image_list_url)
 		
-		retry = Retry(retries=10, final_exc=ServiceError())
-
-		while (retry.left()):		
-			image_url = self.select_url(add_trace_step=False)
-			if exists(image_url):
-				self.add_trace_step('selected url', image_url)
-				return image_url
-			retry.retry()
+		return self.http_get_image_to_temp_file()
 
 
 	def get_nearest_size(self, width, height):
@@ -64,7 +58,7 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 
 		if server_url == None:
 			log.error('bing: no valid image server found in %s'%self.app_js_url)
-			raise ServiceError()
+			raise SourceError()
 
 		ext = 'jpg'
 		width, height = get_desktop().get_size()
@@ -73,7 +67,7 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 		if not (width, height) in self.valid_sizes:
 			width, height = self.get_nearest_size(width, height)
 
-		jsfile = self.get(self.image_list_url, 'getting image list')
+		jsfile = self.http_get(self.image_list_url, msg='getting image list')
 
 		data_regex = re.compile(".*browseData=({.*});.*")
 		m = data_regex.match(jsfile)
@@ -97,7 +91,7 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 
 
 	def get_image_server(self):
-		js = self.get(self.app_js_url, 'getting server list')
+		js = self.http_get(self.app_js_url, msg='getting server list')
 
 		server_url_regex = re.compile(".*(\/\/.*?\.vo\.msecnd\.net\/files\/).*", re.M | re.S)
 		m = server_url_regex.match(js)
@@ -106,12 +100,4 @@ class Bing(ImageInfoMixin, ImageUrlsMixin):
 			url = m.group(1)
 			return url
 		return None
-
-
-	def get(self, url, msg):
-		try:
-			get(url, msg=msg)
-		except HttpError as e:
-			log.error(e)
-			raise ServiceError(str(e))
 

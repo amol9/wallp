@@ -156,6 +156,8 @@ class Imgur(BaseSource):
 
 		while retry.left():
 			self._params.start_page = page
+			self._params.result.clear()
+
 			result = self._imgur.search(self._params)
 			count = self.process_result(result, print_progress=False)
 			update_result_count(count, page)

@@ -1,4 +1,6 @@
 
+from asq.initiators import query
+
 from .image_context import ImageContext
 from ..db import ImageTrace
 from ..util import log
@@ -13,8 +15,15 @@ class ImageInfoMixin(object):
 		self._step = 1
 
 
-	def add_trace_step(self, name, data, log_debug=True, printer_print=True):
-		self._image_trace.append(ImageTrace(step=self._step, name=name, data=data))
+	def add_trace_step(self, name, data, log_debug=True, printer_print=True, overwrite=False):
+		if not overwrite:
+			self._image_trace.append(ImageTrace(step=self._step, name=name, data=data))
+		else:
+			step = next(iter(query(self._image_trace).where(lambda s : s.name == name)), None)
+			if step is not None:
+				step.data = data
+			else:
+				self._image_trace.append(ImageTrace(step=self._step, name=name, data=data))
 
 		if log_debug:
 			log.debug(name + (': ' + data) if data is not None else '')
