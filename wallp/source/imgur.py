@@ -7,7 +7,7 @@ from giraf.api import Imgur as GImgur, ImgurError as GImgurError, QueryType, Ima
 
 from ..util import log, Retry
 from .image_context import ImageContext
-from ..db import ImgurAlbumList, SearchTermList, ConfigError
+from ..db import ImgurAlbumList, ConfigError
 from ..desktop.desktop_factory import get_desktop
 from .config_mixin import ConfigMixin
 from ..util.printer import printer
@@ -100,7 +100,7 @@ class Imgur(BaseSource):
 		retry = Retry(retries=3, final_exc=ImgurError())
 		while retry.left():
 			album_url = self._album_list.get_random()
-			self.add_trace_step('selected random album', album_url)
+			self.add_trace_step('random album', album_url)
 		
 			album = self.get_album_from_url(album_url)
 
@@ -143,10 +143,9 @@ class Imgur(BaseSource):
 	
 	def search(self):
 		if self._params.query is None:
-			self._params.query = SearchTermList().get_random()
-			self.add_trace_step('random search', self._params.query)
-
-		self.add_trace_step('search', self._params.query)
+			self._params.query = self.get_random_query()
+		else:
+			self.add_trace_step('search', self._params.query)
 
 		retry = Retry(retries=3, exp_bkf=False)
 		page = self.search_page_get(self._params.query)

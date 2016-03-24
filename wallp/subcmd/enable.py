@@ -2,7 +2,7 @@
 from redcmd.api import Subcommand, subcmd, Arg, CommandError
 
 from .list_mixin import ListMixin
-from ..service import ServiceFactory
+from ..source.source_factory import SourceFactory
 from ..db import Config
 
 
@@ -10,23 +10,23 @@ __all__ = ['EnableSubcommands']
 
 
 class EnableSubcommands(Subcommand, ListMixin):
-	service_choices = ServiceFactory().service_names
-	name_choices = ListMixin.list_choices + service_choices
+	source_choices = SourceFactory().source_names
+	name_choices = ListMixin.list_choices + source_choices
 	
 	@subcmd
 	def enable(self, name=Arg(choices=name_choices, default=None), item=Arg(pos=True, nargs='?')):
-		'''Enable a service or an item in a list.
-		name: name of the service or value of an item in a list
-		item: item to be enabled, (not needed if name is a service)'''
+		'''Enable a source or an item in a list.
+		name: name of the source or value of an item in a list
+		item: item to be enabled, (not needed if name is a source)'''
 
 		self.update(name, item, True)
 
 
 	@subcmd
 	def disable(self, name=Arg(choices=name_choices, default=None), item=Arg(pos=True, nargs='?')):
-		'''Disable a service or an item in a list.
-		name: name of the service or value of an item in a list
-		item: item to be disabled, (not needed if name is a service)'''
+		'''Disable a source or an item in a list.
+		name: name of the source or value of an item in a list
+		item: item to be disabled, (not needed if name is a source)'''
 
 		self.update(name, item, False)
 
@@ -34,7 +34,7 @@ class EnableSubcommands(Subcommand, ListMixin):
 	def update(self, name, item, state):
 		state_to_str = lambda s: 'enabled' if s else 'disabled'
 
-		if name in self.service_choices:
+		if name in self.source_choices:
 			config = Config()
 			config.set(name + '.enabled', state)
 		elif name in self.list_choices:

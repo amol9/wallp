@@ -3,7 +3,8 @@ from os.path import join as joinpath
 import re
 
 import praw
-from requests.exceptions import HTTPError
+from praw.errors import InvalidSubreddit, NotFound
+from requests.exceptions import HTTPError, ConnectionError
 from giraf.api import Imgur as GImgur, ImgurError as GImgurError
 
 from ..util import log, Retry
@@ -32,8 +33,15 @@ class Reddit(BaseSource):
 
 	def __init__(self):
 		super(Reddit, self).__init__()
+
 		self._posts_limit = Config().get('reddit.posts_limit')
-		self._imgur = GImgur()
+		self._imgur = None
+
+	
+	def get_imgur(self):
+		if self._imgur is None:
+			self._imgur = GImgur()
+		return self._imgur
 
 
 	def get_image(self, params=None):
@@ -42,10 +50,10 @@ class Reddit(BaseSource):
 
 		if params.query is None and params.subreddit is None:
 			params.subreddit = SubredditList().get_random()
-			self.add_trace_step('random subreddit', subreddit)
+			self.add_trace_step('random subreddit', params.subreddit)
 
 		self._params = params
-		self.search()
+		self.exc_call(self.search)
 		return self.http_get_image_to_temp_file()
 
 
@@ -109,7 +117,7 @@ class Reddit(BaseSource):
 		image_id = self.get_imgur_image_id(post_url)
 
 		try:
-			i = self._imgur.get_image(image_id)
+			i = self.get_imgur().get_image(image_id)
 			return i.link
 		except (GImgurError, AttributeError) as e:
 			raise RedditError(str(e))
@@ -119,23 +127,27 @@ class Reddit(BaseSource):
 		p = self._params
 		query, subreddit, limit = p.query, p.subreddit, p.limit
 
-		reddit = praw.Reddit(user_agent=Const.app_name, timeout=Config().get('http.timeout'))
+		reddit = praw.Reddit(user_agent=Const.app_name, timeout=Config().get('http.timeout'), disable_update_check=True)
 
-		try:
-			if subreddit is None:
-				if query is None:
-					raise ServiceError('no subreddit and no query, not cool')
-				posts = reddit.search(query)
+		if subreddit is None:
+			if query is None:
+				raise ServiceError('no subreddit and no query, not cool')
+			posts = self.exc_call(reddit.search, query)
+		else:
+			sub = self.exc_call(reddit.get_subreddit, subreddit)
+			if query is None:
+				posts = self.exc_call(sub.get_hot, limit=limit)
 			else:
-				sub = reddit.get_subreddit(subreddit)
-				if query is None:
-					posts = sub.get_hot(limit=limit)
-				else:
-					posts = sub.search(query)
-		except HTTPError as e:
-			log.error(e)
-			printer.printf('error', str(e))
-			raise ServiceError()
-		
+				posts = self.exc_call(sub.search, query)
+	
 		return posts
 
+
+	def exc_call(self, method, *args, **kwargs):
+		try:
+			return method(*args, **kwargs)
+
+		except (HTTPError, ConnectionError, InvalidSubreddit, NotFound) as e:
+			msg = 'invalid subreddit' if type(e) == InvalidSubreddit else str(e)
+			log.error(msg)
+			raise SourceError(msg)

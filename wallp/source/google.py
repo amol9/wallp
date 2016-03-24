@@ -50,8 +50,10 @@ class Google(BaseSource):
 			self.add_trace_step('random search term', params.query)
 
 		if params.color is not None and not params.color in self.colors:
-			log.error('%s is not a supported color for google image search. please choose from: %s'%(params.color, ', '.join(self.colors)))
-			raise ServiceError()
+			msg = '%s is not a supported color for google image search. please choose from: %s'%(params.color, ', '.join(self.colors))
+			log.error(msg)
+			raise SourceError(msg)
+
 		elif params.color is not None:
 			self.add_trace_step('color', params.color)
 

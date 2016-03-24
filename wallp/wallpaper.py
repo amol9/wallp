@@ -116,7 +116,7 @@ class Wallpaper:
 					retry.cancel()
 					raise GetImageError(str(e))
 				else:
-					printer.printf('error', str(e))
+					printer.printf('error', str(e), verbosity=2)
 					retry.retry()
 
 		return source, src_res
@@ -126,6 +126,9 @@ class Wallpaper:
 		try:
 			source_factory = SourceFactory()
 			source = source_factory.get(self._params.name)
+			if source is None:
+				raise SourceError('error getting source')
+
 			printer.printf('source', source.name)
 			return source
 		except SourceFactoryError as e:

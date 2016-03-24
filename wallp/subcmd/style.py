@@ -2,7 +2,6 @@
 from redcmd.api import Subcommand, subcmd, Arg, CommandError
 from redlib.api.image import get_image_info
 
-from ..client import Client, ChangeWPError
 from ..util import log
 from ..desktop.wpstyle import WPStyle, compute_style, WPStyleError
 from ..desktop.desktop_factory import get_desktop

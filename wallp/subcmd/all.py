@@ -1,5 +1,5 @@
 from .add import *
-from .change import *
+#from .change import *
 from .config import *
 from .db import *
 from .enable import *

@@ -156,7 +156,7 @@ class NameValueSet(object):
 		except ValueError as e:
 			exc_msg.append('group \'%s\' '%group + str(e))
 
-		try:
+		try:							#issue: causes error when name is a search term like: 123
 			self.validate(name, min_len=1, max_len=self._name_max_len, regex=self.name_regex)
 		except ValueError as e:
 			exc_msg.append('name \'%s\' '%name + str(e))

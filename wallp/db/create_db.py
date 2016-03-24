@@ -7,7 +7,7 @@ from os.path import dirname, abspath, join as joinpath
 
 from . import SearchTerm, ImgurAlbum, Subreddit, Base, Config, GlobalVars
 from ..globals import Const
-from ..service import ServiceFactory
+from ..source.source_factory import SourceFactory
 from .dbsession import DBSession
 from ..version import __version__
 
@@ -59,13 +59,13 @@ class CreateDB():
 	
 	def insert_default_config(self):
 		config = Config()
-		self.insert_service_status(config)
+		self.insert_source_status(config)
 		self.insert_config_defaults(config)
 
 
-	def insert_service_status(self, config):
-		for service_name in ServiceFactory().service_names:
-			config.add(service_name + '.enabled', True, bool)
+	def insert_source_status(self, config):
+		for source_name in SourceFactory().source_names:
+			config.add(source_name + '.enabled', True, bool)
 
 
 	def insert_config_defaults(self, config):
