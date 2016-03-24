@@ -13,6 +13,7 @@ from .config_mixin import ConfigMixin
 from ..util.printer import printer
 from .base import SourceParams, SourceError, SourceResponse
 from .base_source import BaseSource
+from ..db.search_page import SearchPage, SearchPageError
 
 
 ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])
@@ -141,12 +142,27 @@ class Imgur(BaseSource):
 	def search(self):
 		if self._params.query is None:
 			self._params.query = SearchTermList().get_random()
-			self.add_trace_step('random search term', self._params.query)
+			self.add_trace_step('random search', self._params.query)
 
-		result = self._imgur.search(self._params)
 		self.add_trace_step('search', self._params.query)
 
-		return self.process_result(result)
+		retry = Retry(retries=3, exp_bkf=False)
+		page = self.search_page_get(self._params.query)
+
+		while retry.left():
+			self._params.start_page = page
+			result = self._imgur.search(self._params)
+			self.process_result(result)
+
+			if self.image_count > 0:
+				retry.cancel()
+			else:
+				if self._params.result.total == 0:
+					page = 0
+				else:
+					page += 1
+				self.search_page_set(self._params.query, page)
+				retry.retry()
 
 
 	def process_result(self, result):
@@ -176,29 +192,24 @@ class Imgur(BaseSource):
 		cb.col_update_cp()
 		log.debug('got %d results'%count)
 
-		def choose_from_images():
+
+	def add_from_images_and_albums(self, images, album):
+		def add_from_images():
 			for i in images:
 				self.add_url(i[0], i[1])
 
-		def choose_from_albums():
+		def add_from_albums():
 			album_url = choice(albums)
+			albums.remove(album_url)
+
 			album = self.get_album_from_url(album_url)
 			self.process_album(album)
 
-		if len(images) > 0 and len(albums) > 0:
-			ch = choice([True, False])
-			if ch:
-				choose_from_images()
-			else:
-				choose_from_albums()
-		elif len(images) > 0:
-			choose_from_images()
-		elif len(albums) > 0:
-			choose_from_albums()
-		else:
-			raise ImgurError('no images found')
+		add_from_images()
 
-		
+		while self.image_count < 1 and len(albums) > 0:
+			add_from_albums()
+			
 
 	def favorite(self):
 		username = self._params.username

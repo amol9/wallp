@@ -21,6 +21,9 @@ class ImageUrlsMixin(object):
 
 
 	def add_url(self, image_url, image_context=None):
+		if dbfunc.image_url_seen(image_url):
+			return
+
 		self._image_urls.append(image_url)
 		if image_context is not None:
 			self._image_contexts[image_url] = image_context

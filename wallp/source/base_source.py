@@ -10,18 +10,20 @@ from ..db.config import Config
 from ..util.logger import log
 from ..util.printer import printer
 from .config_mixin import ConfigMixin
+from .search_page_mixin import SearchPageMixin
 
 
 class ImageError(Exception):
 	pass
 
 
-class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin):
+class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin, SearchPageMixin):
 	
 	def __init__(self):
 		ImageInfoMixin.__init__(self)
 		ImageUrlsMixin.__init__(self)
 		ConfigMixin.__init__(self)
+		SearchPageMixin.__init__(self)
 
 		self._response = SourceResponse()
 
