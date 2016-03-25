@@ -1,5 +1,4 @@
 from .add import *
-#from .change import *
 from .config import *
 from .db import *
 from .enable import *
@@ -12,4 +11,6 @@ from .style import *
 from .favorite import *
 
 from .source.all import *
+
+from .change import *
 

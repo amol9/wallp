@@ -21,5 +21,6 @@ def main():
 				description='A command line utility to download and set wallpapers from various sources.',
 				version=__version__,
 				_to_hyphen=True,
-				default_subcommand='change')
+				default_subcommand='change',
+				moves=True)
 
