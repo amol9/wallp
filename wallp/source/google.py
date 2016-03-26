@@ -13,6 +13,7 @@ from .base_source import BaseSource
 from .images import Images
 from .http_helper import HttpHelper
 from .trace import Trace
+from .images import Image
 
 
 class GoogleParams(SourceParams):
@@ -31,8 +32,8 @@ class Google(Source):
 
 
 	def __init__(self):
-		super(Google, self).__init__()
-		self.cache_urls()
+		#super(Google, self).__init__()
+		pass
 
 
 	def get_image(self, params=None):
@@ -42,10 +43,11 @@ class Google(Source):
 		self._trace = Trace()
 		self._images = Images(params, cache=True)
 
+		self._http = HttpHelper()
+
 		if not self._images.available():
 			self.search(params)
 
-		self._http = HttpHelper()
 		return self._http.download_image(self._images, self._trace)
 
 
@@ -80,7 +82,7 @@ class Google(Source):
 		response = self._http.get(search_url, msg='searching google images', headers={'User-Agent': self.user_agent})
 
 		self.extract_results(response)
-		printer.printf('result', '%d images'%self.image_count, verbosity=2)
+		printer.printf('result', '%d images'%self._images.count, verbosity=2)
 		
 		
 	def extract_results(self, response):
@@ -129,5 +131,5 @@ class Google(Source):
 
 
 	def get_trace(self):
-		return self._trace
+		return self._trace.steps
 

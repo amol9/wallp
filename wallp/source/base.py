@@ -22,7 +22,7 @@ class SourceError(Exception):
 	pass
 
 
-class SourceParams:
+class SourceParams(object):
 	name = None
 
 	def __init__(self, query=None, color=None):
@@ -32,7 +32,7 @@ class SourceParams:
 		self.hash_params = ['query', 'color']
 
 
-	def __hash__(self):
+	def get_hash(self):
 		s = ''
 		for p in self.hash_params:
 			if getattr(self, p, None) is not None:

@@ -8,6 +8,7 @@ from ..db import func as dbfunc
 from ..util import log
 from .base import SourceError
 from ..globals import Const
+from ..util.printer import printer
 
 
 class Image:
@@ -30,6 +31,12 @@ class Image:
 		# temp filepath after image is downloaded
 		self.temp_filepath	= None
 
+		# filepath if an existing local image is being used
+		self.filepath		= None
+
+		# if an already used image is being reused from the db
+		self.db_image		= None
+
 
 class ImageFilter:
 
@@ -38,8 +45,6 @@ class ImageFilter:
 		self.min_height	= min_height
 		self.max_width	= max_width
 		self.max_height	= max_height
-
-		self.url_exist_check	= url_exist_check
 
 
 	def match(self, image):
@@ -74,16 +79,22 @@ class Images:
 		self._cache_timeout	= 'never' if cache_timeout is None else cache_timeout
 		self._url_exist_check	= url_exist_check
 
+		self.load_cache()
+
 
 	def load_cache(self):
-		cached_images = self._cache.get(self._source_params.hash())
+		if self._cache is None:
+			return
 
+		hash = self._source_params.get_hash()
+		cached_images = self._cache.get(hash)
 		if cached_images is not None:
 			if len(cached_images) > 0:
+				printer.printf('cached result', '%d images'%len(cached_images), verbosity=2)
 				self._list = cached_images
 
 	
-	def add_image(self, image):
+	def add(self, image):
 		if self._filter.match(image):
 			self._list.append(image)
 
@@ -93,19 +104,23 @@ class Images:
 			log.error('no image urls found')
 			raise SourceError('no image urls found')
 
-		image_url = None
+		image = None
 		if self._url_exist_check:
 			retry = Retry(retries=10, exp_bkf=False)
 
 			while retry.left():
-				image_url = self.select_random()
+				image = self.select_random()
 				if not exists(image.url):
 					retry.retry()
 		else:
-			image_url =  self.select_random()
+			image =  self.select_random()
 
+		printer.printf('random url', image.url)
+		printer.printf('image title', image.title or '-', verbosity=3)
+		printer.printf('username', image.user or '-', verbosity=3)
+		printer.printf('image context url', image.context_url or '-', verbosity=3)
 
-		return image_url
+		return image
 
 
 	def select_random(self):
@@ -115,7 +130,8 @@ class Images:
 		del self._list[rindex]
 
 		if self._cache is not None:
-			self._cache.pickle_add((self._list, self._cache_timeout, id=self._source_params.hash())
+			hash = self._source_params.get_hash()
+			self._cache.pickle_add(self._list, self._cache_timeout, id=hash)
 
 		return image
 
@@ -124,8 +140,8 @@ class Images:
 		return len(self._list) > 0
 
 
-	def get_image_count(self):
+	def get_count(self):
 		return len(self._list)
 
-	image_count = property(get_image_count)
+	count = property(get_count)
 

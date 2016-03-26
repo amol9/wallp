@@ -29,25 +29,27 @@ class HttpHelper:
 		while retry.left():
 			try:
 				image = images.select()
-				printer.printf('random url', image.url)
 				
 				if image.url is None:
 					continue
 
-				temp_filepath = get(image_url, msg='getting image', max_content_length=Config().get('image.max_size'),
+				temp_filepath = get(image.url, msg='getting image', max_content_length=Config().get('image.max_size'),
 						save_to_temp_file=True)
 
-				image.type, image.i_width, r.i_height = self.get_image_info(temp_filepath)
+				image.type, image.i_width, image.i_height = get_image_info(None, filepath=temp_filepath)
+				if image.i_width < 1 or image.i_height < 1:
+					retry.retry()
+					continue
 
 				if image.ext is None:
 					image.ext = image.url[image_url.rfind('.') + 1 : ]
 
 				image.temp_filepath = temp_filepath
-				trace.add_step('random url', image.url)
+				trace.add_step('random url', image.url, printer_print=False)
 
 				retry.cancel()
 
-			except (HttpError, ImageError) as e:
+			except HttpError as e:
 				log.error(e)
 				printer.printf('error', str(e))
 				retry.retry()

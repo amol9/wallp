@@ -50,7 +50,7 @@ class Wallpaper:
 			wp_image_path = self.move_temp_file(image)
 
 			dt = get_desktop()
-			wp_style = compute_style(image.im_width, image.im_height, *dt.get_size())
+			wp_style = compute_style(image.i_width, image.i_height, *dt.get_size())
 
 			dt.set_wallpaper(wp_image_path, style=wp_style)
 			printer.printf('wallpaper changed', '', verbosity=2)
@@ -159,8 +159,8 @@ class Wallpaper:
 			db_image = image.db_image
 
 		db_image.type = image.type
-		db_image.width = image.im_width
-		db_image.height = image.im_height
+		db_image.width = image.i_width
+		db_image.height = image.i_height
 
 		db_image.size = stat(wp_path).st_size
 
@@ -172,10 +172,10 @@ class Wallpaper:
 
 			db_image.title = image.title
 			db_image.description = image.description[0: 1024] if image.description is not None else None
-			db_image.context_url = image.url
+			db_image.context_url = image.context_url
 			db_image.artist = image.user
 
-			db_image.trace = source.image_trace
+			db_image.trace = source.get_trace()
 
 		db_image.save()
 		return db_image.id
