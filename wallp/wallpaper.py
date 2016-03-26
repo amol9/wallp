@@ -45,17 +45,17 @@ class Wallpaper:
 		try:
 			self.write_to_transport(WPState.CHANGING)
 
-			source, src_res = self.get_image()
+			source, image = self.get_image()
 
-			wp_image_path = self.move_temp_file(src_res)
+			wp_image_path = self.move_temp_file(image)
 
 			dt = get_desktop()
-			wp_style = compute_style(src_res.im_width, src_res.im_height, *dt.get_size())
+			wp_style = compute_style(image.im_width, image.im_height, *dt.get_size())
 
 			dt.set_wallpaper(wp_image_path, style=wp_style)
 			printer.printf('wallpaper changed', '', verbosity=2)
 
-			image_id = self.save_image_info(source, wp_image_path, src_res)
+			image_id = self.save_image_info(source, wp_image_path, image)
 			self.update_global_vars(image_id)
 
 			self.write_to_transport(WPState.READY)
@@ -106,7 +106,7 @@ class Wallpaper:
 		while retry.left():
 			try:
 				source = self.get_source()
-				src_res = source.get_image(params=self._params)
+				image = source.get_image(params=self._params)
 				retry.cancel()
 
 			except SourceError as e:
@@ -119,7 +119,7 @@ class Wallpaper:
 					printer.printf('error', str(e), verbosity=2)
 					retry.retry()
 
-		return source, src_res
+		return source, image
 
 
 	def get_source(self):
@@ -136,15 +136,15 @@ class Wallpaper:
 			raise WallpaperError(str(e))
 
 
-	def move_temp_file(self, src_res):
-		if src_res.filepath is not None:
-			return src_res.filepath
+	def move_temp_file(self, image):
+		if image.filepath is not None:
+			return image.filepath
 
 		dirpath = get_pictures_dir() if not Const.debug else '.'
-		wp_path = joinpath(dirpath, Const.wallpaper_basename + '.' + src_res.ext)
+		wp_path = joinpath(dirpath, Const.wallpaper_basename + '.' + image.ext)
 
 		try:
-			shutil.move(src_res.temp_filepath, wp_path)
+			shutil.move(image.temp_filepath, wp_path)
 		except (IOError, OSError) as e:
 			log.error(str(e))
 			raise GetImageError(str(e))
@@ -152,32 +152,31 @@ class Wallpaper:
 		return wp_path
 
 
-	def save_image_info(self, source, wp_path, src_res):
-		if src_res.db_image is None:
-			image = Image()
+	def save_image_info(self, source, wp_path, image):
+		if image.db_image is None:
+			db_image = Image()
 		else:
-			image = src_res.db_image
+			db_image = image.db_image
 
-		image.type = src_res.im_type
-		image.width = src_res.im_width
-		image.height = src_res.im_height
+		db_image.type = image.type
+		db_image.width = image.im_width
+		db_image.height = image.im_height
 
-		image.size = stat(wp_path).st_size
+		db_image.size = stat(wp_path).st_size
 
-		image.filepath = wp_path
-		image.time = int(time())
+		db_image.filepath = wp_path
+		db_image.time = int(time())
 
-		if src_res.db_image is None:
-			image.url = src_res.url
+		if image.db_image is None:
+			db_image.url = image.url
 
-			image_context = source.image_context
-			image.title = image_context.title
-			image.description = image_context.description[0: 1024] if image_context.description is not None else None
-			image.context_url = image_context.url
-			image.artist = image_context.artist
+			db_image.title = image.title
+			db_image.description = image.description[0: 1024] if image.description is not None else None
+			db_image.context_url = image.url
+			db_image.artist = image.user
 
-			image.trace = source.image_trace
+			db_image.trace = source.image_trace
 
-		image.save()
-		return image.id
+		db_image.save()
+		return db_image.id
 

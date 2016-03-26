@@ -12,6 +12,7 @@ from ..util.printer import printer
 from .config_mixin import ConfigMixin
 from .search_page_mixin import SearchPageMixin
 from ..db.itemlist import SearchTermList
+from ..desktop.desktop_factory import get_desktop
 
 
 class ImageError(Exception):
@@ -27,6 +28,13 @@ class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin, SearchPage
 		SearchPageMixin.__init__(self)
 
 		self._response = SourceResponse()
+
+		min_ratio = 0.8
+
+		dt = get_desktop()
+		dw, dh = dt.get_size()
+		self._min_size = (min_ratio * dw, min_ratio * dh)
+		self._max_size = (1.4 * dw, 1.4 * dh)
 
 
 	def http_get(self, url, msg=None, headers=None):
@@ -53,7 +61,7 @@ class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin, SearchPage
 
 				r.im_type, r.im_width, r.im_height = self.get_image_info(temp_filepath)
 
-				ext = image_url[image_url.rfind('.') + 1 : ]
+				ext = image_url[image_url.rfind('.') + 1 : ] or self.image_context.ext
 				r.url, r.temp_filepath, r.ext = image_url, temp_filepath, ext
 
 				retry.cancel()
@@ -80,3 +88,9 @@ class BaseSource(Source, ImageInfoMixin, ImageUrlsMixin, ConfigMixin, SearchPage
 		self.add_trace_step('random search', query)
 		return query
 
+	
+	def min_size(self, im_width, im_height):
+		if im_width is None and im_height is None:
+			return True
+
+		return (im_width >= self._min_size[0] or im_height >= self._min_size[1])

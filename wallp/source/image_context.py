@@ -1,6 +1,6 @@
 
 class ImageContext:
-	def __init__(self, title=None, description=None, artist=None, url=None):
+	def __init__(self, title=None, description=None, artist=None, url=None, ext=None):
 		self.title 		= title
 		self.description 	= description
 		self.artist 		= artist

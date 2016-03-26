@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
+from redlib.api.misc import md5hash
+
 
 class Source:
 	__metaclass__ = ABCMeta
@@ -10,6 +12,9 @@ class Source:
 	gen	= None
 
 	def get_image(self, params=None):
+		pass
+
+	def get_trace(self):
 		pass
 
 
@@ -23,6 +28,17 @@ class SourceParams:
 	def __init__(self, query=None, color=None):
 		self.query	= query
 		self.color	= color
+
+		self.hash_params = ['query', 'color']
+
+
+	def __hash__(self):
+		s = ''
+		for p in self.hash_params:
+			if getattr(self, p, None) is not None:
+				s += p
+
+		return md5hash(s)
 
 
 class SourceResponse:

@@ -8,15 +8,18 @@ from ..util import log
 from .image_context import ImageContext
 from ..db import SearchTermList
 from ..util.printer import printer
-from .base import SourceError, SourceParams
+from .base import SourceError, SourceParams, Source
 from .base_source import BaseSource
+from .images import Images
+from .http_helper import HttpHelper
+from .trace import Trace
 
 
 class GoogleParams(SourceParams):
 	name = 'google'
 
 
-class Google(BaseSource):
+class Google(Source):
 	name 	= 'google'
 	online	= True
 	db	= False
@@ -26,28 +29,30 @@ class Google(BaseSource):
 	colors 		= ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown']
 	user_agent 	= 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0'
 
+
 	def __init__(self):
 		super(Google, self).__init__()
+		self.cache_urls()
 
 
 	def get_image(self, params=None):
-		if self.image_urls_available():
-			image_url = self.select_url()
-			return image_url
-
 		if params is None:
 			params = GoogleParams()
 
-		self.search(params)
-		self.http_get_image_to_temp_file()
+		self._trace = Trace()
+		self._images = Images(params, cache=True)
 
-		return self._response
+		if not self._images.available():
+			self.search(params)
+
+		self._http = HttpHelper()
+		return self._http.download_image(self._images, self._trace)
 
 
 	def search(self, params):
 		if params.query is None:
 			params.query = SearchTermList().get_random()
-			self.add_trace_step('random search term', params.query)
+			self._trace.add_step('random search term', params.query)
 
 		if params.color is not None and not params.color in self.colors:
 			msg = '%s is not a supported color for google image search. please choose from: %s'%(params.color, ', '.join(self.colors))
@@ -55,7 +60,7 @@ class Google(BaseSource):
 			raise SourceError(msg)
 
 		elif params.color is not None:
-			self.add_trace_step('color', params.color)
+			self._trace.add_step('color', params.color)
 
 		q_params = {
 			'as_q'		: params.query,
@@ -71,8 +76,8 @@ class Google(BaseSource):
 
 		search_url = self.search_base_url + urlencode(q_params)
 
-		self.add_trace_step('search', params.query)
-		response = self.http_get(search_url, msg='searching google images', headers={'User-Agent': self.user_agent})
+		self._trace.add_step('search', params.query)
+		response = self._http.get(search_url, msg='searching google images', headers={'User-Agent': self.user_agent})
 
 		self.extract_results(response)
 		printer.printf('result', '%d images'%self.image_count, verbosity=2)
@@ -95,19 +100,24 @@ class Google(BaseSource):
 			if imgurl is None:
 				continue
 
+			image = Image()
+			image.url = imgurl[0]
+
 			meta_div = div.find(".//div[@class='rg_meta']")
 			image_context = None
+
 			if meta_div is not None:
 				meta = json.loads(meta_div.text)
 
-				url 		= meta.get('isu', None)
-				title		= meta.get('pt', None)
-				description	= meta.get('s', None)
+				image.width = meta.get('ow', None)
+				image.height = meta.get('oh', None)
 
-				if any([i != None for i in [url, title, description]]):
-					image_context = ImageContext(url=url, title=title, description=description)
+				image.context_url 	= meta.get('isu', None)
+				image.title		= meta.get('pt', None)
+				image.description	= meta.get('s', None)
+				image.ext		= meta.get('ity', None)
 
-			self.add_url(imgurl[0], image_context)
+			self._images.add(image)
 
 
 	def get_etree(self, html):
@@ -116,4 +126,8 @@ class Google(BaseSource):
 		etree = parser.etree
 
 		return etree
+
+
+	def get_trace(self):
+		return self._trace
 
