@@ -35,9 +35,9 @@ class SourceParams(object):
 	def get_hash(self):
 		s = ''
 		for p in self.hash_params:
-			if getattr(self, p, None) is not None:
-				s += p
-
+			value = getattr(self, p, None)
+			if value is not None:
+				s += str(value)
 		return md5hash(s)
 
 

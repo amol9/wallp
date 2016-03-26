@@ -9,11 +9,13 @@ from ..util import log
 from .base import SourceError
 from ..globals import Const
 from ..util.printer import printer
+from ..db.app.config import Config
+from ..desktop.desktop_factory import get_desktop
 
 
 class Image:
 
-	def __init__(self, url=None, title=None, description=None, user=None, context_url=None, width=None, height=None, ext=None):
+	def __init__(self, url=None, title=None, description=None, user=None, context_url=None, width=None, height=None, ext=None, size=None):
 		self.url		= url
 		self.title		= title
 		self.description	= description
@@ -22,6 +24,7 @@ class Image:
 		self.width		= width
 		self.height		= height
 		self.ext		= ext
+		self.size		= size
 
 		# to be filled in by get_image_info() by scanning the actual image data
 		self.type		= None
@@ -40,11 +43,21 @@ class Image:
 
 class ImageFilter:
 
-	def __init__(self, min_width=None, min_height=None, max_width=None, max_height=None):
-		self.min_width	= min_width
-		self.min_height	= min_height
-		self.max_width	= max_width
-		self.max_height	= max_height
+	def __init__(self, min_width=None, min_height=None, max_width=None, max_height=None, max_size=None):
+		config = Config()
+		
+		min_ratio = config.eget('image.min_ratio_to_desktop', default=Const.min_ratio_to_desktop)
+		max_ratio = config.eget('image.max_ratio_to_desktop', default=Const.max_ratio_to_desktop)
+
+		dt = get_desktop()
+		dw, dh = dt.get_size()
+
+		self.min_width	= min_width 	or int(dw * min_ratio)
+		self.min_height	= min_height 	or int(dh * min_ratio)
+		self.max_width	= max_width 	or int(dw * max_ratio)
+		self.max_height	= max_height 	or int(dh * max_ratio)
+
+		self.max_size	= max_size or config.eget('image.max_size', default=Const.max_image_size)
 
 
 	def match(self, image):
@@ -63,6 +76,10 @@ class ImageFilter:
 			if self.min_height is not None and image.height < self.min_height:
 				result = False
 			if result and self.max_height is not None and image.height > self.max_height:
+				result = False
+
+		if result and image.size is not None:
+			if self.max_size is not None and image.size > self.max_size:
 				result = False
 
 		return result

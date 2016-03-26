@@ -1,6 +1,7 @@
 
 from redlib.api.misc import Retry
 from redlib.api.image import get_image_info
+from PIL import Image
 
 from .base import SourceError
 from ..web.func import get, HttpError, exists
@@ -23,7 +24,7 @@ class HttpHelper:
 			raise SourceError(str(e))
 
 
-	def download_image(self, images, trace):	
+	def download_image(self, images, trace, headers=None):	
 		retry = Retry(retries=3, exp_bkf=False, final_exc=SourceError('could not get image from source'))
 
 		while retry.left():
@@ -34,15 +35,19 @@ class HttpHelper:
 					continue
 
 				temp_filepath = get(image.url, msg='getting image', max_content_length=Config().get('image.max_size'),
-						save_to_temp_file=True)
+						save_to_temp_file=True, headers=headers)
 
-				image.type, image.i_width, image.i_height = get_image_info(None, filepath=temp_filepath)
+				im = Image.open(temp_filepath)
+				image.type = im.format.lower()
+				image.i_width, image.i_height = im.size
+				im.close()
+
 				if image.i_width < 1 or image.i_height < 1:
 					retry.retry()
 					continue
 
 				if image.ext is None:
-					image.ext = image.url[image_url.rfind('.') + 1 : ]
+					image.ext = image.url[image.url.rfind('.') + 1 : ]
 
 				image.temp_filepath = temp_filepath
 				trace.add_step('random url', image.url, printer_print=False)

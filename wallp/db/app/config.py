@@ -1,10 +1,10 @@
 
-from . import Setting
-from .namevalueset import NameValueSet, NameError
+from .. import Setting
+from ..namevalueset import NameValueSet, NameError
 
 from redlib.api.misc import Singleton
 
-from .nv_shortcut_mixin import NVShortcutMixin
+from ..nv_shortcut_mixin import NVShortcutMixin
 
 
 class ConfigError(NameError):
