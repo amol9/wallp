@@ -7,8 +7,9 @@ from time import time
 from redlib.api.colors import colorlist
 
 from ..util.logger import log
-from .base import SourceError, SourceParams, SourceResponse
-from .base_source import BaseSource
+from .base import SourceError, SourceParams, Source
+from .image import Image
+from .trace import Trace
 
 
 class BitmapParams(SourceParams):
@@ -18,11 +19,11 @@ class BitmapParams(SourceParams):
 		self.color = color
 
 
-class Bitmap(BaseSource):
+class Bitmap(Source):
 	name = 'bitmap'
 
-	def __init__(self, use_color_table=True):
-		super(Bitmap, self).__init__()
+	def __init__(self):
+		self._trace = Trace()
 
 
 	def get_extension(self):
@@ -35,7 +36,7 @@ class Bitmap(BaseSource):
 		color = params.color
 
 		if color is not None:
-			self.add_trace_step('color', color)
+			self._trace.add_step('color', color)
 			if not color.startswith('0x'):
 				c = colorlist.get(color)
 				if c is None:
@@ -44,7 +45,7 @@ class Bitmap(BaseSource):
 
 		else:
 			color = choice(list(colorlist.keys()))
-			self.add_trace_step('random color', color)
+			self._trace.add_step('random color', color)
 			color = colorlist[color]
 
 		
@@ -65,12 +66,13 @@ class Bitmap(BaseSource):
 
 		end_time = time()
 
-		self.add_trace_step('generated bitmap', '%.3fms'%((end_time - start_time) * 1000))
+		self._trace.add_step('generated bitmap', '%.3fms'%((end_time - start_time) * 1000))
 
-		r = SourceResponse()
-		r.im_type, r.im_width, r.im_height = self.get_image_info(temp_file_path)
-		r.temp_filepath, r.ext = temp_file_path, 'bmp'
-		return r
+		image = Image()
+		image.type, image.i_width, image.i_height = 'bmp', 2, 2
+		image.temp_filepath, image.ext = temp_file_path, 'bmp'
+
+		return image
 
 
 	def write_bmp_header(self, bmpfile, pa_size):
@@ -118,4 +120,8 @@ class Bitmap(BaseSource):
 		log.debug('row size: %d'%row_size)
 		pa_size = row_size * height
 		return pa_size, row_size
+
+
+	def get_trace(self):
+		return self._trace.steps
 
