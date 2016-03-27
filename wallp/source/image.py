@@ -27,3 +27,15 @@ class Image:
 		# if an already used image is being reused from the db
 		self.db_image		= None
 
+
+	def init_from_db_image(self, db_image):
+		self.url		= db_image.url
+		self.title		= db_image.title
+		self.description	= db_image.description
+		self.user		= db_image.artist
+		self.context_url	= db_image.context_url
+		self.width		= db_image.width
+		self.height		= db_image.height
+		
+		self.db_image		= db_image
+

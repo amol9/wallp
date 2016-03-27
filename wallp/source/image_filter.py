@@ -23,11 +23,15 @@ class ImageFilter:
 
 		self.max_size	= max_size or config.eget('image.max_size', default=Const.max_image_size)
 
+		self.allow_seen_images = False
+
+		self.ext_filters = []
+
 
 	def match(self, image):
 		result = True
 
-		if image_url_seen(image.url):
+		if not self.allow_seen_images and image_url_seen(image.url):
 			result = False
 
 		if result and image.width is not None:
@@ -46,6 +50,12 @@ class ImageFilter:
 			if self.max_size is not None and image.size > self.max_size:
 				result = False
 
+		if result and len(self.ext_filters) > 0:
+			result = all(map(lambda f : f(image), self.ext_filters))
+
 		return result
 
+
+	def add_ext_filter(self, filter):
+		self.ext_filters.append(filter)
 

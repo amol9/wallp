@@ -1,35 +1,46 @@
 
-from redlib.api.misc import Retry
-
 from ..util import log
-from ..util.printer import printer
 from ..db.func import get_random_favorite, FavoriteError
-from .base import SourceError, SourceParams, SourceResponse
-from .base_source import BaseSource
+from .base import SourceError, SourceParams, Source
+from .image import Image
+from .images import Images
+from .http_helper import HttpHelper
+from .trace import Trace
 
 
 class FavoritesParams(SourceParams):
 	name = 'favorites'
 
 
-class Favorites(BaseSource):
+class Favorites(Source):
 	name = 'favorites'
 
+	def __init__(self):
+		self._trace 	= Trace()
+		self._http 	= HttpHelper()
+
+
 	def get_image(self, params=None):
-		return self.http_get_image_to_temp_file()
+		params = params or FavoritesParams()
+
+		self._images = Images(params, cache=False)
+		self._images.filter.allow_seen_images = True
+
+		self.select_set()
+		return self._http.download_image(self._images, self._trace)
 
 
-	def select_url(self):
-		retry = Retry(retries=10, exp_bkf=False, final_exc=SourceError('could not find random favorite with a url'))
-
-		while retry.left():
+	def select_set(self):
+		for _ in range(0, 20):
 			try:
-				image = get_random_favorite()
-				if image.url is None:
-					retry.retry()
+				db_image = get_random_favorite()
+				if db_image.url is None:
 					continue
-				self._response.db_image = image
-				return image.url
+
+				image = Image()
+				image.init_from_db_image(db_image)
+
+				self._images.add(image)
 
 			except FavoriteError as e:
-				retry.retry()
+				raise SourceError('no favorites found')

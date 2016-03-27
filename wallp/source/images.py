@@ -2,6 +2,7 @@ from random import randint
 
 from redlib.api.misc import Retry
 from redlib.http.cache2 import Cache2
+from asq.initiators import query
 
 from ..web.func import exists
 from ..util import log
@@ -23,6 +24,14 @@ class Images:
 		self._url_exist_check	= url_exist_check
 
 		self.load_cache()
+		self.add_dup_filter()
+
+
+	def add_dup_filter(self):
+		def no_dup(image):
+			return len(query(self._list).where(lambda i : i.url == image.url).to_list()) == 0
+
+		self._filter.add_ext_filter(no_dup)
 
 
 	def load_cache(self):
@@ -86,5 +95,11 @@ class Images:
 	def get_count(self):
 		return len(self._list)
 
+
+	def get_filter(self):
+		return self._filter
+
+
 	count = property(get_count)
+	filter = property(get_filter)
 
