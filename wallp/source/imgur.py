@@ -57,7 +57,7 @@ class Imgur(Source):
 
 		self._trace 	= Trace()
 		self._http 	= HttpHelper()
-		self._config	= Config()
+		self._config	= Config(group=self.name)
 
 
 	def get_image(self, params=None):

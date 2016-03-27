@@ -6,22 +6,23 @@ from zope.interface import implementer
 
 from redlib.api.misc import Retry
 
-from ..web.func import get, exists, HttpError
 from ..util.logger import log
 from ..desktop import get_desktop, get_standard_desktop_size
-from .image_context import ImageContext
-from .base import SourceError, SourceParams
-from .base_source import BaseSource
+from .base import SourceError, SourceParams, Source
+from .image import Image
+from .images import Images
+from .http_helper import HttpHelper
+from .trace import Trace
 
 
 class BingParams(SourceParams):
 	name = 'bing'
 
 	def __init__(self):
-		pass
+		self.hash_params = ['name']
 
 
-class Bing(BaseSource):
+class Bing(Source):
 	name 		= 'bing'
 
 	image_list_url 	= 'http://www.bing.com/gallery/home/browsedata'
@@ -33,17 +34,19 @@ class Bing(BaseSource):
 	]
 	
 	def __init__(self):
-		super(Bing, self).__init__()
-		self._check_if_url_exists = True
+		self._trace 	= Trace()
+		self._http 	= HttpHelper()
 
 
 	def get_image(self, params=None):
-		self.get_image_urls()
+		params = BingParams()
 
-		if self.image_count == 0:
-			raise SourceError('no images found at %s'%self.image_list_url)
-		
-		return self.http_get_image_to_temp_file()
+		self._images = Images(params, cache=True, url_exist_check=True)
+
+		if not self._images.available():
+			self.get_image_urls()
+
+		return self._http.download_image(self._images, self._trace)
 
 
 	def get_nearest_size(self, width, height):
@@ -67,7 +70,7 @@ class Bing(BaseSource):
 		if not (width, height) in self.valid_sizes:
 			width, height = self.get_nearest_size(width, height)
 
-		jsfile = self.http_get(self.image_list_url, msg='getting image list')
+		jsfile = self._http.get(self.image_list_url, msg='getting image list')
 
 		data_regex = re.compile(".*browseData=({.*});.*")
 		m = data_regex.match(jsfile)
@@ -77,21 +80,23 @@ class Bing(BaseSource):
 			jdata = json.loads(data)
 
 			for i in range(len(jdata['imageNames'])):
+				image = Image()
+
 				image_name = jdata['imageNames'][i]
-				image_url = 'http:' + server_url + image_name + '_' + str(width) + 'x' + str(height) + '.' + ext
+				image.url = 'http:' + server_url + image_name + '_' + str(width) + 'x' + str(height) + '.' + ext
 
-				desc = 'country    : %s\ntags       : %s\nholidays   : %s\
-					\nregion     : %s\ncolor      : %s\ncategories : %s'\
-					%(jdata['countries'][i], jdata['tags'][i], jdata['holidays'][i],
-					jdata['regions'][i], jdata['colors'][i], jdata['categories'][i])
+				image.description = 'country    : %s\ntags       : %s\nholidays   : %s\
+						\nregion     : %s\ncolor      : %s\ncategories : %s'\
+						%(jdata['countries'][i], jdata['tags'][i], jdata['holidays'][i],
+						jdata['regions'][i], jdata['colors'][i], jdata['categories'][i])
 
-				self.add_url(image_url, ImageContext(description=desc))
+				self._images.add(image)
 		
 		return None
 
 
 	def get_image_server(self):
-		js = self.http_get(self.app_js_url, msg='getting server list')
+		js = self._http.get(self.app_js_url, msg='getting server list')
 
 		server_url_regex = re.compile(".*(\/\/.*?\.vo\.msecnd\.net\/files\/).*", re.M | re.S)
 		m = server_url_regex.match(js)

@@ -9,35 +9,45 @@ from giraf.api import Imgur as GImgur, ImgurError as GImgurError
 
 from ..util import log, Retry
 from ..globals import Const
-from ..db import SubredditList, Config
-from .image_context import ImageContext
-from .base import SourceError, SourceParams
-from .base_source import BaseSource
+from ..db import SubredditList
+from .base import SourceError, SourceParams, Source
+from .image import Image
+from .images import Images
+from .http_helper import HttpHelper
+from .trace import Trace
+from ..db.app.config import Config
 
 
 class RedditParams(SourceParams):
 	name = 'reddit'
 
-	def __init__(self, query=None, subreddit=None, limit=10):
+	def __init__(self, query=None, subreddit=None, limit=20):
 		self.query	= query
 		self.subreddit	= subreddit
 		self.limit	= limit
+
+		self.hash_params = ['query', 'subreddit', 'limit']
 
 
 class RedditError(Exception):
 	pass
 
 
-class Reddit(BaseSource):
+class Reddit(Source):
 	name = 'reddit'
 
 	def __init__(self):
 		super(Reddit, self).__init__()
 
-		self._posts_limit = Config().get('reddit.posts_limit')
+		self._config = Config(group=self.name)
+		self._posts_limit = self._config.pget('posts_limit')
+
 		self._imgur = None
 
+		self._trace 	= Trace()
+		self._http 	= HttpHelper()
 	
+
 	def get_imgur(self):
 		if self._imgur is None:
 			self._imgur = GImgur()
@@ -45,16 +55,21 @@ class Reddit(BaseSource):
 
 
 	def get_image(self, params=None):
-		if self.image_urls_available():
-			return self.http_get_image_to_temp_file()
+		params = params or RedditParams()
 
+		cache = True
 		if params.query is None and params.subreddit is None:
 			params.subreddit = SubredditList().get_random()
-			self.add_trace_step('random subreddit', params.subreddit)
+			self._trace.add_step('random subreddit', params.subreddit)
+			cache = False
 
-		self._params = params
-		self.exc_call(self.search)
-		return self.http_get_image_to_temp_file()
+		self._images = Images(params, cache=cache)
+
+		if not self._images.available():
+			self._params = params
+			self.exc_call(self.search)
+
+		return self._http.download_image(self._images, self._trace)
 
 
 	def search(self):
@@ -66,10 +81,11 @@ class Reddit(BaseSource):
 			ext = url[url.rfind('.') + 1 : ]
 
 			if ext in Const.image_extensions:
-				self.add_url(p.url, ImageContext(artist=p.author.name, title=p.title, url=p.permalink))
+				image = Image(url=p.url, user=p.author.name, title=p.title, context_url=p.permalink)
+				self._images.add(image)
 
 
-	def old_logic(self):
+	'''def old_logic(self):
 		query = None
 		subreddit = None
 
@@ -81,7 +97,7 @@ class Reddit(BaseSource):
 		log.debug('%d posts found'%self.image_count)
 
 		while retry.left():
-			url = self.select_url(add_trace_step=False)
+			url = self.select_url(_trace.add_step=False)
 			ext = url[url.rfind('.') + 1 : ]
 
 			if ext not in Const.image_extensions:
@@ -96,10 +112,10 @@ class Reddit(BaseSource):
 					log.debug('not a direct link to image')
 					retry.retry()
 			else:
-				self.add_trace_step('selected url', url)
+				self._trace.add_step('selected url', url)
 				retry.cancel()
 
-		return url
+		return url'''
 
 
 	def get_imgur_image_id(self, post_url):
@@ -127,7 +143,7 @@ class Reddit(BaseSource):
 		p = self._params
 		query, subreddit, limit = p.query, p.subreddit, p.limit
 
-		reddit = praw.Reddit(user_agent=Const.app_name, timeout=Config().get('http.timeout'), disable_update_check=True)
+		reddit = praw.Reddit(user_agent=Const.app_name, timeout=self._config.get('http.timeout'), disable_update_check=True)
 
 		if subreddit is None:
 			if query is None:
@@ -151,3 +167,7 @@ class Reddit(BaseSource):
 			msg = 'invalid subreddit' if type(e) == InvalidSubreddit else str(e)
 			log.error(msg)
 			raise SourceError(msg)
+
+	def get_trace(self):
+		return self._trace.steps
+

@@ -49,7 +49,7 @@ class Images:
 
 		image = None
 		if self._url_exist_check:
-			retry = Retry(retries=10, exp_bkf=False)
+			retry = Retry(retries=10, exp_bkf=False, final_exc=SourceError('could not find usable image urls'))
 
 			while retry.left():
 				image = self.select_random()
