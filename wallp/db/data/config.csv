@@ -8,3 +8,4 @@ style.tiled_size	100,		int
 output.verbosity	1,		int
 image.max_size		4*1024*1024,	int
 http.timeout		15,		int
+interfacelift.page	1,		int
