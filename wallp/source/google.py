@@ -5,15 +5,13 @@ from redlib.api.web import HtmlParser
 from six.moves.urllib.parse import urlencode, urlparse, parse_qs
 
 from ..util import log
-from .image_context import ImageContext
 from ..db import SearchTermList
 from ..util.printer import printer
 from .base import SourceError, SourceParams, Source
-from .base_source import BaseSource
 from .images import Images
 from .http_helper import HttpHelper
 from .trace import Trace
-from .images import Image
+from .image import Image
 
 
 class GoogleParams(SourceParams):

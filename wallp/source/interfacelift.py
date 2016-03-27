@@ -13,7 +13,7 @@ from .base import SourceError, SourceParams, Source
 from .images import Images
 from .http_helper import HttpHelper
 from .trace import Trace
-from .images import Image
+from .image import Image
 from ..desktop.desktop_factory import get_desktop
 from ..db.app.config import Config
 
