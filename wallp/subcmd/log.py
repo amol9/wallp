@@ -2,7 +2,7 @@
 from redcmd.api import Subcommand, subcmd, Arg, CommandError
 
 from ..util import log
-from ..db import Config
+from ..db.app.config import Config
 
 
 __all__ = ['LogSubcommand']

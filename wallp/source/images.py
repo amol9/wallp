@@ -60,10 +60,16 @@ class Images:
 		if self._url_exist_check:
 			retry = Retry(retries=10, exp_bkf=False, final_exc=SourceError('could not find usable image urls'))
 
+			cb = printer.printf('checking', ' ', progress=True)
 			while retry.left():
 				image = self.select_random()
+				cb.progress_cb(-1)
+
 				if not exists(image.url):
 					retry.retry()
+				else:
+					retry.cancel()
+			cb.progress_cp()
 		else:
 			image =  self.select_random()
 

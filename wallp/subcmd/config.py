@@ -2,7 +2,7 @@ import os
 
 from redcmd.api import Subcommand, subcmd, CommandError
 
-from ..db import Config, ConfigError
+from ..db.app.config import Config, ConfigError
 from ..globals import Const
 
 

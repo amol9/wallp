@@ -2,7 +2,8 @@ from unittest import TestCase, main as ut_main, TestLoader
 from functools import partial
 from csv import reader
 
-from wallp.db import Config, DBSession, Base, ConfigError, Setting
+from wallp.db import DBSession, Base, Setting
+from wallp.db.app import Config, ConfigError
 from wallp.test.utils import order, replace_default_testcase_sort_order
 from wallp.globals import Const
 

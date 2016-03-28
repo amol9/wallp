@@ -44,3 +44,8 @@ class Favorites(Source):
 
 			except FavoriteError as e:
 				raise SourceError('no favorites found')
+
+
+	def get_trace(self):
+		return self._trace.steps
+

@@ -6,11 +6,11 @@ from enum import Enum
 from giraf.api import Imgur as GImgur, ImgurError as GImgurError, QueryType, ImageSize, GalleryType, ImgurErrorType, Filter as GImgurFilter
 
 from ..util import log, Retry
-from ..db import ImgurAlbumList, ConfigError
+from ..db import ImgurAlbumList
 from ..desktop.desktop_factory import get_desktop
 from ..util.printer import printer
 from .base import SourceParams, SourceError, Source
-from ..db.search_page import SearchPage, SearchPageError
+from ..db.app.search_page import SearchPage, SearchPageError
 from ..db.app.config import Config
 from ..db.app.search_page import SearchPage
 from .image import Image

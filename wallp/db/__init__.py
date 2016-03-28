@@ -12,7 +12,6 @@ from .setting import Setting
 from .var import Var
 from .search_page_num import SearchPageNum
 
-from .config import Config, ConfigError
 from .globalvars import GlobalVars, VarError
 
 from .itemlist import ItemList, ImgurAlbumList, SubredditList, SearchTermList, NotFoundError

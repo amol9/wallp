@@ -5,7 +5,7 @@ from PIL import Image
 
 from .base import SourceError
 from ..web.func import get, HttpError, exists
-from ..db.config import Config
+from ..db.app.config import Config
 from ..util.logger import log
 from ..util.printer import printer
 

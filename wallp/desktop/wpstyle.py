@@ -1,6 +1,6 @@
 
 from ..util.logger import log
-from ..db.config import Config
+from ..db.app.config import Config
 from ..util.printer import printer
 
 

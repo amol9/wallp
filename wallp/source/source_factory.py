@@ -2,7 +2,7 @@ from random import choice
 
 from redlib.api.misc import Singleton
 
-from ..db import Config, ConfigError
+from ..db.app.config import Config, ConfigError
 from ..util import log
 from .base import Source
 from .all_sources import *

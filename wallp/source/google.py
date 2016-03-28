@@ -104,7 +104,6 @@ class Google(Source):
 			image.url = imgurl[0]
 
 			meta_div = div.find(".//div[@class='rg_meta']")
-			image_context = None
 
 			if meta_div is not None:
 				meta = json.loads(meta_div.text)

@@ -23,12 +23,10 @@ class TestGetImageUrl(TestCase):
 		dbfunc.image_url_seen = cls.orig_image_url_seen
 
 
-	def print_info(self, image_trace, image_context):
+	def print_info(self, image_trace):
 		print('')
 		for step in image_trace:
 			print("{0}. {1:<25}: {2}".format(step.step, step.name, step.data))
-		print('\ncontext info:')
-		print(image_context)
 
 
 	def service_get_image_url(self, service):
@@ -36,7 +34,7 @@ class TestGetImageUrl(TestCase):
 
 		if self.interactive:
 			print(url)
-			self.print_info(service.image_trace, service.image_context)
+			self.print_info(service.image_trace)
 
 		self.assertGreater(len(service.image_trace), 0)
 

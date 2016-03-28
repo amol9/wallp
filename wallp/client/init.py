@@ -2,7 +2,8 @@ import os
 from os.path import exists
 from six.moves import input
 
-from ..db import Config, DBError, NotFoundError, ConfigError
+from ..db import DBError, NotFoundError
+from ..db.app.config import Config, ConfigError
 from ..db.create_db import CreateDB
 from ..util import log
 from ..globals import Const

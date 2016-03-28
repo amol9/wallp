@@ -3,7 +3,7 @@ from redcmd.api import Subcommand, subcmd, Arg, CommandError
 
 from .list_mixin import ListMixin
 from ..source.source_factory import SourceFactory
-from ..db import Config
+from ..db.app.config import Config
 
 
 __all__ = ['EnableSubcommands']

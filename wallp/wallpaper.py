@@ -10,7 +10,7 @@ from mayloop.transport.pipe_connection import PipeConnection
 
 from util.retry import Retry
 from util.logger import log
-from db import Image, Config
+from db import Image
 from globals import Const
 from desktop import DesktopError, get_desktop
 from desktop.wpstyle import WPStyle, compute_style

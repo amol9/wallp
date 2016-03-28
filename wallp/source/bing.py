@@ -106,3 +106,7 @@ class Bing(Source):
 			return url
 		return None
 
+
+	def get_trace(self):
+		return self._trace.steps
+

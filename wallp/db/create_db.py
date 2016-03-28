@@ -5,7 +5,8 @@ from csv import reader
 import os
 from os.path import dirname, abspath, join as joinpath
 
-from . import SearchTerm, ImgurAlbum, Subreddit, Base, Config, GlobalVars
+from . import SearchTerm, ImgurAlbum, Subreddit, Base, GlobalVars
+from .app.config import Config
 from ..globals import Const
 from ..source.source_factory import SourceFactory
 from .dbsession import DBSession
