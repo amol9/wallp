@@ -7,10 +7,12 @@ from six.moves.urllib.parse import urlencode
 
 from ..util.logger import log
 from ..desktop import get_desktop, get_standard_desktop_size
-from .image_context import ImageContext
 from ..db import SearchTermList
-from .base import SourceError, SourceParams
-from .base_source import BaseSource
+from .base import SourceError, SourceParams, Source
+from .images import Images
+from .http_helper import HttpHelper
+from .trace import Trace
+from .image import Image
 
 
 class DeviantArtParams(SourceParams):
@@ -19,32 +21,41 @@ class DeviantArtParams(SourceParams):
 	def __init__(self, query=None):
 		self.query = query
 
+		self.hash_params = ['query']
 
-class DeviantArt(BaseSource):
+
+class DeviantArt(Source):
 	name = 'deviantart'
 
 	rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&boost:popular&'
 	xmlns = {'media': 'http://search.yahoo.com/mrss/'}
 
 
-	def get_image(self, params=None):
-		if self.image_urls_available():
-			image_url = self.select_url()
-			return image_url
+	def __init__(self):
+		self._http = HttpHelper()
+		self._trace = Trace()
 
-		self.search(params)
-		return self.http_get_image_to_temp_file()
+
+	def get_image(self, params=None):
+		params = params or DeviantArtParams()
+
+		self._images = Images(params, cache=True)
+
+		if not self._images.available():
+			self.search(params)
+
+		return self._http.download_image(self._images, self._trace)
 
 
 	def search(self, params):
 		if params.query is None:
 			params.query = SearchTermList().get_random()
-			self.add_trace_step('random search', params.query)
+			self._trace.add_step('random search', params.query)
 		else:
-			self.add_trace_step('search', params.query)
+			self._trace.add_step('search', params.query)
 
 		search_url = self.make_search_url(params.query)
-		response = self.http_get(search_url, msg='searching deviantart')
+		response = self._http.get(search_url, msg='searching deviantart')
 		self.parse_search_response(response)
 	
 
@@ -66,9 +77,6 @@ class DeviantArt(BaseSource):
 	def parse_search_response(self, xml):
 		rss = ET.fromstring(xml)
 
-		width, height = get_desktop().get_size()
-		width, height = get_standard_desktop_size(width, height)
-
 		for item in rss.findall('./channel/item', self.xmlns):
 			mr = item.findall('media:rating', self.xmlns)[0]
 			if mr.text == 'nonadult':
@@ -77,18 +85,19 @@ class DeviantArt(BaseSource):
 					continue
 				mc = mc[0]
 
-				image_width = int(mc.get('width')) if mc.get('width') != None else 0
-				image_height = int(mc.get('height')) if mc.get('height') != None else 0
-				
-				if (image_width >= width * 0.9) and (image_height >= height * 0.9):
-					self.add_url(mc.get('url'), self.extract_image_context(item))
+				image = Image()
 
-		log.debug('got %d results'%self.image_count)
+				image.url = mc.get('url')
+				image.width = int(mc.get('width') or 0) 
+				image.height = int(mc.get('height') or 0)
+				self.add_image_context(image, item)
+
+				self._images.add(image)
+
+		log.debug('got %d results'%self._images.count)
 
 
-	def extract_image_context(self, item):
-		image_context = ImageContext()
-
+	def add_image_context(self, image, item):
 		def extract_field(name):
 			field = item.findall(name, self.xmlns)
 			if len(field) > 0:
@@ -96,15 +105,18 @@ class DeviantArt(BaseSource):
 			else:
 				return None
 
-		image_context.artist 		= extract_field('media:credit')
-		image_context.title 		= extract_field('title')
-		image_context.url		= extract_field('link')
+		image.user 		= extract_field('media:credit')
+		image.title 		= extract_field('title')
+		image.context_url	= extract_field('link')
 
 		description = extract_field('description')
 		parser = HtmlStripper()
 		parser.feed(description)
 		description = parser.get_output() 
-		image_context.description = description
 
-		return image_context
+		image.description = description
+
+
+	def get_trace(self):
+		return self._trace.steps
 
