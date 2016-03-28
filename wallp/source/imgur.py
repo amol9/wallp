@@ -37,7 +37,7 @@ class ImgurParams(SourceParams, GImgurFilter):
 		self.favorite		= favorite
 
 		self.hash_params = ['query', 'image_size', 'pages', 'query_type', 'gallery_type', 'animated', 'max_filesize',
-				'method', 'username', 'favorite']
+				'method', 'username', 'favorite', 'start_page']
 
 
 class ImgurError(Exception):
@@ -127,16 +127,22 @@ class Imgur(Source):
 
 
 	def process_album(self, album):
-		image_ok = lambda i : i.get('link', None) is not None and\
-				i.get('width', None) >= self.min_size[0] and i.get('height', None) >= self.min_size[1] and\
-				(self._params.max_filesize is None or i.get('size', None) <= self._params.max_filesize)
+		for i in album.images:
+			image = Image()
 
-		url_list = [i['link'] for i in album.images if image_ok(i)]
-		#if len(url_list) == 0:
-		#	raise ImgurError('no usable image urls found')
+			image.url 	= i.get('link')
+			image.width 	= i.get('width')
+			image.height 	= i.get('height')
+			image.size 	= i.get('size')
+		
+			image.title		= i.get('title') or album.title
+			image.description 	= i.get('description') or album.description
+			image.user		= i.get('account_url')
+			image.context_url	= album.link
+			
+			#image.nsfw = i.get('nsfw')
+			#image.score = i.get('score')
 
-		for url in url_list:
-			image = Image(url=url, title=album.title, description=album.description, user=album.account_url, context_url=album.link)
 			self._images.add(image)
 
 	
@@ -192,7 +198,7 @@ class Imgur(Source):
 					continue
 
 				image = Image(url=ga('link'), title=ga('title'), description=ga('description'), user=ga('account_url'),
-						context_url=drop_ext(ga('link')))
+						context_url=drop_ext(ga('link')), width=ga('width'), height=ga('height'), size=ga('size'))
 				images.append(image)
 				count += 1
 			else:

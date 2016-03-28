@@ -72,13 +72,11 @@ class Interfacelift(Source):
 
 		retry = Retry(retries=3, exp_bkf=False, delay=1, final_exc=SourceError('could not get unused images'))
 
-		page_url = None
-
 		config = Config(group=self.name)
 		page = config.pget('page', default=1)
 
 		while retry.left():
-			self.parse_page(page_url)
+			self.parse_page(page)
 
 			if self._images.available():
 				retry.cancel()

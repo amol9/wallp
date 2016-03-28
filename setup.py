@@ -44,5 +44,5 @@ setup(
 
 update_db()
 
-setup_autocomp('wallp.command.all_subcommands', 'wallp', _to_hyphen=True)
+setup_autocomp('wallp.subcmd.all', 'wallp', _to_hyphen=True)
 
