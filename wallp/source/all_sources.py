@@ -6,4 +6,5 @@ from .deviantart import DeviantArt
 from .reddit import Reddit
 from .favorites import Favorites
 from .interfacelift import Interfacelift
+from .code import Code
 

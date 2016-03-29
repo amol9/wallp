@@ -87,7 +87,7 @@ class Images:
 
 		del self._list[rindex]
 
-		if self._cache is not None:
+		if self._cache is not None and self.available():
 			hash = self._source_params.get_hash()
 			self._cache.pickle_add(self._list, self._cache_timeout, id=hash)
 

@@ -6,4 +6,5 @@ from .bing import *
 from .color import *
 from .reddit import *
 from .interfacelift import *
+from .code import *
 

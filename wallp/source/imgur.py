@@ -12,7 +12,6 @@ from ..util.printer import printer
 from .base import SourceParams, SourceError, Source
 from ..db.app.search_page import SearchPage, SearchPageError
 from ..db.app.config import Config
-from ..db.app.search_page import SearchPage
 from .image import Image
 from .images import Images
 from .http_helper import HttpHelper
@@ -154,7 +153,7 @@ class Imgur(Source):
 
 		retry = Retry(retries=3, exp_bkf=False)
 
-		search_page = SearchPage()
+		search_page = SearchPage(group=self.name)
 		page = search_page.pget(self._params.query, default=0)
 
 		cb = printer.printf('results', '?', verbosity=2, col_cb=True)
