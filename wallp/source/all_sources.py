@@ -8,3 +8,5 @@ from .favorites import Favorites
 from .interfacelift import Interfacelift
 from .code import Code
 
+from .comic.all import *
+

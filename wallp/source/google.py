@@ -1,5 +1,4 @@
 import json
-from random import choice
 
 from redlib.api.web import HtmlParser
 from six.moves.urllib.parse import urlencode, urlparse, parse_qs

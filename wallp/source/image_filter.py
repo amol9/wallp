@@ -1,7 +1,6 @@
 
 from ..db.app.config import Config
 from ..desktop.desktop_factory import get_desktop
-from ..db.func import image_url_seen
 from ..globals import Const
 
 
@@ -30,9 +29,6 @@ class ImageFilter:
 
 	def match(self, image):
 		result = True
-
-		if not self.allow_seen_images and image_url_seen(image.url):
-			result = False
 
 		if result and image.width is not None:
 			if self.min_width is not None and image.width < self.min_width:
