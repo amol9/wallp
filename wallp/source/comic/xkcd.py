@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 from redlib.api.web import HtmlParser
 from redlib.api.net import AbsUrl, RelUrl
@@ -27,33 +28,34 @@ class XkcdParams(SourceParams):
 class Xkcd(Source):
 	name = 'xkcd'
 
-	archive_url = 'http://xkcd.com/archive'
-	base_url = 'http://xkcd.com'
+	archive_url 	= 'http://xkcd.com/archive'
+	base_url 	= 'http://xkcd.com'
+	json_suffix 	= 'info.0.json'
 
 
 	def __init__(self):
 		self._trace = Trace()
 		self._http = HttpHelper()
 
-		self._latest_comic_image = None
-
 
 	def get_image(self, params):
 		self._params = params or XkcdParams()
 
 		def select_latest():
-			self._trace.add_step('latest comic', self._latest_comic_image.context_url)
-			return self._latest_comic_image
+			return self.get_latest()
 
 		selector = select_latest if self._params.latest else None
+
 		self._images = Images(self._params, cache=True, image_alias='comic', selector=selector, trace=self._trace)
 
 		self._images.add_db_filter(lambda i, d : i.context_url is None or not d.seen_by_context_url(i.context_url))
 		self._images.add_list_filter(lambda i, l : i.context_url is None or 
 				len(query(l).where(lambda li : li.context_url == i.context_url).to_list()) == 0)
-		self._images.add_select_filter(self.get_comic_image_url)
 
-		if not self._images.available() or self._params.latest:
+		if not self._params.latest:
+			self._images.add_select_filter(self.get_comic_image_url)
+
+		if not self._images.available():
 			self.scrape()
 
 		return self._http.download_image(self._images, self._trace)
@@ -74,33 +76,48 @@ class Xkcd(Source):
 
 			image.context_url = self.base_url + (link.attrib.get('href') or html.parse_error('link href'))
 			image.title = link.text
-			date = link.attrib.get('title') or html.parse_error('link title')
-			try:
-				image.date = datetime.strptime(date, '%Y-%m-%d')
-			except ValueError as e:
-				html.parse_error(str(e))
 
+			date = link.attrib.get('title') or html.parse_error('link title')
+			image.date = self.parse_date(date)
 			image.title += image.date.strftime(' (%d %b %Y)')
+
 			self._images.add(image)
 
-			if c == 0: self._latest_comic_image = image
 			c += 1
 			cb.col_cb(2, str(c))
 		cb.col_update_cp()
 
 
+	def parse_date(self, date_str):
+		try:
+			date = datetime.strptime(date_str, '%Y-%m-%d')
+			return date
+		except ValueError as e:
+			html.parse_error(str(e))
+
+
 	def get_comic_image_url(self, image):
-		html_text = self._http.get(image.context_url, msg='getting comic page')
+		json_text = self._http.get(image.context_url + self.json_suffix, msg='getting comic info')
+		info = json.loads(json_text)
 
-		html = HtmlHelper()
-		etree = html.get_etree(html_text)
+		image.url = info.get('img') 
+		image.description = info.get('alt')
 
-		imgs = etree.findall(".//div[@id='comic']/img")
-		len(imgs) > 0 or html.parse_error('comic img')
-		img = imgs[0]
+		return image
 
-		image.url = 'http:' + (img.attrib.get('src') or html.parse_error('comic img.src'))
-		image.description = img.attrib.get('title')
+
+	def get_latest(self):
+		json_text = self._http.get(self.base_url + '/' + self.json_suffix, msg='getting comic info')
+		info = json.loads(json_text)
+
+		self._trace.add_step('latest comic', self.base_url + '/' + str(info.get('num')))
+		image = Image()
+
+		image.url 	= info.get('img')
+		image.date 	= self.parse_date('%s-%s-%s'%(info.get('year'), info.get('month'), info.get('day')))
+		image.title	= info.get('title') + image.date.strftime(' (%d %b %Y)')
+
+		image.description = info.get('alt')
 
 		return image
 
