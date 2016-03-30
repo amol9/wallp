@@ -15,7 +15,8 @@ from ..db.app.images import Images as DBImages
 	
 class Images:
 
-	def __init__(self, source_params, cache=False, cache_timeout=None, url_exist_check=False, image_alias=None, selector=None, trace=None):
+	def __init__(self, source_params, cache=False, cache_timeout=None, url_exist_check=False, image_alias=None,
+			selector=None, trace=None, allow_seen_urls=False):
 		self._list 	= []
 		self._cache 	= Cache2(Const.cache_dir) if cache else None
 		self._filter	= ImageFilter()
@@ -25,6 +26,8 @@ class Images:
 		self._source_params	= source_params
 		self._cache_timeout	= 'never' if cache_timeout is None else cache_timeout
 		self._url_exist_check	= url_exist_check
+
+		self._allow_seen_urls = allow_seen_urls
 
 		self.load_cache()
 		self.add_filters()
@@ -46,10 +49,11 @@ class Images:
 
 		self.add_list_filter(no_dup)
 
-		def url_not_seen(image, db_images):
-			return image.url is None or not db_images.seen_by_url(image.url)
+		if not self._allow_seen_urls:
+			def url_not_seen(image, db_images):
+				return image.url is None or not db_images.seen_by_url(image.url)
 
-		self.add_db_filter(url_not_seen)
+			self.add_db_filter(url_not_seen)
 
 
 	def add_list_filter(self, fn):
@@ -69,7 +73,7 @@ class Images:
 		if cached_images is not None:
 			if len(cached_images) > 0:
 				item_desc = self.image_alias + 's' if len(cached_images) > 1 else ''
-				printer.printf('cached', '%d %s'%(len(cached_images), item_desc), verbosity=2)
+				printer.printf('cached list', '%d %s'%(len(cached_images), item_desc), verbosity=2)
 				self._list = cached_images
 
 	
@@ -89,7 +93,7 @@ class Images:
 
 			cb = printer.printf('checking', ' ', progress=True)
 			while retry.left():
-				image = self._selector()
+				image = self._selector(print_step=False)
 				cb.progress_cb(-1)
 
 				if not exists(image.url):
@@ -113,10 +117,11 @@ class Images:
 		return image
 
 
-	def select_random(self):
+	def select_random(self, print_step=True):
 		rindex = randint(0, len(self._list) - 1)
 		image = self._list[rindex]
-		self._trace.add_step('random %s'%self.image_alias, image.url or image.context_url, overwrite=True)
+
+		self._trace.add_step('random %s'%self.image_alias, image.url or image.context_url, overwrite=True, print_step=print_step)
 
 		del self._list[rindex]
 		return image

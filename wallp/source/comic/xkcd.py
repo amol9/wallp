@@ -31,6 +31,7 @@ class Xkcd(Source):
 	archive_url 	= 'http://xkcd.com/archive'
 	base_url 	= 'http://xkcd.com'
 	json_suffix 	= 'info.0.json'
+	author		= 'Randall Munroe'
 
 
 	def __init__(self):
@@ -76,6 +77,7 @@ class Xkcd(Source):
 
 			image.context_url = self.base_url + (link.attrib.get('href') or html.parse_error('link href'))
 			image.title = link.text
+			image.user = self.author
 
 			date = link.attrib.get('title') or html.parse_error('link title')
 			image.date = self.parse_date(date)
@@ -116,6 +118,7 @@ class Xkcd(Source):
 		image.url 	= info.get('img')
 		image.date 	= self.parse_date('%s-%s-%s'%(info.get('year'), info.get('month'), info.get('day')))
 		image.title	= info.get('title') + image.date.strftime(' (%d %b %Y)')
+		image.user	= self.author
 
 		image.description = info.get('alt')
 

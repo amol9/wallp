@@ -40,18 +40,15 @@ class Interfacelift(Source):
 
 
 	def __init__(self):
-		pass
+		self._trace = Trace()
+		self._http = HttpHelper()
 
 
 	def get_image(self, params=None):
 		if params is None:
 			params = InterfaceliftParams()
 
-
-		self._http = HttpHelper()
-		self._images = Images(params, cache=(params.page is None))
-
-		self._trace = Trace()
+		self._images = Images(params, cache=(params.page is None), trace=self._trace)
 
 		if not self._images.available():
 			url = self.parse(params)

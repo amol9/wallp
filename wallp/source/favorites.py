@@ -23,7 +23,7 @@ class Favorites(Source):
 	def get_image(self, params=None):
 		params = params or FavoritesParams()
 
-		self._images = Images(params, cache=False)
+		self._images = Images(params, cache=False, trace=self._trace, allow_seen_urls=True)
 		self._images.filter.allow_seen_images = True
 
 		self.select_set()

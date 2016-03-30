@@ -13,7 +13,7 @@ class Trace:
 		self._step = 1
 
 
-	def add_step(self, name, data, log_debug=True, printer_print=True, overwrite=False):
+	def add_step(self, name, data, log_debug=True, print_step=True, overwrite=False):
 		if not overwrite:
 			self._steps.append(ImageTrace(step=self._step, name=name, data=data))
 		else:
@@ -26,7 +26,7 @@ class Trace:
 		if log_debug:
 			log.debug(name + (': ' + data) if data is not None else '')
 
-		if printer_print:
+		if print_step:
 			printer.printf(name, data if data is not None else '')
 
 		self._step += 1

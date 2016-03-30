@@ -61,7 +61,7 @@ class Imgur(Source):
 
 	def get_image(self, params=None):
 		self._params = params or ImgurParams()
-		self._images = Images(self._params, cache=True)
+		self._images = Images(self._params, cache=True, trace=self._trace)
 
 		if not self._images.available():
 			self.map_call()

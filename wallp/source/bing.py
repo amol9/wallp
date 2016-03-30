@@ -41,7 +41,7 @@ class Bing(Source):
 	def get_image(self, params=None):
 		params = BingParams()
 
-		self._images = Images(params, cache=True, url_exist_check=True)
+		self._images = Images(params, cache=True, url_exist_check=True, trace=self._trace)
 
 		if not self._images.available():
 			self.get_image_urls()
