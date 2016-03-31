@@ -21,6 +21,7 @@ class BitmapParams(SourceParams):
 
 class Bitmap(Source):
 	name = 'bitmap'
+	params_cls = BitmapParams
 
 	def __init__(self):
 		self._trace = Trace()

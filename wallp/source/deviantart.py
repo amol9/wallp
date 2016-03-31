@@ -26,6 +26,7 @@ class DeviantArtParams(SourceParams):
 
 class DeviantArt(Source):
 	name = 'deviantart'
+	params_cls = DeviantArtParams
 
 	rss_url_base = 'http://backend.deviantart.com/rss.xml?type=deviation&order=11&boost:popular&'
 	xmlns = {'media': 'http://search.yahoo.com/mrss/'}

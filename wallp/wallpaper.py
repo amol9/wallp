@@ -106,6 +106,9 @@ class Wallpaper:
 		while retry.left():
 			try:
 				source = self.get_source()
+				if self._params.name is None:
+					self._params = source.params_cls()
+
 				image = source.get_image(params=self._params)
 				retry.cancel()
 

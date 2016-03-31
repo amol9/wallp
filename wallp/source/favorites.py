@@ -14,6 +14,7 @@ class FavoritesParams(SourceParams):
 
 class Favorites(Source):
 	name = 'favorites'
+	params_cls = FavoritesParams
 
 	def __init__(self):
 		self._trace 	= Trace()

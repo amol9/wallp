@@ -30,6 +30,9 @@ class ImageFilter:
 	def match(self, image):
 		result = True
 
+		if Const.ignore_image_filter:
+			return True
+
 		if result and image.width is not None:
 			if self.min_width is not None and image.width < self.min_width:
 				result = False

@@ -24,6 +24,7 @@ class BingParams(SourceParams):
 
 class Bing(Source):
 	name 		= 'bing'
+	params_cls	= BingParams
 
 	image_list_url 	= 'http://www.bing.com/gallery/home/browsedata'
 	app_js_url 	= 'http://az615200.vo.msecnd.net/site/scripts/app.f21eb9ba.js'

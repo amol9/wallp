@@ -2,6 +2,7 @@ import tempfile
 import os
 from time import time
 from io import BytesIO
+from os.path import abspath
 
 from redlib.api.colors import colorlist
 from pygments.lexers import get_lexer_for_filename
@@ -16,20 +17,28 @@ from .trace import Trace
 from ..desktop.desktop_factory import get_desktop
 
 
+def src_path():
+	path = abspath(__file__)
+	if path[-1] == 'c':
+		path = path [0 : -1]
+	return path
+
+
 class CodeParams(SourceParams):
 	name = 'code'
 
-	def __init__(self, filepath, font_name=None, font_size=14):
+	def __init__(self, filepath=src_path(), font_name=None, font_size=14):
 		self.filepath 	= filepath
 		self.font_name	= font_name
 		self.font_size	= font_size
 
 
 class Code(Source):
-	name 	= 'code'
-	online	= False
-	db	= False
-	gen	= True
+	name 		= 'code'
+	params_cls 	= CodeParams
+	online		= False
+	db		= False
+	gen		= True
 
 	
 	def __init__(self):

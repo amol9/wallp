@@ -84,8 +84,8 @@ class Images:
 
 	def select(self):
 		if len(self._list) == 0:
-			log.error('no image urls found')
-			raise SourceError('no image urls found')
+			log.error('no usable %s found'%self.image_alias)
+			raise SourceError('no usable %s found'%self.image_alias)
 
 		image = None
 		if self._url_exist_check:

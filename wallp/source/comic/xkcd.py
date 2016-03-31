@@ -27,6 +27,7 @@ class XkcdParams(SourceParams):
 
 class Xkcd(Source):
 	name = 'xkcd'
+	params_cls = XkcdParams
 
 	archive_url 	= 'http://xkcd.com/archive'
 	base_url 	= 'http://xkcd.com'

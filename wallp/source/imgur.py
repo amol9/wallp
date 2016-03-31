@@ -16,6 +16,7 @@ from .image import Image
 from .images import Images
 from .http_helper import HttpHelper
 from .trace import Trace
+from ..db import SearchTermList
 
 
 ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])
@@ -28,7 +29,7 @@ class ImgurParams(SourceParams, GImgurFilter):
 			favorite=False, query_type=QueryType.all, gallery_type=None, animated=False):
 
 		GImgurFilter.__init__(self, query=query, image_size=image_size, pages=pages, query_type=query_type,
-				gallery_type=gallery_type, animated=animated, max_filesize=Config().get('image.max_size'))
+				gallery_type=gallery_type, animated=animated)
 
 		self.method		= method
 		self.username		= username
@@ -45,6 +46,7 @@ class ImgurError(Exception):
 
 class Imgur(Source):
 	name = 'imgur'
+	params_cls = ImgurParams
 
 	def __init__(self):
 		try:
@@ -147,7 +149,7 @@ class Imgur(Source):
 	
 	def search(self):
 		if self._params.query is None:
-			self._params.query = self.get_random_query()
+			self._params.query = SearchTermList().get_random()
 		else:
 			self._trace.add_step('search', self._params.query)
 

@@ -35,6 +35,7 @@ class RedditError(Exception):
 
 class Reddit(Source):
 	name = 'reddit'
+	params_cls = RedditParams
 
 	def __init__(self):
 		super(Reddit, self).__init__()

@@ -8,4 +8,5 @@ from .reddit import *
 from .interfacelift import *
 from .code import *
 from .comic import *
+from .random import *
 

@@ -22,4 +22,5 @@ class Const():
 	max_image_size		= 4 * 1024 * 1024
 	min_ratio_to_desktop	= 0.8
 	max_ratio_to_desktop	= 1.5
+	ignore_image_filter	= False
 

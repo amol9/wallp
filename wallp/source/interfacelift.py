@@ -28,10 +28,11 @@ class InterfaceliftParams(SourceParams):
 
 
 class Interfacelift(Source):
-	name 	= 'interfacelift'
-	online	= True
-	db	= False
-	gen	= False
+	name 		= 'interfacelift'
+	params_cls	= InterfaceliftParams
+	online		= True
+	db		= False
+	gen		= False
 
 	base_url = "https://interfacelift.com/wallpaper/downloads/date/any/index%d.html"
 	root_url = "https://interfacelift.com"

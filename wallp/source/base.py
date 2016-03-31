@@ -6,10 +6,11 @@ from redlib.api.misc import md5hash
 class Source:
 	__metaclass__ = ABCMeta
 
-	name	= None
-	online	= None
-	db	= None
-	gen	= None
+	name		= None
+	params_cls 	= None
+	online		= None
+	db		= None
+	gen		= None
 
 	def get_image(self, params=None):
 		pass

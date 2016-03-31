@@ -18,10 +18,11 @@ class GoogleParams(SourceParams):
 
 
 class Google(Source):
-	name 	= 'google'
-	online	= True
-	db	= False
-	gen	= False
+	name 		= 'google'
+	params_cls 	= GoogleParams
+	online		= True
+	db		= False
+	gen		= False
 
 	search_base_url = "https://www.google.com/search?tbm=isch&"
 	colors 		= ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown']
