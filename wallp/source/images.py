@@ -16,7 +16,7 @@ from ..db.app.images import Images as DBImages
 class Images:
 
 	def __init__(self, source_params, cache=False, cache_timeout=None, url_exist_check=False, image_alias=None,
-			selector=None, trace=None, allow_seen_urls=False):
+			selector=None, trace=None, allow_seen_urls=False, cache_load=True):
 		self._list 	= []
 		self._cache 	= Cache2(Const.cache_dir) if cache else None
 		self._filter	= ImageFilter()
@@ -29,7 +29,8 @@ class Images:
 
 		self._allow_seen_urls = allow_seen_urls
 
-		self.load_cache()
+		if cache_load:
+			self.load_cache()
 		self.add_filters()
 
 		self._select_filters = []

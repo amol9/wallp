@@ -26,7 +26,7 @@ class ImgurParams(SourceParams, GImgurFilter):
 	name = 'imgur'
 		
 	def __init__(self, query=None, method=ImgurMethod.random, image_size=ImageSize.medium, pages=1, username=None, newest=False,
-			favorite=False, query_type=QueryType.all, gallery_type=None, animated=False):
+			favorite=False, query_type=QueryType.all, gallery_type=None, animated=False, post_id=None):
 
 		GImgurFilter.__init__(self, query=query, image_size=image_size, pages=pages, query_type=query_type,
 				gallery_type=gallery_type, animated=animated)
@@ -35,9 +35,16 @@ class ImgurParams(SourceParams, GImgurFilter):
 		self.username		= username
 		self.newest		= newest
 		self.favorite		= favorite
+		self.post_id		= post_id
 
 		self.hash_params = ['query', 'image_size', 'pages', 'query_type', 'gallery_type', 'animated', 'max_filesize',
-				'method', 'username', 'favorite', 'start_page']
+				'username', 'favorite', 'start_page', 'post_id']
+
+
+	def get_hash(self):
+		if self.post_id is not None:
+			self.hash_params = ['post_id']
+		return SourceParams.get_hash(self)
 
 
 class ImgurError(Exception):
@@ -49,12 +56,8 @@ class Imgur(Source):
 	params_cls = ImgurParams
 
 	def __init__(self):
-		try:
-			self._imgur = GImgur()
-		except GImgurError as e:
-			raise SourceError(str(e))
-
 		self._album_list = ImgurAlbumList()
+		self._gimgur = None
 
 		self._trace 	= Trace()
 		self._http 	= HttpHelper()
@@ -63,7 +66,9 @@ class Imgur(Source):
 
 	def get_image(self, params=None):
 		self._params = params or ImgurParams()
-		self._images = Images(self._params, cache=True, trace=self._trace)
+
+		cache_load = self._params.method not in [ImgurMethod.random, ImgurMethod.random_album, ImgurMethod.wallpaper_album]
+		self._images = Images(self._params, cache=True, trace=self._trace, cache_load=cache_load)
 
 		if not self._images.available():
 			self.map_call()
@@ -89,6 +94,16 @@ class Imgur(Source):
 			raise SourceError()
 
 
+	def get_gimgur(self):
+		if self._gimgur is None:
+			try:
+				self._gimgur = GImgur()
+			except GImgurError as e:
+				raise SourceError(str(e))
+
+		return self._gimgur
+
+
 	def random(self):
 		m = choice([self.search, self.random_album, self.wallpaper_album, self.favorite])
 		return m()
@@ -102,29 +117,42 @@ class Imgur(Source):
 			album_url = self._album_list.get_random()
 			self._trace.add_step('random album', album_url)
 		
-			album = self.get_album_from_url(album_url)
-
-			if album is not None:
+			try:
+				self.get_album(album_url)
 				retry.cancel()
-			else:
+			except ImgurError as e:
+				log.error(e)
 				retry.retry()
 
-		self.process_album(album)
+
+	def get_album_id_from_url(self, album_url):
+		return album_url[album_url.rfind('/') : ]
 
 
-	def get_album_from_url(self, album_url):
-		album_id = album_url[album_url.rfind('/') : ]
+	def album_images_in_cache(self, album_id):
+		self._params.post_id = album_id
+		self._images.load_cache()
+
+		return self._images.available()
+
+
+	def get_album(self, album_url):
+		album_id = self.get_album_id_from_url(album_url)
+		if self.album_images_in_cache(album_id):
+			return
+
 		album = None
 
 		try:
-			album = self._imgur.get_album(album_id)
+			album = self.get_gimgur().get_album(album_id)
 		except GImgurError as e:
 			log.error(e)
 			if e.err_type == ImgurErrorType.not_found:
 				self._album_list.disable(album_url)
 				log.debug('disabled album: %s'%album_url)
+				raise ImgurError(e)
 
-		return album
+		self.process_album(album)
 
 
 	def process_album(self, album):
@@ -165,7 +193,7 @@ class Imgur(Source):
 			self._params.start_page = page
 			self._params.result.clear()
 
-			result = self._imgur.search(self._params)
+			result = self.get_gimgur().search(self._params)
 			count = self.process_result(result, print_progress=False)
 			update_result_count(count, page)
 
@@ -223,8 +251,7 @@ class Imgur(Source):
 			album_url = choice(albums)
 			albums.remove(album_url)
 
-			album = self.get_album_from_url(album_url)
-			self.process_album(album)
+			self.get_album(album_url)
 
 		add_from_images()
 
@@ -242,7 +269,7 @@ class Imgur(Source):
 		else:
 			self._config.pset('username', username)
 
-		result = self._imgur.gallery_favorites(username, self._params) 
+		result = self.get_gimgur().gallery_favorites(username, self._params) 
 
 		return self.process_result(result)
 
@@ -276,28 +303,32 @@ class Imgur(Source):
 
 		retry = Retry(retries=3, delay=1, exp_bkf=False)
 
+		def get_random_album(album_urls):
+			album_url = choice(album_urls)
+			self._trace.add_step('random album', album_url)
+			self.get_album(album_url)
+
+		ex_album_urls = []
+
 		while retry.left():
 			self._params.start_page = page
-			result = self._imgur.search(self._params)
+			result = self.get_gimgur().search(self._params)
 
 			found_new = False
-			album_urls = []
+			new_album_urls = []
 			for r in result:
 				if not self._album_list.exists(r.link):
 					self._album_list.add(r.link, True)
 					found_new = True
-					album_urls.append(r.link)
+					new_album_urls.append(r.link)
 					log.debug('found new wallpaper album: %s'%r.link)
+				else:
+					ex_album_urls.append(r.link)
 
 			if found_new:
 				self._album_list.commit()
-				album_url = choice(album_urls)
-
-				printer.printf('new wallpaper albums', str(len(album_urls)))
-				self._trace.add_step('selected random album', album_url)
-
-				album = self.get_album_from_url(album_url)
-				self.process_album(album)
+				printer.printf('new wallpaper albums', str(len(new_album_urls)))
+				get_random_album(new_album_urls)
 				return
 			else:
 				page += 1
@@ -305,6 +336,10 @@ class Imgur(Source):
 
 		if self._params.query == 'wallpaper':
 			self._config.pset('wallpaper_search_page', (page + 1) % 100)
+
+		if len(ex_album_urls) > 0:
+			get_random_album(ex_album_urls)
+		else:
 			self.random_album()
 
 
