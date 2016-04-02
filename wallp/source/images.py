@@ -142,6 +142,9 @@ class Images:
 
 
 	def get_image(self, index=None, fn=None):
+		if len(self._list) == 0:
+			raise SourceError('no usable %s found'%self.image_alias)
+
 		if index is not None:
 			return self._list[index]
 		elif fn is not None:

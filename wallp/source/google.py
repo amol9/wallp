@@ -16,6 +16,13 @@ from .image import Image
 class GoogleParams(SourceParams):
 	name = 'google'
 
+	def __init__(self, query=None, color=None, safesearch=True):
+		self.query	= query
+		self.color	= color
+		self.safesearch	= safesearch
+
+		self.hash_params = ['query', 'color', 'safesearch']
+
 
 class Google(Source):
 	name 		= 'google'
@@ -70,7 +77,7 @@ class Google(Source):
 			'as_eq'		: '',
 			'cr'		: '',
 			'as_sitesearch' : '',
-			'safe'		: 'active',
+			'safe'		: 'active' if params.safesearch else 'images',
 			'tbs'		: 'isz:lt,islt:xga' + ',ic:specific,isc:%s'%params.color if params.color is not None else ''
 		}
 
