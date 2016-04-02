@@ -27,7 +27,7 @@ class SourceSubcommand(Subcommand):
 		self._repeat_delay = delay
 
 
-	@subcmd(add=[ignore_image_filter, repeat])
+	@subcmd(add=[ignore_image_filter, repeat], add_rec=True, add_skip=True)
 	def source(self):
 		'Select source for wallpaper.'
 		pass

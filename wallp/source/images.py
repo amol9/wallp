@@ -11,6 +11,7 @@ from ..globals import Const
 from ..util.printer import printer
 from .image_filter import ImageFilter
 from ..db.app.images import Images as DBImages
+from .image_selector import ImageSelector
 
 	
 class Images:
@@ -36,8 +37,10 @@ class Images:
 		self._select_filters = []
 		self._db_images = DBImages()
 
-		self._selector = selector or self.select_random
 		self._trace = trace
+		self._selector = selector or ImageSelector(self, self._trace)
+
+		self._rank = 1	# automatically added rank for images
 
 
 	def add_select_filter(self, fn):
@@ -80,10 +83,16 @@ class Images:
 	
 	def add(self, image):
 		if self._filter.match(image):
+			if image.rank is None:
+				image.rank = self._rank
+				self._rank += 1
+
 			self._list.append(image)
 
 
 	def select(self):
+		return self._selector.select()
+
 		if len(self._list) == 0:
 			log.error('no usable %s found'%self.image_alias)
 			raise SourceError('no usable %s found'%self.image_alias)
@@ -128,6 +137,26 @@ class Images:
 		return image
 
 
+	def get_length(self):
+		return len(self._list)
+
+
+	def get_image(self, index=None, fn=None):
+		if index is not None:
+			return self._list[index]
+		elif fn is not None:
+			return fn(self._list)
+
+
+	def del_image(self, index=None, image=None):
+		if index is not None:
+			del self._list[index]
+		elif image is not None:
+			self._list.remove(image)
+
+		self.update_cache()
+
+
 	def update_cache(self):
 		if self._cache is not None and self.available():
 			hash = self._source_params.get_hash()
@@ -153,4 +182,5 @@ class Images:
 	count 		= property(get_count)
 	filter 		= property(get_filter)
 	image_alias 	= property(get_image_alias)
+	length		= property(get_length)
 

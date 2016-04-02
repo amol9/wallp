@@ -7,6 +7,7 @@ from os.path import abspath
 from redlib.api.colors import colorlist
 from pygments.lexers import get_lexer_for_filename
 from pygments.formatters import ImageFormatter
+from pygments.util import ClassNotFound
 from pygments import highlight
 from PIL import Image as PILImage
 
@@ -52,7 +53,11 @@ class Code(Source):
 	def generate_image(self, params):
 		filepath = params.filepath
 
-		lexer = get_lexer_for_filename(filepath)
+		try:
+			lexer = get_lexer_for_filename(filepath)
+		except ClassNotFound as e:
+			log.error(e)
+			raise SourceError(str(e))
 
 		if lexer is None:
 			raise SourceError('cannot find a lexer for %s'%filepath)

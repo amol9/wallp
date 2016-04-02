@@ -3,7 +3,7 @@
 class Image:
 
 	def __init__(self, url=None, title=None, description=None, user=None, context_url=None, width=None, height=None, ext=None, 
-			size=None, date=None):
+			size=None, date=None, rank=None, score=None):
 
 		self.url		= url
 		self.title		= title
@@ -15,6 +15,8 @@ class Image:
 		self.ext		= ext
 		self.size		= size
 		self.date		= date
+		self.rank		= rank
+		self.score		= score
 
 		# to be filled in by get_image_info() by scanning the actual image data
 		self.type		= None

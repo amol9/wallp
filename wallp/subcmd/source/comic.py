@@ -10,7 +10,7 @@ __all__ = ['ComicSubcommand']
 
 class ComicSubcommand(SourceSubcommand):
 
-	@subcmd
+	@subcmd(add_skip=True)
 	def comic(self):
 		pass
 
