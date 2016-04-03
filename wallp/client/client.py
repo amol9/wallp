@@ -15,7 +15,7 @@ from ..util.retry import Retry
 from ..util.logger import log
 from ..db import Image, Config
 from ..web.func import get, HttpError
-from ..globals import Const
+from .. import const
 from ..desktop import desktop_factory, DesktopError, get_desktop
 from ..desktop.wpstyle import WPStyle, compute_style
 from ..server.protocol import WPState
@@ -193,8 +193,8 @@ class Client:
 
 
 	def move_temp_file(self, temp_path, ext):
-		dirpath = get_pictures_dir() if not Const.debug else '.'
-		wp_path = joinpath(dirpath, Const.wallpaper_basename + '.' + ext)
+		dirpath = get_pictures_dir() if not const.debug else '.'
+		wp_path = joinpath(dirpath, const.wallpaper_basename + '.' + ext)
 
 		try:
 			shutil.move(temp_path, wp_path)

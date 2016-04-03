@@ -2,7 +2,7 @@ from unittest import TestCase, main as ut_main
 import sys
 
 from wallp.util.scheduler import get_scheduler
-from wallp.globals import Const
+from wallp. import const
 
 
 class TestScheduler(TestCase):
@@ -25,9 +25,9 @@ class TestScheduler(TestCase):
 if __name__ =='__main__':
 	if len(sys.argv) > 1:
 		if sys.argv[1] == '-d':
-			get_scheduler().delete(Const.scheduler_task_name)
+			get_scheduler().delete(const.scheduler_task_name)
 		else:
-			get_scheduler().schedule(sys.argv[1], 'wallp', Const.scheduler_task_name)
+			get_scheduler().schedule(sys.argv[1], 'wallp', const.scheduler_task_name)
 		sys.exit(0)
 
 	ut_main()

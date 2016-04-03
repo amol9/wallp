@@ -7,22 +7,32 @@ from ..db.app.config import Config
 
 
 ImageSelectorMethod = Enum('ImageSelectorMethod', ['random', 'rank', 'score', 'size', 'time'])
+ImageSelectorMethodMod = Enum('ImageSelectorMethodMod', {'min': min, 'max': max, 'avg'])
+
+
+class SelectorParams:
+	def __init_-(self, method, mod, value):
+		self.method	= method
+		self.mod	= mod
+		self.value	= value
 
 
 class ImageSelector:
 
-	def __init__(self, images, trace):
+	def __init__(self, images, trace, params):
 		self._images = images
 		self._trace = trace
 
 		self._filters = []
+		self._params = params
+
 		self.set_method()
 
 
 	def set_method(self):
 		ism = ImageSelectorMethod
 		config = Config()
-		method = ism.rank or enum_attr(ism, config.eget('image.selection_method', str(ism.rank)))
+		method = method or ism.score or enum_attr(ism, config.eget('image.selection_method', str(ism.rank)))
 
 		map = {
 				ism.random	: self.select_random,
@@ -35,8 +45,9 @@ class ImageSelector:
 		self._select = map[method]
 
 
-	def select(self):
-		return self._select()
+	def select(self, retry=None):
+		item = self._select()
+		return item		
 
 
 	def select_random(self):
@@ -48,14 +59,17 @@ class ImageSelector:
 
 
 	def select_by_rank(self, desc=True):
-		image = self._images.get_image(fn=lambda l : min(l, key=lambda i: i.rank))
-		self._images.del_image(image=image)
+		return self.select_by_fn(lambda l : min(l, key=lambda i: i.rank))
 
+
+	def select_by_fn(self, fn):
+		image = self._images.get_image(fn=fn)
+		self._images.del_image(image=image)
 		return image
 
 
 	def select_by_score(self, desc=True):
-		pass
+		return self.select_by_fn(lambda l : max(l, key=lambda i: i.score))
 
 
 	def select_by_size(self, desc=False):
@@ -69,4 +83,9 @@ class ImageSelector:
 	def add_trace(self, msg, print_step=True):
 		if self._trace is not None:
 			self._trace.add_step('random %s'%self.image_alias, image.url or image.context_url, overwrite=True, print_step=print_step)
+
+
+	def add_filter(self, fn):
+		self._filters.append(fn)
+
 

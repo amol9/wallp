@@ -1,7 +1,7 @@
 
 from ..db.app.config import Config
 from ..desktop.desktop_factory import get_desktop
-from ..globals import Const
+from .. import const
 
 
 class ImageFilter:
@@ -9,8 +9,8 @@ class ImageFilter:
 	def __init__(self, min_width=None, min_height=None, max_width=None, max_height=None, max_size=None):
 		config = Config()
 		
-		min_ratio = config.eget('image.min_ratio_to_desktop', default=Const.min_ratio_to_desktop)
-		max_ratio = config.eget('image.max_ratio_to_desktop', default=Const.max_ratio_to_desktop)
+		min_ratio = config.eget('image.min_ratio_to_desktop', default=const.min_ratio_to_desktop)
+		max_ratio = config.eget('image.max_ratio_to_desktop', default=const.max_ratio_to_desktop)
 
 		dt = get_desktop()
 		dw, dh = dt.get_size()
@@ -20,7 +20,7 @@ class ImageFilter:
 		self.max_width	= max_width 	or int(dw * max_ratio)
 		self.max_height	= max_height 	or int(dh * max_ratio)
 
-		self.max_size	= max_size or config.eget('image.max_size', default=Const.max_image_size)
+		self.max_size	= max_size or config.eget('image.max_size', default=const.max_image_size)
 
 		self.allow_seen_images = False
 
@@ -30,7 +30,7 @@ class ImageFilter:
 	def match(self, image):
 		result = True
 
-		if Const.ignore_image_filter:
+		if const.ignore_image_filter:
 			return True
 
 		if result and image.width is not None:

@@ -2,7 +2,7 @@ from unittest import TestCase, main as ut_main
 from argparse import ArgumentParser
 
 from wallp.client import ArgParser
-from wallp.globals import Const
+from wallp. import const
 
 
 class ArgParserError(Exception):

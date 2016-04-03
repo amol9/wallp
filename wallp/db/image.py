@@ -23,6 +23,11 @@ class Image(Base):
 	context_url = 	Column(String(512))
 	favorite =	Column(Boolean, default=False)
 
+	# user
+	# score (source)
+	# likes (local)
+	# source id
+	
 	trace = 	relationship('ImageTrace')
 
 

@@ -157,22 +157,8 @@ class Imgur(Source):
 
 	def process_album(self, album):
 		for i in album.images:
-			image = Image()
-
-			image.url 	= i.get('link')
-			image.width 	= i.get('width')
-			image.height 	= i.get('height')
-			image.size 	= i.get('size')
-		
-			image.title		= i.get('title') or album.title
-			image.description 	= i.get('description') or album.description
-			image.user		= i.get('account_url')
-			image.context_url	= album.link
-			
-			#image.nsfw = i.get('nsfw')
-			#image.score = i.get('score')
-
-			self._images.add(image)
+			image = self.make_image_obj(i)
+			self._images.add(image, album=album)
 
 	
 	def search(self):
@@ -210,6 +196,31 @@ class Imgur(Source):
 		cb.col_update_cp()
 
 
+	def make_image_obj(self, gimage, album=None):
+		if type(gimage) == GalleryType.image.value:
+			get = lambda f : getattr(gimage, f, None) 
+		else:
+			get = lambda f : gimage.get(f)
+
+		drop_ext = lambda u : u[0 : u.rfind('.')]
+		image = Image()
+
+		image.url 	= get('link')
+		image.width 	= get('width')
+		image.height 	= get('height')
+		image.size 	= get('size')
+	
+		image.title		= get('title') or album.title
+		image.description 	= get('description') or (album and album.description)
+		image.user		= get('account_url')
+		image.context_url	= (album and album.link) or drop_ext(image.url)
+		
+		image.nsfw = get('nsfw')
+		image.score = get('score')
+
+		return image
+
+
 	def process_result(self, result, print_progress=True):
 		images = []
 		albums = []
@@ -221,13 +232,7 @@ class Imgur(Source):
 
 		for r in result:
 			if type(r) == GalleryType.image.value:
-				ga = lambda f : getattr(r, f, None)
-				drop_ext = lambda u : u[0 : u.rfind('.')]
-				if ga('link') is None:
-					continue
-
-				image = Image(url=ga('link'), title=ga('title'), description=ga('description'), user=ga('account_url'),
-						context_url=drop_ext(ga('link')), width=ga('width'), height=ga('height'), size=ga('size'))
+				image = self.make_image_obj(r)
 				images.append(image)
 				count += 1
 			else:

@@ -5,7 +5,7 @@ from csv import reader
 from wallp.db import DBSession, Base, Setting
 from wallp.db.app import Config, ConfigError
 from wallp.test.utils import order, replace_default_testcase_sort_order
-from wallp.globals import Const
+from wallp. import const
 
 
 class SettingTestData:
@@ -130,10 +130,10 @@ class TestConfig(TestCase):
 	def test_shortcut(self):
 		config = Config()
 
-		config.add_shortcut('server', ['server.host', 'server.port'], [None, Const.default_server_port], ':')
+		config.add_shortcut('server', ['server.host', 'server.port'], [None, const.default_server_port], ':')
 
 		config.set('server', 'bighost')
-		self.assertEquals(config.get('server'), 'bighost:' + str(Const.default_server_port))
+		self.assertEquals(config.get('server'), 'bighost:' + str(const.default_server_port))
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ import os
 from redcmd.api import Subcommand, subcmd, CommandError
 
 from ..db.app.config import Config, ConfigError
-from ..globals import Const
+from .. import const
 
 
 __all__ = ['ConfigSubcommands']
@@ -18,7 +18,7 @@ class ConfigSubcommands(Subcommand):
 	
 	def add_config_shortcuts(self):
 		config = Config()
-		config.add_shortcut('server', ['server.host', 'server.port'], [None, Const.default_server_port], ':')
+		config.add_shortcut('server', ['server.host', 'server.port'], [None, const.default_server_port], ':')
 
 		setting_names = config.names
 		config.add_shortcut('all', setting_names, None, os.linesep, get_only=True, print_fmt=True)

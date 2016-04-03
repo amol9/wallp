@@ -4,7 +4,7 @@ from redcmd.api import Subcommand, subcmd, Arg, CommandError, IntArg, FloatArg
 
 from ...util.printer import printer
 from ...wallpaper import Wallpaper, WallpaperError
-from ...globals import Const
+from ... import const
 
 
 class SourceSubcommand(Subcommand):
@@ -17,7 +17,7 @@ class SourceSubcommand(Subcommand):
 	def ignore_image_filter(self, ignore_image_filter=Arg(opt=True, default=False, short='iif', hidden=True)):
 		'ignore_image_filter: ignore image filters such as size, dimensions, etc.'
 
-		Const.ignore_image_filter = ignore_image_filter
+		const.ignore_image_filter = ignore_image_filter
 
 
 	def repeat(self, count=IntArg(opt=True, default=1, hidden=True, short='rptc', min=1, max=100),
@@ -27,7 +27,15 @@ class SourceSubcommand(Subcommand):
 		self._repeat_delay = delay
 
 
-	@subcmd(add=[ignore_image_filter, repeat], add_rec=True, add_skip=True)
+
+	def no_cache(self, no_cache=Arg(opt=True, default=False, short='noc', hidden=True)):
+		
+		const.cache_enabled = not no_cache
+
+
+	def select(self, select=Arg(opt=True, default=False, short='noc', hidden=True)):
+
+	@subcmd(add=[ignore_image_filter, repeat, no_cache], add_rec=True, add_skip=True)
 	def source(self):
 		'Select source for wallpaper.'
 		pass

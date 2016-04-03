@@ -6,7 +6,7 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 from alembic.runtime.environment import EnvironmentContext
 
-from ...globals import Const
+from ... import const
 
 
 class ManageDBError(Exception):
@@ -47,9 +47,9 @@ class DB:
 
 	def backup(self, dest_path=None):
 		if dest_path is None:
-			dest_path = dirname(Const.db_path)
+			dest_path = dirname(const.db_path)
 
-		db_path = Const.db_path
+		db_path = const.db_path
 
 		dt = datetime.now().strftime('%d_%b_%Y_%H_%M_%S').lower()
 		dest_db_path = joinpath(dest_path, dt + '_' + basename(db_path))

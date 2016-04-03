@@ -11,7 +11,7 @@ from mayloop.transport.pipe_connection import PipeConnection
 from util.retry import Retry
 from util.logger import log
 from db import Image
-from globals import Const
+from  import const
 from desktop import DesktopError, get_desktop
 from desktop.wpstyle import WPStyle, compute_style
 from server.protocol import WPState
@@ -143,8 +143,8 @@ class Wallpaper:
 		if image.filepath is not None:
 			return image.filepath
 
-		dirpath = get_pictures_dir() if not Const.debug else '.'
-		wp_path = joinpath(dirpath, Const.wallpaper_basename + '.' + image.ext)
+		dirpath = get_pictures_dir() if not const.debug else '.'
+		wp_path = joinpath(dirpath, const.wallpaper_basename + '.' + image.ext)
 
 		try:
 			shutil.move(image.temp_filepath, wp_path)

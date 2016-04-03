@@ -5,7 +5,7 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers import SchedulerAlreadyRunningError, SchedulerNotRunningError
 
-from ..globals import Const
+from .. import const
 from ..util.logger import log
 
 

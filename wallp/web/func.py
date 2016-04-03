@@ -2,12 +2,12 @@
 from redlib.api.http import HttpRequest, GlobalOptions, RequestOptions, HttpError
 from redlib.api.prnt import format_size
 
-from ..globals import Const
+from .. import const
 from ..util.printer import printer
 from ..db.app.config import Config
 
 
-http_global_options = GlobalOptions(cache_dir=Const.cache_dir, chunksize=Const.http_chunksize, timeout=Config().get('http.timeout'))
+http_global_options = GlobalOptions(cache_dir=const.cache_dir, chunksize=const.http_chunksize, timeout=Config().eget('http.timeout', const.http_timeout))
 httprequest = HttpRequest(global_options=http_global_options)
 
 

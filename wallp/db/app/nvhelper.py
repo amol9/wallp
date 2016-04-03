@@ -1,4 +1,7 @@
 
+from ..exc import NotFoundError
+
+
 class NVHelper:
 
 	def __init__(self, group=None):
@@ -8,7 +11,7 @@ class NVHelper:
 	def pget(self, name, default=None):
 		try:
 			return self.get(self._prefix + name)
-		except self.name_err_type:
+		except (self.name_err_type, NotFoundError):
 			self.padd(name, default)
 
 		return default
@@ -17,7 +20,7 @@ class NVHelper:
 	def pset(self, name, value):
 		try:
 			self.set(self._prefix + name, value)
-		except self.name_err_type:
+		except (self.name_err_type, NotFoundError):
 			self.padd(name, value)	
 
 
@@ -29,7 +32,7 @@ class NVHelper:
 	def eget(self, name, default=None):
 		try:
 			return self.get(name)
-		except self.name_err_type:
+		except (self.name_err_type, NotFoundError):
 			self.eadd(name, default)
 
 		return default
@@ -38,7 +41,7 @@ class NVHelper:
 	def eset(self, name, value):
 		try:
 			self.set(name, value)
-		except self.name_err_type:
+		except (self.name_err_type, NotFoundError):
 			self.eadd(name, value)	
 
 

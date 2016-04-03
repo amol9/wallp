@@ -7,7 +7,7 @@ from os.path import dirname, abspath, join as joinpath
 
 from . import SearchTerm, ImgurAlbum, Subreddit, Base, GlobalVars
 from .app.config import Config
-from ..globals import Const
+from .. import const
 from ..source.source_factory import SourceFactory
 from .dbsession import DBSession
 from ..version import __version__
@@ -20,7 +20,7 @@ class CreateDBError(Exception):
 class CreateDB():
 	def __init__(self, db_path=None):
 		if db_path is None:
-			db_path = Const.db_path
+			db_path = const.db_path
 
 		self._session = DBSession(db_path=db_path, create_db=True)
 		self._data_dir_abspath = joinpath(dirname(abspath(__file__)), 'data')

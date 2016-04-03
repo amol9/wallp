@@ -7,7 +7,7 @@ from asq.initiators import query
 from ..web.func import exists
 from ..util import log
 from .base import SourceError
-from ..globals import Const
+from .. import const
 from ..util.printer import printer
 from .image_filter import ImageFilter
 from ..db.app.images import Images as DBImages
@@ -19,7 +19,7 @@ class Images:
 	def __init__(self, source_params, cache=False, cache_timeout=None, url_exist_check=False, image_alias=None,
 			selector=None, trace=None, allow_seen_urls=False, cache_load=True):
 		self._list 	= []
-		self._cache 	= Cache2(Const.cache_dir) if cache else None
+		self._cache 	= Cache2(const.cache_dir) if (cache and const.cache_enabled) else None
 		self._filter	= ImageFilter()
 
 		self._image_alias = image_alias

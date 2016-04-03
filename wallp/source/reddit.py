@@ -8,7 +8,7 @@ from requests.exceptions import HTTPError, ConnectionError
 from giraf.api import Imgur as GImgur, ImgurError as GImgurError
 
 from ..util import log, Retry
-from ..globals import Const
+from .. import const
 from ..db import SubredditList
 from .base import SourceError, SourceParams, Source
 from .image import Image
@@ -81,7 +81,7 @@ class Reddit(Source):
 			url = url[url.rfind('?') + 1 : ]
 			ext = url[url.rfind('.') + 1 : ]
 
-			if ext in Const.image_extensions:
+			if ext in const.image_extensions:
 				image = Image(url=p.url, user=p.author.name, title=p.title, context_url=p.permalink)
 				self._images.add(image)
 
@@ -101,7 +101,7 @@ class Reddit(Source):
 			url = self.select_url(_trace.add_step=False)
 			ext = url[url.rfind('.') + 1 : ]
 
-			if ext not in Const.image_extensions:
+			if ext not in const.image_extensions:
 				if url.find('imgur.com') != -1:
 					try:
 						url = self.get_imgur_image_url(url)
@@ -144,7 +144,7 @@ class Reddit(Source):
 		p = self._params
 		query, subreddit, limit = p.query, p.subreddit, p.limit
 
-		reddit = praw.Reddit(user_agent=Const.app_name, timeout=self._config.get('http.timeout'), disable_update_check=True)
+		reddit = praw.Reddit(user_agent=const.app_name, timeout=self._config.get('http.timeout'), disable_update_check=True)
 
 		if subreddit is None:
 			if query is None:

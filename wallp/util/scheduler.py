@@ -2,7 +2,7 @@
 from redlib.api.system import get_scheduler, FrequencyError, PlatformError, frequency_help
 from redlib.api.misc import trim_docstring
 
-from ..globals import Const
+from .. import const
 
 
 class SchedulerError(Exception):
@@ -24,9 +24,9 @@ class Scheduler:
 		if freq is None:
 			return
 
-		cmd = Const.scheduler_cmd
+		cmd = const.scheduler_cmd
 
-		taskname = Const.scheduler_task_name
+		taskname = const.scheduler_task_name
 		try:
 			self._sys_scheduler.parse(freq)
 			if self._sys_scheduler.exists(taskname):
@@ -40,7 +40,7 @@ class Scheduler:
 
 
 	def remove(self):
-		taskname = Const.scheduler_task_name
+		taskname = const.scheduler_task_name
 		if self._sys_scheduler.exists(taskname):
 			r = self._sys_scheduler.delete(taskname)
 			print('schedule deletion %s..'%('succeeded' if r else 'failed'))

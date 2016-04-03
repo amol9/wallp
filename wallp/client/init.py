@@ -6,7 +6,7 @@ from ..db import DBError, NotFoundError
 from ..db.app.config import Config, ConfigError
 from ..db.create_db import CreateDB
 from ..util import log
-from ..globals import Const
+from .. import const
 
 
 class InitError(Exception):
@@ -14,12 +14,12 @@ class InitError(Exception):
 
 
 def db_exists():
-	return exists(Const.db_path)
+	return exists(const.db_path)
 
 
 def first_run():
-	if not exists(Const.data_dir):	
-		os.mkdir(Const.data_dir)
+	if not exists(const.data_dir):	
+		os.mkdirs(const.data_dir)
 		log.debug('data directory created')
 		create_db()
 

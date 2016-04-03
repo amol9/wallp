@@ -3,7 +3,7 @@ from six.moves import input
 
 from redcmd.api import Subcommand, subcmd
 
-from ..globals import Const
+from .. import const
 from ..db.create_db import CreateDB
 from ..db import DBSession
 
@@ -28,7 +28,7 @@ class DbSubSubCommands(DbSubcommand):
 
 		choice = input('Are you sure you want to reset the db? [y/N]: ')
 		if choice == 'y':
-			db_path = Const.db_path
+			db_path = const.db_path
 			dbsession = DBSession()
 			dbsession.close()
 

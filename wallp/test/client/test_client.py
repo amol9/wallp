@@ -9,7 +9,7 @@ from wallp.client import Client, GetImageError, KeepError
 from wallp.service import ServiceFactory
 from wallp.db import Var
 from wallp.db.create_db import CreateDB
-from wallp.globals import Const
+from wallp. import const
 from wallp.util import log
 
 
@@ -18,7 +18,7 @@ class TestClient(TestCase):
 
 	@classmethod
 	def setUpClass(cls):
-		Const.db_path = cls.db_path
+		const.db_path = cls.db_path
 		create_db = CreateDB()
 		create_db.execute()
 
@@ -74,7 +74,7 @@ class TestClient(TestCase):
 
 
 	def get_new_dbsession(self):
-		engine = create_engine('sqlite:///' + self.db_path, echo=Const.debug)
+		engine = create_engine('sqlite:///' + self.db_path, echo=const.debug)
 		session_class = sessionmaker(bind=engine)
 		return session_class()
 

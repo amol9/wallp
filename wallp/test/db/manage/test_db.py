@@ -3,7 +3,7 @@ from os.path import join as joinpath, dirname, abspath, exists
 from os import sep
 
 from wallp.db.manage.db import DB
-from wallp.globals import Const
+from wallp. import const
 
 
 class TestDB(TestCase):

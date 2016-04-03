@@ -4,7 +4,7 @@ from os.path import exists
 import sys
 
 from . import *
-from ..globals import Const
+from .. import const
 from .exc import DBError
 from ..util import log
 
@@ -15,14 +15,14 @@ class DBSession():
 	instance = None
 	session_class = None
 
-	def __init__(self, db_path=None, create_db=False):
+	def __init__(self, db_path=None, create_db=True):
 		if DBSession.session_class is None:
-			db_path = Const.db_path if db_path is None else db_path
+			db_path = const.db_path if db_path is None else db_path
 			if not create_db:
 				if not exists(db_path):
 					raise DBError('No database found.')
 
-			engine = create_engine('sqlite:///' + db_path, echo=Const.debug)
+			engine = create_engine('sqlite:///' + db_path, echo=const.debug)
 			DBSession.session_class = sessionmaker(bind=engine)
 
 
