@@ -19,6 +19,37 @@ class DB:
 		pass
 
 
+	def create(self):
+		pass
+
+
+	def insert_data(self):
+		# table list
+		tables = [Source]
+
+		# check if it has data file
+		for table in tables:
+			data_file_path = dirpath + table.__tablename__ + '.csv'
+			if exists(data_file_path):
+				csv = load(data_file_path)
+
+				csv_cols = row[0]
+				for row in csv:
+					dict = {csv_col : row[i] } # optionally, eval 
+					record = table(**dict)
+
+					if not exists row:	# or pass the constraint exception
+						session.add(record)
+
+			session.commit()
+
+		# handle exceptions
+
+		# if yes, load it as csv
+		# if a column type != String, eval it
+		# insert data
+
+
 	def upgrade(self, script_location, db_path, dest_rev):
 		sa_url = 'sqlite:///' + db_path
 

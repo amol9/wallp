@@ -1,0 +1,10 @@
+name,			enabled
+reddit,			True
+imgur,			True
+google,			True
+deviantart,		False
+color,			True
+bing,			True
+favorites,		True
+interfacelift,		True
+xkcd,			True

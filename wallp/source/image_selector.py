@@ -6,7 +6,7 @@ from redlib.api.py23 import enum_attr
 from ..db.app.config import Config
 
 
-ImageSelectorMethod = Enum('ImageSelectorMethod', ['random', 'rank', 'score', 'size', 'time'])
+ImageSelectorMethod = Enum('ImageSelectorMethod', ['random', 'rank', 'score', 'size', 'time', 'domain', 'url', 'resolution'])
 ImageSelectorMethodMod = Enum('ImageSelectorMethodMod', {'min': min, 'max': max, 'avg'])
 
 
