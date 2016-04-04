@@ -3,7 +3,7 @@ from os.path import join as joinpath, dirname, abspath, exists
 from os import sep
 
 from wallp.db.manage.db import DB
-from wallp. import const
+from wallp import const
 
 
 class TestDB(TestCase):
@@ -12,7 +12,7 @@ class TestDB(TestCase):
 
 	def test_upgrade_to_head(self):
 		db = DB()
-		db.upgrade(self.script_location, 'test.db', 'head')
+		db.upgrade(script_location=self.script_location, db_path='test.db', dest_rev='head')
 
 
 	def test_backup(self):
@@ -28,6 +28,22 @@ class TestDB(TestCase):
 
 		bkp_db_path = db.backup()
 		db.upgrade(self.script_location, bkp_db_path, 'head')
+
+
+	def test_create(self):
+		db = DB()
+		db.create()
+
+		self.assertTrue(exists(const.db_path))
+
+
+	def test_insert_data(self):
+		db = DB()
+		db.create()
+
+		db.insert_data()
+
+		# check tables, count, etc. for each table
 
 
 if __name__ == '__main__':

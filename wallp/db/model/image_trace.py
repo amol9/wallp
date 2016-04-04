@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
-from . import Base
+from .base import Base
 
 
 class ImageTrace(Base):

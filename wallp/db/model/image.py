@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
 
-from . import Base, DBSession
+from .base import Base
 from .image_trace import ImageTrace
 
 
@@ -33,14 +33,13 @@ class Image(Base):
 
 	def __init__(self, *args, **kwargs):
 		Base.__init__(self, *args, **kwargs)
-
 		self.step = 1
 
 
-	def save(self):
+	'''def save(self):
 		dbsession = DBSession()
 		dbsession.add(self)
-		dbsession.commit()
+		dbsession.commit()'''
 
 
 	def add_trace(self, name, data):

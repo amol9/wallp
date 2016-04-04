@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.schema import UniqueConstraint
 
-from . import Base
+from .base import Base
 
 
 class SearchPageNum(Base):

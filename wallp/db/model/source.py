@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
 
-from . import Base
+from .base import Base
 
 
 class Source(Base):

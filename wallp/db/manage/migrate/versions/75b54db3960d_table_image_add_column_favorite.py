@@ -14,7 +14,7 @@ depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
-from wallp.db import Base
+from wallp.db.model.all import Base
 
 
 def upgrade():

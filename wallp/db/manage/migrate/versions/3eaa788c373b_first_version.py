@@ -30,7 +30,7 @@ def upgrade():
 		sa.Column('name', sa.String(length=40), nullable=True),
 		sa.Column('value', sa.String(length=512), nullable=True),
 		sa.Column('type', sa.String(length=15), nullable=True),
-		sa.PrimaryKeyconstraint('id'),
+		sa.PrimaryKeyConstraint('id'),
 		sa.UniqueConstraint('group', 'name')
 		)
 
@@ -41,7 +41,7 @@ def upgrade():
 		sa.Column('name', sa.String(length=40), nullable=True),
 		sa.Column('value', sa.String(length=512), nullable=True),
 		sa.Column('type', sa.String(length=15), nullable=True),
-		sa.PrimaryKeyconstraint('id'),
+		sa.PrimaryKeyConstraint('id'),
 		sa.UniqueConstraint('group', 'name')
 		)
 
@@ -60,7 +60,7 @@ def upgrade():
 		sa.Column('title', sa.String(length=256), nullable=True),
 		sa.Column('description', sa.String(length=1024), nullable=True),
 		sa.Column('context_url', sa.String(length=512), nullable=True),
-		sa.PrimaryKeyconstraint('id')
+		sa.PrimaryKeyConstraint('id')
 		)
 
 	if not has_table('imgur'):
@@ -69,7 +69,7 @@ def upgrade():
 		sa.Column('url', sa.String(length=512), nullable=True),
 		sa.Column('image_count', sa.Integer(), nullable=True),
 		sa.Column('enabled', sa.Boolean(), nullable=True),
-		sa.PrimaryKeyconstraint('id')
+		sa.PrimaryKeyConstraint('id')
 		)
 
 
@@ -78,7 +78,7 @@ def upgrade():
 		sa.Column('id', sa.Integer(), nullable=False),
 		sa.Column('name', sa.String(length=70), nullable=True),
 		sa.Column('enabled', sa.Boolean(), nullable=True),
-		sa.PrimaryKeyconstraint('id')
+		sa.PrimaryKeyConstraint('id')
 		)
 
 	if not has_table('search_term'):
@@ -86,7 +86,7 @@ def upgrade():
 		sa.Column('id', sa.Integer(), nullable=False),
 		sa.Column('term', sa.String(length=100), nullable=True),
 		sa.Column('enabled', sa.Boolean(), nullable=True),
-		sa.PrimaryKeyconstraint('id')
+		sa.PrimaryKeyConstraint('id')
 		)
 
 	if not has_table('image_trace'):
@@ -96,8 +96,8 @@ def upgrade():
 		sa.Column('name', sa.String(length=50), nullable=True),
 		sa.Column('data', sa.String(length=512), nullable=True),
 		sa.Column('image_id', sa.Integer(), nullable=True),
-		sa.ForeignKeyconstraint(['image_id'], ['image.id'], ),
-		sa.PrimaryKeyconstraint('id')
+		sa.ForeignKeyConstraint(['image_id'], ['image.id'], ),
+		sa.PrimaryKeyConstraint('id')
 		)
 
 	### end Alembic commands ###

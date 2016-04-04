@@ -24,7 +24,7 @@ def upgrade():
     sa.Column('name', sa.String(length=40), nullable=True),
     sa.Column('value', sa.String(length=512), nullable=True),
     sa.Column('type', sa.String(length=15), nullable=True),
-    sa.PrimaryKeyconstraint('id'),
+    sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('group', 'name')
     )
     ### end Alembic commands ###

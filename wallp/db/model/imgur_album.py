@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text
 
-from . import Base
+from .base import Base
 
 
 class ImgurAlbum(Base):

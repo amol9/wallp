@@ -1,17 +1,16 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.schema import UniqueConstraint
 
-from . import Base
+from .base import Base
 
 
-class Setting(Base):
+class Config(Base):
 	__tablename__ = 'config'
 
 	id 	= Column(Integer, primary_key=True)
-	group 	= Column(String(20))
-	name 	= Column(String(40))
+	name 	= Column(String(128))
 	value   = Column(String(512))
 	type 	= Column(String(15))
 
-	__table_args__ = (UniqueConstraint('group', 'name'),)
+	__table_args__ = (UniqueConstraint('name'),)
 
