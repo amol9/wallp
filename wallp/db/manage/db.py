@@ -7,9 +7,11 @@ import csv
 from alembic.config import Config as AlConfig
 from alembic.script import ScriptDirectory
 from alembic.runtime.environment import EnvironmentContext
+from sqlalchemy import String
 
 from ... import const
 from ..model.all import *
+from ..dbsession import DBSession
 
 
 class ManageDBError(Exception):
@@ -39,16 +41,20 @@ class DB:
 				with open(data_file_path, 'r') as f:
 					csv_file = csv.reader(f)
 
-					csv_cols = row[0]
 					cols = []
 					values = {}
 					for row in csv_file:
 						if csv_file.line_num == 1:
-							cols = row
+							cols = [c.strip() for c in row]
 							values = dict.fromkeys(cols, None)
+							continue
 
 						for i in range(0, len(cols)):
-							values[cols[i]] = row[i]
+							col_cls = getattr(table, cols[i]).type.__class__
+							value = row[i].strip()
+							value = value if col_cls == String else eval(value)
+
+							values[cols[i]] = value
 
 						record = table(**values)
 

@@ -1,10 +1,11 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text
+from sqlalchemy.schema import UniqueConstraint
 
 from .base import Base
 
 
 class ImgurAlbum(Base):
-	__tablename__ = 'imgur'
+	__tablename__ = 'imgur_album'
 
 	id 			= Column(Integer, primary_key=True)
 	album_id 		= Column(String(512))
@@ -17,3 +18,4 @@ class ImgurAlbum(Base):
 	wallpaper		= Column(Boolean, default=False)
 	favorite		= Column(Boolean, default=False)
 
+	__table_args__ = (UniqueConstraint('album_id'),)
