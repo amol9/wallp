@@ -12,9 +12,9 @@ from wallp.version import __version__
 
 
 entry_points = {}
-entry_points['console_scripts'] = ['wallp=wallp.client.main:main']
+entry_points['console_scripts'] = ['wallp=wallp.main:main']
 if platform.system() == 'Windows':
-	entry_points['gui_scripts'] = ['wallps=wallp.client.main:main']
+	entry_points['gui_scripts'] = ['wallps=wallp.main:main']
 
 
 setup(	
@@ -41,8 +41,6 @@ setup(
 					'Topic :: Multimedia :: Graphics'
 				]
 )
-
-update_db()
 
 setup_autocomp('wallp.subcmd.all', 'wallp', _to_hyphen=True)
 

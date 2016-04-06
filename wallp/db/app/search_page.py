@@ -1,21 +1,15 @@
 
 from redlib.api.misc import Singleton
 
-from ..search_page_num import SearchPageNum
-from ..namevalueset import NameValueSet, NameError
-from ..nv_shortcut_mixin import NVShortcutMixin
-from .nvhelper import NVHelper
+from ..model.search_page_num import SearchPageNum
+from .kvhelper import KVHelper
 
 
-class SearchPageError(NameError):
-	nv_typename = 'search_page_num'
+class SearchPageError(Exception):
+	pass
 
-
-class SearchPage(NVShortcutMixin, NameValueSet, NVHelper):
-	nvtype = SearchPageNum
-	name_err_type = SearchPageError
+class SearchPage(KVHelper):
 
 	def __init__(self, group=None):
-		super(SearchPage, self).__init__()
-		NVHelper.__init__(self, group=group)
+		KVHelper.__init__(self, SearchPageNum, SearchPageError, prefix=group)
 

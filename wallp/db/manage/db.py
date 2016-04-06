@@ -25,8 +25,14 @@ class DB:
 		pass
 
 
+	def check(self):
+		if not exists(const.db_path):
+			self.create()
+
+
 	def create(self):
 		self.upgrade()
+		self.insert_data()
 
 
 	def insert_data(self):
@@ -34,7 +40,6 @@ class DB:
 		inspector = reflection.Inspector.from_engine(db_session.bind)
 
 		tables = [Config, Source, ImgurAlbum, Var, Subreddit, SearchTerm]
-
 		data_dir_path = joinpath(dirname(abspath(__file__)), 'data')
 
 		for table in tables:
@@ -45,19 +50,19 @@ class DB:
 					csv_file = csv.reader(f)
 
 					check_uniq = True
-					exst_rows = []
-					uniq_cols = []
+					exst_rows = []		# existing rows in table (to check against duplicate insertion)
+					uniq_cols = []		# columns belonging to unique constraint
 					uniq_cons = inspector.get_unique_constraints(table.__tablename__)
 					if len(uniq_cons) == 0:
 						check_uniq = False
 					else:
-						uniq_cols = uniq_cons[0]['column_names']
+						uniq_cols = uniq_cons[0]['column_names']	# only taking the first unique constraint (good for now)
 						exst_rows = db_session.query(table).all()
 
-					cols = []
+					cols = []		# columns in data file
 					values = {}
 					for row in csv_file:
-						if csv_file.line_num == 1:
+						if csv_file.line_num == 1:		# first row always has the column names
 							cols = [c.strip() for c in row]
 							values = dict.fromkeys(cols, None)
 							continue
@@ -65,24 +70,17 @@ class DB:
 						for i in range(0, len(cols)):
 							col_cls = getattr(table, cols[i]).type.__class__
 							value = row[i].strip()
-							value = value if col_cls == String else eval(value)
+							value = value if col_cls == String else eval(value)	# convert if not string
 
 							values[cols[i]] = value
 
 						if any(map(lambda r : all([getattr(r, c) == values.get(c) for c in uniq_cols]), exst_rows)):
-							print 'dup', row
-							continue
+							continue	# already present
 
 						record = table(**values)
 						db_session.add(record)
 
 			db_session.commit()
-
-		# handle exceptions
-
-		# if yes, load it as csv
-		# if a column type != String, eval it
-		# insert data
 
 
 	def upgrade(self, script_location=None, db_path=None, dest_rev=None):

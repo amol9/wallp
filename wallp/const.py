@@ -4,7 +4,8 @@ from os import environ
 from redlib.api.system import *
 
 
-app_name 		= 'wallpaper_app'
+app_name 		= 'wallp'
+app_description		= 'A command line utility to download and set wallpapers from various sources.'
 debug 			= False
 wallpaper_basename 	= 'wallp' + ('_debug' if debug else '')
 data_dir 		= environ.get('WALLP_DATA_DIR', None) or expanduser('~/.wallp')

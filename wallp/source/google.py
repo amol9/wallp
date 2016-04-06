@@ -4,7 +4,7 @@ from redlib.api.web import HtmlParser
 from six.moves.urllib.parse import urlencode, urlparse, parse_qs
 
 from ..util import log
-from ..db import SearchTermList
+from ..db.itemlist import SearchTermList
 from ..util.printer import printer
 from .base import SourceError, SourceParams, Source
 from .images import Images

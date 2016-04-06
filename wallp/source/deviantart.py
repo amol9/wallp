@@ -7,7 +7,7 @@ from six.moves.urllib.parse import urlencode
 
 from ..util.logger import log
 from ..desktop import get_desktop, get_standard_desktop_size
-from ..db import SearchTermList
+from ..db.itemlist import SearchTermList
 from .base import SourceError, SourceParams, Source
 from .images import Images
 from .http_helper import HttpHelper

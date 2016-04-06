@@ -55,7 +55,8 @@ def upgrade():
 		op.drop_table(src_table)
 
 	# copy data from table: config
-	copy_data('config', 'config2', lambda row : {'name': row.group + '.' + row.name, 'value': row.value, 'type': row.type }, uniq=['name'])
+	concat_group_name = lambda g, n: n if (g is None or g == '') else g + '.' + n
+	copy_data('config', 'config2', lambda row : {'name': concat_group_name(row.group, row.name), 'value': row.value, 'type': row.type }, uniq=['name'])
 	#op.rename_table('config2', 'config')
 
 	op.create_table('imgur_album',

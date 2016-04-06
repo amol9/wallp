@@ -6,7 +6,7 @@ from enum import Enum
 from giraf.api import Imgur as GImgur, ImgurError as GImgurError, QueryType, ImageSize, GalleryType, ImgurErrorType, Filter as GImgurFilter
 
 from ..util import log, Retry
-from ..db import ImgurAlbumList
+from ..db.itemlist import ImgurAlbumList
 from ..desktop.desktop_factory import get_desktop
 from ..util.printer import printer
 from .base import SourceParams, SourceError, Source
@@ -16,7 +16,7 @@ from .image import Image
 from .images import Images
 from .http_helper import HttpHelper
 from .trace import Trace
-from ..db import SearchTermList
+from ..db.itemlist import SearchTermList
 
 
 ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])

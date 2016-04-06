@@ -6,20 +6,20 @@ def update_db():
 	args = sys.argv
 
 	if len(args) > 1 and args[1] == 'install':
-		wallp_db_config = None
+		wallp_db_manage_db = None
 		wallp_db_exc = None
 		try:
-			wallp_db_config = import_module('wallp.db.config')
+			wallp_db_manage_db = import_module('wallp.db.manage.db')
 			wallp_db_exc = import_module('wallp.db.exc')
 		except ImportError as e:
 			print(e)
 			return
 		
-		config = wallp_db_config.Config()
+		db = wallp_db_manage_db.DB()
 
 		try:
-			config.get('style.tiled_size')
-		except (wallp_db_config.ConfigError, wallp_db_exc.NotFoundError):
-			config.add('style.tiled_size', 100, int)
-			config._dbsession.commit()
-
+			db.upgrade()
+			db.insert_data()
+		except Exception as e:
+			print(e)
+		

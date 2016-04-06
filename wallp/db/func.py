@@ -2,10 +2,10 @@ from datetime import timedelta
 from time import time
 from random import choice
 
-from .globalvars import GlobalVars
+from .app.vars import Vars
 from .dbsession import DBSession
 from .itemlist import ImgurAlbumList, SubredditList, SearchTermList
-from .image import Image
+from .model.image import Image
 from .exc import NotFoundError
 
 
@@ -14,7 +14,7 @@ class FavoriteError(Exception):
 
 
 def get_wallpaper_image():
-	globalvars = GlobalVars()
+	globalvars = Vars()
 	image_id = globalvars.get('current_wallpaper_image')
 
 	if image_id is None:
@@ -80,7 +80,7 @@ def unfavorite_wallpaper():
 
 
 def get_last_change_time():
-	globalvars = GlobalVars()
+	globalvars = Vars()
 	return globalvars.get('last_change_time')
 
 
@@ -89,7 +89,7 @@ def get_lists():
 
 
 def get_current_wallpaper_image():
-	image_id = GlobalVars().get('current_wallpaper_image')
+	image_id = Vars().get('current_wallpaper_image')
 	result = DBSession().query(Image).filter(Image.id == image_id).all()
 
 	if len(result) == 0:

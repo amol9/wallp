@@ -2,7 +2,7 @@
 from redcmd.api import Subcommand, subcmd, CommandError
 
 from ..db.func import favorite_wallpaper, unfavorite_wallpaper, FavoriteError
-from ..db import DBError
+from ..db.exc import DBError
 
 
 __all__ = ['FavoriteSubcommand']

@@ -2,7 +2,10 @@ from zope.interface import Interface, Attribute, implementer
 import re
 import random
 
-from . import ImgurAlbum, Subreddit, SearchTerm, DBSession
+from .model.imgur_album import ImgurAlbum
+from .model.subreddit import Subreddit
+from .model.search_term import SearchTerm
+from .dbsession import DBSession
 from .regex import Regex
 from .exc import NotFoundError
 
@@ -122,8 +125,8 @@ class ItemList:
 class ImgurAlbumList(ItemList):
 	name		= 'imgur-album'
 	itemtype 	= ImgurAlbum
-	column 		= 'url'
-	regex 		= Regex("https?://imgur.com/\w+", 'imgur url be like http://imgur.com/...')
+	column 		= 'album_id'
+	regex 		= Regex(".*", 'imgur url be like http://imgur.com/...')
 
 	def set_image_count(self, url, count):
 		imgur_album = self.get_item(url)

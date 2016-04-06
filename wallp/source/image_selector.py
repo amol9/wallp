@@ -7,11 +7,11 @@ from ..db.app.config import Config
 
 
 ImageSelectorMethod = Enum('ImageSelectorMethod', ['random', 'rank', 'score', 'size', 'time', 'domain', 'url', 'resolution'])
-ImageSelectorMethodMod = Enum('ImageSelectorMethodMod', {'min': min, 'max': max, 'avg'])
+ImageSelectorMethodMod = Enum('ImageSelectorMethodMod', {'min': min, 'max': max, 'avg': None})
 
 
 class SelectorParams:
-	def __init_-(self, method, mod, value):
+	def __init__(self, method, mod, value):
 		self.method	= method
 		self.mod	= mod
 		self.value	= value
@@ -19,7 +19,7 @@ class SelectorParams:
 
 class ImageSelector:
 
-	def __init__(self, images, trace, params):
+	def __init__(self, images, trace, params=None):
 		self._images = images
 		self._trace = trace
 
@@ -32,7 +32,7 @@ class ImageSelector:
 	def set_method(self):
 		ism = ImageSelectorMethod
 		config = Config()
-		method = method or ism.score or enum_attr(ism, config.eget('image.selection_method', str(ism.rank)))
+		method = ism.rank or enum_attr(ism, config.eget('image.selection_method', str(ism.rank)))
 
 		map = {
 				ism.random	: self.select_random,

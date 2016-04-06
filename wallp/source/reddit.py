@@ -9,7 +9,7 @@ from giraf.api import Imgur as GImgur, ImgurError as GImgurError
 
 from ..util import log, Retry
 from .. import const
-from ..db import SubredditList
+from ..db.itemlist import SubredditList
 from .base import SourceError, SourceParams, Source
 from .image import Image
 from .images import Images

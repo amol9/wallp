@@ -38,7 +38,7 @@ class _SourceFactory():
 		config = Config()
 		for source_name in self._sources.keys():
 			try:
-				enabled = config.get(source_name + '.enabled')
+				enabled = True or config.eget(source_name + '.enabled', default=True)
 				self._sources[source_name].enabled = enabled
 			except ConfigError as e:
 				log.error(str(e))

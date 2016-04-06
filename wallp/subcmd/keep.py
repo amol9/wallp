@@ -4,7 +4,7 @@ from time import time
 
 from redcmd.api import Subcommand, subcmd, CommandError
 
-from ..db import GlobalVars
+from ..db.app.vars import Vars
 
 
 __all__ = ['KeepSubcommand']
@@ -66,8 +66,8 @@ class KeepSubcommand(Subcommand):
 		td = timedelta(**tdarg)
 		keep_timeout = int(time()) + td.total_seconds()
 
-		globalvars = GlobalVars()
-		globalvars.set('keep_timeout', keep_timeout)
+		vars = Vars()
+		vars.set('keep_timeout', keep_timeout)
 
 		return '%d %s'%(num, period_map[abbr_period][0 : -1 if num == 1 else None])
 

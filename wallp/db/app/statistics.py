@@ -4,7 +4,7 @@ from time import time
 from sqlalchemy import func
 from redlib.api.net import AbsUrl
 
-from .. import Image
+from ..model.image import Image
 from .. import DBSession
 
 

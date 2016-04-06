@@ -1,7 +1,7 @@
 
 from asq.initiators import query
 
-from ..db import ImageTrace
+from ..db.model.image_trace import ImageTrace
 from ..util import log
 from ..util.printer import printer
 

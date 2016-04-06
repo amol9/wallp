@@ -10,12 +10,13 @@ from mayloop.transport.pipe_connection import PipeConnection
 
 from util.retry import Retry
 from util.logger import log
-from db import Image
-from  import const
+from db.model.image import Image
+from . import const
 from desktop import DesktopError, get_desktop
 from desktop.wpstyle import WPStyle, compute_style
 from server.protocol import WPState
-from db import GlobalVars, VarError
+from db.app.vars import Vars, VarError
+from db.app.images import Images as DBImages
 from util.printer import printer
 from source.source_factory import SourceFactory, SourceFactoryError
 from source.base import SourceError, SourceParams
@@ -80,7 +81,7 @@ class Wallpaper:
 
 	def check_keep_timeout(self):
 		try:
-			keep_timeout = GlobalVars().get('keep_timeout')
+			keep_timeout = Vars().eget('keep_timeout')
 		except VarError as e:
 			log.error(str(e))
 
@@ -92,10 +93,10 @@ class Wallpaper:
 
 
 	def update_global_vars(self, image_id):
-		globalvars = GlobalVars()
+		vars = Vars()
 		try:
-			globalvars.set('current_wallpaper_image', image_id)
-			globalvars.set('last_change_time', int(time()))
+			vars.eset('current_wallpaper_image', image_id)
+			vars.eset('last_change_time', int(time()))
 		except VarError as e:
 			log.error(str(e))
 
@@ -180,6 +181,6 @@ class Wallpaper:
 
 			db_image.trace = source.get_trace()
 
-		db_image.save()
+		DBImages().add(db_image)
 		return db_image.id
 

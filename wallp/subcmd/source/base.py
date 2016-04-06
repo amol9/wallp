@@ -34,6 +34,8 @@ class SourceSubcommand(Subcommand):
 
 
 	def select(self, select=Arg(opt=True, default=False, short='noc', hidden=True)):
+		pass
+
 
 	@subcmd(add=[ignore_image_filter, repeat, no_cache], add_rec=True, add_skip=True)
 	def source(self):
