@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.schema import UniqueConstraint
 
 from .base import Base
 

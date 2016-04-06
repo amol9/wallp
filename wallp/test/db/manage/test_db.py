@@ -1,6 +1,7 @@
 from unittest import TestCase, main as ut_main
 from os.path import join as joinpath, dirname, abspath, exists
-from os import sep
+from os import sep, remove
+from shutil import copy
 
 from wallp.db.manage.db import DB
 from wallp import const
@@ -39,6 +40,10 @@ class TestDB(TestCase):
 
 	def test_insert_data(self):
 		db = DB()
+
+		#remove('test.db')
+		copy(const.db_path, './test.db')
+		const.db_path = './test.db'
 		db.create()
 
 		db.insert_data()

@@ -17,6 +17,7 @@ import sqlalchemy as sa
 
 from wallp.db.model.base import Base
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import text
 
 
 def upgrade():
@@ -38,20 +39,24 @@ def upgrade():
 		st = Base.metadata.tables[src_table]
 		dt = Base.metadata.tables[dst_table]
 
+		check_uniq = len(uniq) > 0
+
+		uniq_rows = []  
 		for row in connection.execute(st.select()):
 			values = values_fn(row)
-		
-			if 
-			try:
-				connection.execute(dt.insert(values=values))
-			except IntegrityError as e:
-				print(e)
+			
+			if check_uniq:
+				if any(map(lambda v : all([v.get(f) == values.get(f) for f in uniq]), uniq_rows)):
+					continue
 
+			uniq_rows.append(values)
+
+		op.bulk_insert(dt, uniq_rows)
 		op.drop_table(src_table)
 
 	# copy data from table: config
-	copy_data('config', 'config2', lambda row : {'name': row.group + '.' + row.name, 'value': row.value, 'type': row.type })
-	op.rename_table('config2', 'config')
+	copy_data('config', 'config2', lambda row : {'name': row.group + '.' + row.name, 'value': row.value, 'type': row.type }, uniq=['name'])
+	#op.rename_table('config2', 'config')
 
 	op.create_table('imgur_album',
 	sa.Column('id', sa.Integer(), nullable=False),
@@ -69,7 +74,8 @@ def upgrade():
 	)
 
 	# copy data from table: imgur
-	copy_data('imgur', 'imgur_album', lambda row : {'album_id': row.url[row.url.rfind('/') + 1 : 5], 'enabled': row.enabled})
+	extract_album_id = lambda url : url[url.rfind('/') + 1 : url.rfind('/') + 6]
+	copy_data('imgur', 'imgur_album', lambda row : {'album_id': extract_album_id(row.url), 'enabled': row.enabled}, uniq=['album_id'])
 
 	op.create_table('source',
 	sa.Column('id', sa.Integer(), nullable=False),
@@ -87,7 +93,7 @@ def upgrade():
 	)
 
 	# copy data from table: reddit
-	copy_data('reddit', 'subreddit', lambda row : {'name': row.name, 'enabled': row.enabled})
+	copy_data('reddit', 'subreddit', lambda row : {'name': row.name, 'enabled': row.enabled}, uniq=['name'])
 
 	op.create_table('var',
 	sa.Column('id', sa.Integer(), nullable=False),
@@ -99,7 +105,7 @@ def upgrade():
 	)
 
 	# copy data from table: globalvars
-	copy_data('globalvars', 'var', lambda row : {'name': row.group + '.' + row.name, 'value': row.value, 'type': row.type })
+	copy_data('globalvars', 'var', lambda row : {'name': row.group + '.' + row.name, 'value': row.value, 'type': row.type }, uniq=['name'])
     	
 	#op.drop_table('config')
 	#op.drop_table('globalvars')

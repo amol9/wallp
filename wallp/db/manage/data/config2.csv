@@ -1,11 +1,12 @@
+name,			value,		type
 reddit.posts_limit,	10,		int
 imgur.get_full_album,	True,		bool
 server.host,		None,		str
 server.port,		None,		int
 client.logfile,		'stdout',	str
 client.loglevel,	40,		int
-style.tiled_size	100,		int
-output.verbosity	1,		int
-image.max_size		4*1024*1024,	int
-http.timeout		15,		int
-interfacelift.page	1,		int
+style.tiled_size,	100,		int
+output.verbosity,	1,		int
+image.max_size,		4*1024*1024,	int
+http.timeout,		15,		int
+interfacelift.page,	1,		int

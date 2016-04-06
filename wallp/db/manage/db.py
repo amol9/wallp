@@ -8,6 +8,7 @@ from alembic.config import Config as AlConfig
 from alembic.script import ScriptDirectory
 from alembic.runtime.environment import EnvironmentContext
 from sqlalchemy import String
+from sqlalchemy.engine import reflection
 
 from ... import const
 from ..model.all import *
@@ -30,7 +31,9 @@ class DB:
 
 	def insert_data(self):
 		db_session = DBSession()
-		tables = [Source, ImgurAlbum]
+		inspector = reflection.Inspector.from_engine(db_session.bind)
+
+		tables = [Config, Source, ImgurAlbum, Var, Subreddit, SearchTerm]
 
 		data_dir_path = joinpath(dirname(abspath(__file__)), 'data')
 
@@ -40,6 +43,16 @@ class DB:
 			if exists(data_file_path):
 				with open(data_file_path, 'r') as f:
 					csv_file = csv.reader(f)
+
+					check_uniq = True
+					exst_rows = []
+					uniq_cols = []
+					uniq_cons = inspector.get_unique_constraints(table.__tablename__)
+					if len(uniq_cons) == 0:
+						check_uniq = False
+					else:
+						uniq_cols = uniq_cons[0]['column_names']
+						exst_rows = db_session.query(table).all()
 
 					cols = []
 					values = {}
@@ -56,9 +69,11 @@ class DB:
 
 							values[cols[i]] = value
 
-						record = table(**values)
+						if any(map(lambda r : all([getattr(r, c) == values.get(c) for c in uniq_cols]), exst_rows)):
+							print 'dup', row
+							continue
 
-						#if not exists row:	# or pass the constraint exception
+						record = table(**values)
 						db_session.add(record)
 
 			db_session.commit()

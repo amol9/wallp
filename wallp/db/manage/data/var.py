@@ -1,3 +1,4 @@
+name,				value,		type
 current_wallpaper_image,	None,		int
 keep_timeout,			None,		int
 last_change_time,		None,		int
