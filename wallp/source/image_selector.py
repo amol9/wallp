@@ -32,7 +32,7 @@ class ImageSelector:
 	def set_method(self):
 		ism = ImageSelectorMethod
 		config = Config()
-		method = ism.rank or enum_attr(ism, config.eget('image.selection_method', str(ism.rank)))
+		method = ism.random or enum_attr(ism, config.eget('image.selection_method', str(ism.rank)))
 
 		map = {
 				ism.random	: self.select_random,
@@ -51,6 +51,7 @@ class ImageSelector:
 
 
 	def select_random(self):
+		print 'images: %d'%self._images.length
 		index = randint(0, self._images.length - 1)
 		image = self._images.get_image(index)
 

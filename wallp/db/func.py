@@ -14,8 +14,8 @@ class FavoriteError(Exception):
 
 
 def get_wallpaper_image():
-	globalvars = Vars()
-	image_id = globalvars.get('current_wallpaper_image')
+	vars = Vars()
+	image_id = vars.eget('current_wallpaper_image', default=None)
 
 	if image_id is None:
 		raise LikeError('no wallpaper set')
@@ -80,8 +80,8 @@ def unfavorite_wallpaper():
 
 
 def get_last_change_time():
-	globalvars = Vars()
-	return globalvars.get('last_change_time')
+	vars = Vars()
+	return vars.eget('last_change_time', default=None)
 
 
 def get_lists():
@@ -89,7 +89,8 @@ def get_lists():
 
 
 def get_current_wallpaper_image():
-	image_id = Vars().get('current_wallpaper_image')
+	vars = Vars()
+	image_id = vars.eget('current_wallpaper_image', default=None)
 	result = DBSession().query(Image).filter(Image.id == image_id).all()
 
 	if len(result) == 0:

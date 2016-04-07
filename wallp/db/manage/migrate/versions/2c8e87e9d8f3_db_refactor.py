@@ -106,7 +106,7 @@ def upgrade():
 	)
 
 	# copy data from table: globalvars
-	copy_data('globalvars', 'var', lambda row : {'name': row.group + '.' + row.name, 'value': row.value, 'type': row.type }, uniq=['name'])
+	copy_data('globalvars', 'var', lambda row : {'name': concat_group_name(row.group, row.name), 'value': row.value, 'type': row.type }, uniq=['name'])
     	
 	#op.drop_table('config')
 	#op.drop_table('globalvars')

@@ -137,3 +137,5 @@ class DB:
 		pass
 
 
+	def reset(self):
+		pass

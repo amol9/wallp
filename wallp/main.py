@@ -12,7 +12,10 @@ def main():
 	from .db.app.config import Config, ConfigError
 
 	config = Config()
-	log.start(config.get('client.logfile'), loglevel=config.get('client.loglevel'))
+	try:
+		log.start(config.eget('client.logfile', default='stdout'), loglevel=config.eget('client.loglevel', default=40))
+	except ConfigError as e:
+		print(str(e) + '\nlog start failed')
 
 	from .subcmd import all
 	from .version import __version__

@@ -7,7 +7,7 @@ client.logfile,			'stdout',	str
 client.loglevel,		40,		int
 style.tiled_size,		100,		int
 output.verbosity,		1,		int
-image.max_size,			4*1024*1024,	int
+image.max_size,			4194304,	int
 http.timeout,			15,		int
 interfacelift.page,		1,		int
 image.min_ratio_to_desktop,	0.7,		float

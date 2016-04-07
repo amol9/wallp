@@ -30,7 +30,7 @@ class KVStore:
 	def get(self, name):
 		try:
 			record = self._dbsession.query(self._table).filter(self._table.name == name).one()
-		except NoResultFound as e:
+		except (NoResultFound, OperationalError) as e:
 			raise KeyNotFound(str(e))
 
 		if record.value is None:
@@ -65,7 +65,7 @@ class KVStore:
 	def set(self, name, value):
 		try:
 			record = self._dbsession.query(self._table).filter(self._table.name == name).one()
-		except NoResultFound as e:
+		except (NoResultFound, OperationalError) as e:
 			raise KeyNotFound(str(e))
 
 		if value is None:
@@ -85,7 +85,11 @@ class KVStore:
 
 
 	def commit(self):
-		self._dbsession.commit()
+		try:
+			self._dbsession.commit()
+		except OperationalError as e:
+			self._dbsession.rollback()
+			raise KVError(str(e))
 
 	names = property(get_all_names)
 

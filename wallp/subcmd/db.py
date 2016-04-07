@@ -4,8 +4,8 @@ from six.moves import input
 from redcmd.api import Subcommand, subcmd
 
 from .. import const
-from ..db.create_db import CreateDB
 from ..db import DBSession
+from ..db.manage.db import DB
 
 
 __all__ = ['DbSubcommand']
@@ -21,6 +21,10 @@ class DbSubcommand(Subcommand):
 
 class DbSubSubCommands(DbSubcommand):
 
+	def __init__(self):
+		self._db = DB()
+
+
 	@subcmd
 	def reset(self):
 		'''Reset the database.
@@ -28,18 +32,7 @@ class DbSubSubCommands(DbSubcommand):
 
 		choice = input('Are you sure you want to reset the db? [y/N]: ')
 		if choice == 'y':
-			db_path = const.db_path
-			dbsession = DBSession()
-			dbsession.close()
-
-			os.remove(db_path)
-			self.create_db()
-
-
-	def create_db(self):
-		create_db = CreateDB()
-		create_db.execute()
-		print('db created')
+			self._db.reset()
 
 
 	@subcmd
@@ -47,7 +40,7 @@ class DbSubSubCommands(DbSubcommand):
 		'''Backup the database.
 		path: path to the directory or the file where backup will be stored'''
 
-		print('not implemented')
+		self._db.backup()
 
 
 	@subcmd
@@ -56,4 +49,12 @@ class DbSubSubCommands(DbSubcommand):
 		path: path to the database backup file to restore from'''
 
 		print('not implemented')
+
+
+	@subcmd
+	def upgrade(self):
+		'Upgrade the database to latest version.'
+
+		self._db.upgrade()
+		self._db.insert_data()
 

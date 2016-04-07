@@ -81,9 +81,10 @@ class Wallpaper:
 
 	def check_keep_timeout(self):
 		try:
-			keep_timeout = Vars().eget('keep_timeout')
+			keep_timeout = Vars().eget('keep_timeout', default=None)
 		except VarError as e:
 			log.error(str(e))
+			keep_timeout = None
 
 		if keep_timeout is not None and keep_timeout > time():
 			expiry = datetime.fromtimestamp(keep_timeout).strftime('%d %b %Y, %H:%M:%S')

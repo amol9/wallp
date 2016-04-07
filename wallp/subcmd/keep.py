@@ -64,10 +64,10 @@ class KeepSubcommand(Subcommand):
 			tdarg[period_map[abbr_period]] = num
 
 		td = timedelta(**tdarg)
-		keep_timeout = int(time()) + td.total_seconds()
+		keep_timeout = int(time() + td.total_seconds())
 
 		vars = Vars()
-		vars.set('keep_timeout', keep_timeout)
+		vars.eset('keep_timeout', keep_timeout)
 
 		return '%d %s'%(num, period_map[abbr_period][0 : -1 if num == 1 else None])
 

@@ -3,11 +3,18 @@ from redlib.api.http import HttpRequest, GlobalOptions, RequestOptions, HttpErro
 from redlib.api.prnt import format_size
 
 from .. import const
+from ..util.logger import log
 from ..util.printer import printer
-from ..db.app.config import Config
+from ..db.app.config import Config, ConfigError
 
 
-http_global_options = GlobalOptions(cache_dir=const.cache_dir, chunksize=const.http_chunksize, timeout=Config().eget('http.timeout', const.http_timeout))
+http_global_options = None
+try:
+	http_global_options = GlobalOptions(cache_dir=const.cache_dir, chunksize=const.http_chunksize,
+			timeout=Config().eget('http.timeout', const.http_timeout))
+except ConfigError as e:
+	log.error(e)
+
 httprequest = HttpRequest(global_options=http_global_options)
 
 
