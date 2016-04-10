@@ -95,35 +95,23 @@ class Google(Source):
 		result_div_path = './/div[@class=\'rg_di rg_el ivg-i\']'
 
 		for div in etree.findall(result_div_path):
-			a = div.find('.//a')
-			if a is None:
-				continue
-
-			href = a.attrib.get('href', None)
-			query = urlparse(href).query
-			params = parse_qs(query)
-			imgurl = params.get('imgurl', None)
-
-			if imgurl is None:
-				continue
-
-			image = Image()
-			image.url = imgurl[0]
-
 			meta_div = div.find(".//div[@class='rg_meta']")
 
 			if meta_div is not None:
 				meta = json.loads(meta_div.text)
 
-				image.width = meta.get('ow', None)
-				image.height = meta.get('oh', None)
+				image = Image()
 
-				image.context_url 	= meta.get('isu', None)
+				image.url 	= meta.get('ou', None)
+				image.width 	= meta.get('ow', None)
+				image.height 	= meta.get('oh', None)
+
+				image.context_url 	= meta.get('ru', None)
 				image.title		= meta.get('pt', None)
 				image.description	= meta.get('s', None)
 				image.ext		= meta.get('ity', None)
 
-			self._images.add(image)
+				self._images.add(image)
 
 
 	def get_etree(self, html):

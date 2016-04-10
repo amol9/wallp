@@ -16,7 +16,7 @@ class GoogleSubcommand(SourceSubcommand):
 
 		query:		search query
 		color:		preferred color
-		safesearch:	safe search'''
+		safesearch:	turn safe search off'''
 
 		gp = GoogleParams(query=query, color=color, safesearch=safesearch)
 		self.change_wallpaper(gp)
