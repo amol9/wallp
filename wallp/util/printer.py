@@ -13,7 +13,6 @@ class Printer:
 	def __init__(self, verbosity=3):
 		try:
 			self._cp = ColumnPrinter(cols=[Column(width=30), SepColumn(), Column(min=30, fill=True)])
-			self._progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=12)], row_width=37)
 		except ColumnPrinterError as e:
 			raise PrinterError(str(e))
 
@@ -27,12 +26,19 @@ class Printer:
 		if not progress and not col_updt:
 			self._cp.printf(msg, data)
 		elif progress:
-			self._cp.printf(msg, self._progress_cp)
-			cb = self._progress_cp.printf('?', '?', '?', col_updt=True)
+			progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=12)], row_width=37)
+			self._cp.printf(msg, progress_cp)
+			cb = progress_cp.printf('?', '?', '?', col_updt=True)
+
 			pcb = cb.progress_cb
 			pcp = cb.progress_cp
 			cb.progress_cb = lambda p : pcb(1, p)
-			cb.progress_cp = lambda : pcp(1)
+
+			def pcp2():
+				pcp(1)
+				progress_cp.done()
+			cb.progress_cp = pcp2
+
 			return cb
 		else:
 			return self._cp.printf(msg, data, col_updt=True)

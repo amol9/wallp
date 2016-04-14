@@ -88,7 +88,7 @@ class Xkcd(Source):
 
 			c += 1
 			cb.col_updt_cb(2, str(c))
-		cb.col_updt_cp(2)
+		cb.col_updt_cp()
 
 
 	def parse_date(self, date_str):

@@ -24,15 +24,14 @@ def get(url, save_filepath=None, open_file=None, callbacks=None, msg=None, heade
 
 	if msg is not None:
 		cb = printer.printf(msg, '?', progress=True)
-		clc = lambda c : cb.col_updt_cb(0, format_size(c))
-		cb.content_length_cb = clc
 		callbacks = cb
 
 	if callbacks is not None:
 		roptions.progress_cb 		= callbacks.progress_cb
 		roptions.progress_cp 		= callbacks.progress_cp
-		roptions.content_length_cb	= callbacks.content_length_cb
-		#roptions.speed_cb
+		roptions.content_length_cb	= lambda c : cb.col_updt_cb(0, format_size(c))
+		roptions.rate_cb		= lambda c : cb.col_updt_cb(2, format_size(c) + '/s')
+		roptions.cached_cb		= lambda c : cb.col_updt_cb(2, '[cached]')
 
 	return httprequest.get(url, roptions)
 

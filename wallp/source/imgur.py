@@ -193,7 +193,7 @@ class Imgur(Source):
 				search_page.pset(self._params.query, page)
 				retry.retry()
 
-		cb.col_updt_cp(2)
+		cb.col_updt_cp()
 
 
 	def make_image_obj(self, gimage, album=None):
@@ -240,7 +240,7 @@ class Imgur(Source):
 				count += r.images_count
 			if print_progress: update_result_count(count)
 
-		if print_progress: cb.col_updt_cp(2)
+		if print_progress: cb.col_updt_cp()
 		log.debug('got %d results'%count)
 		self.add_from_images_and_albums(images, albums)
 
