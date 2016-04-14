@@ -51,7 +51,6 @@ class ImageSelector:
 
 
 	def select_random(self):
-		print 'images: %d'%self._images.length
 		index = randint(0, self._images.length - 1)
 		image = self._images.get_image(index)
 

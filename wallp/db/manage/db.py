@@ -7,12 +7,14 @@ import csv
 from alembic.config import Config as AlConfig
 from alembic.script import ScriptDirectory
 from alembic.runtime.environment import EnvironmentContext
-from sqlalchemy import String
+from sqlalchemy import String, update
 from sqlalchemy.engine import reflection
+from sqlalchemy.exc import OperationalError
 
 from ... import const
 from ..model.all import *
 from ..dbsession import DBSession
+from ...version import __version__
 
 
 class ManageDBError(Exception):
@@ -70,7 +72,10 @@ class DB:
 						for i in range(0, len(cols)):
 							col_cls = getattr(table, cols[i]).type.__class__
 							value = row[i].strip()
-							value = value if col_cls == String else eval(value)	# convert if not string
+							if value == 'None':
+								value = None
+							else:
+								value = value if col_cls == String else eval(value)	# convert if not string
 
 							values[cols[i]] = value
 
@@ -81,6 +86,17 @@ class DB:
 						db_session.add(record)
 
 			db_session.commit()
+
+		self.update_app_version()
+
+
+	def update_app_version(self):
+		db_session = DBSession()
+		try:
+			db_session.execute(update(Var).where(Var.name == 'app_version').values(value=__version__))
+			db_session.commit()
+		except OperationalError as e:
+			log.error(e)
 
 
 	def upgrade(self, script_location=None, db_path=None, dest_rev=None):

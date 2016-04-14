@@ -71,7 +71,7 @@ class Xkcd(Source):
 
 		links = etree.findall(".//div[@id='middleContainer']//a")
 
-		cb = printer.printf('comics', '?', col_cb=True)
+		cb = printer.printf('comics', '?', col_updt=True)
 		c = 0
 		for link in links:
 			image = Image()
@@ -87,8 +87,8 @@ class Xkcd(Source):
 			self._images.add(image)
 
 			c += 1
-			cb.col_cb(2, str(c))
-		cb.col_update_cp()
+			cb.col_updt_cb(2, str(c))
+		cb.col_updt_cp(2)
 
 
 	def parse_date(self, date_str):

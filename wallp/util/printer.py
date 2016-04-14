@@ -1,57 +1,41 @@
 
-from redlib.api.prnt import ColumnPrinter
+from redlib.api.prnt import ColumnPrinter, Column, ColumnPrinterError, SepColumn, ProgressColumn
+from ..db.app.config import Config
+
+
+class PrinterError(Exception):
+	pass
 
 
 class Printer:
 	progress_col_width = 10
 
 	def __init__(self, verbosity=3):
-		self._cp = ColumnPrinter(cols=[25, 1, 50, self.progress_col_width])
-		self._verbosity = verbosity
+		try:
+			self._cp = ColumnPrinter(cols=[Column(width=30), SepColumn(), Column(min=30, fill=True)])
+			self._progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=12)], row_width=37)
+		except ColumnPrinterError as e:
+			raise PrinterError(str(e))
+
+		self._verbosity = Config().eget('output.verbosity', default=1)
 
 
-	def printf(self, msg, data, progress=False, percentage_cb=True, col_cb=False, verbosity=1):
+	def printf(self, msg, data, progress=False, col_updt=False, verbosity=1):
 		if verbosity > self._verbosity:
 			return
 
-		sep = ''
-		if data is not None and data != '':
-			sep = ':'
-		else:
-			data = ''
-
-		if not progress and not col_cb:
-			self._cp.printf(msg, sep, data, '')
-		else:
-			cb = self._cp.printf(msg, sep, data, '', progress_col=3, col_cb=col_cb)
-			
-			progress_cb = cb.progress_cb
-			progress_cp = cb.progress_cp
-
-			if percentage_cb:
-				cycle = [1]
-				def progress_cb2(percentage):
-					if percentage >= 0:
-						progress = '#' * int(percentage / self.progress_col_width)
-					else:
-						progress = '#' * cycle[0]
-						cycle[0] += 1
-						cycle[0] %= self.progress_col_width
-
-					progress_cb(progress)
-
-				def progress_cp2(value=None):
-					if value is not None and value == -1:
-						progress = '#' * self.progress_col_width
-						progress_cb(progress)
-						progress_cp()
-					else:
-						progress_cp(value)
-
-				cb.progress_cb = progress_cb2
-				cb.progress_cp = progress_cp2
-
+		if not progress and not col_updt:
+			self._cp.printf(msg, data)
+		elif progress:
+			self._cp.printf(msg, self._progress_cp)
+			cb = self._progress_cp.printf('?', '?', '?', col_updt=True)
+			pcb = cb.progress_cb
+			pcp = cb.progress_cp
+			cb.progress_cb = lambda p : pcb(1, p)
+			cb.progress_cp = lambda : pcp(1)
 			return cb
+		else:
+			return self._cp.printf(msg, data, col_updt=True)
 
 
 printer = Printer()

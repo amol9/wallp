@@ -172,8 +172,8 @@ class Imgur(Source):
 		search_page = SearchPage(group=self.name)
 		page = search_page.pget(self._params.query, default=0)
 
-		cb = printer.printf('results', '?', verbosity=2, col_cb=True)
-		update_result_count = lambda c, p : cb.col_cb(2, '%d (p %d)'%(c, p+1))
+		cb = printer.printf('results', '?', verbosity=2, col_updt=True)
+		update_result_count = lambda c, p : cb.col_updt_cb(2, '%d (p %d)'%(c, p+1))
 
 		while retry.left():
 			self._params.start_page = page
@@ -193,7 +193,7 @@ class Imgur(Source):
 				search_page.pset(self._params.query, page)
 				retry.retry()
 
-		cb.col_update_cp()
+		cb.col_updt_cp(2)
 
 
 	def make_image_obj(self, gimage, album=None):
@@ -227,8 +227,8 @@ class Imgur(Source):
 
 		count = 0
 		if print_progress:
-			cb = printer.printf('results', '%d'%count, verbosity=2, col_cb=True)
-			update_result_count = lambda c : cb.col_cb(2, str(c))
+			cb = printer.printf('results', '%d'%count, verbosity=2, col_updt=True)
+			update_result_count = lambda c : cb.col_updt_cb(2, str(c))
 
 		for r in result:
 			if type(r) == GalleryType.image.value:
@@ -240,7 +240,7 @@ class Imgur(Source):
 				count += r.images_count
 			if print_progress: update_result_count(count)
 
-		if print_progress: cb.col_update_cp()
+		if print_progress: cb.col_updt_cp(2)
 		log.debug('got %d results'%count)
 		self.add_from_images_and_albums(images, albums)
 
