@@ -26,7 +26,7 @@ class Printer:
 		if not progress and not col_updt:
 			self._cp.printf(msg, data)
 		elif progress:
-			progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=12)], row_width=37)
+			progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=30)], row_width=55)
 			self._cp.printf(msg, progress_cp)
 			cb = progress_cp.printf('?', '?', '?', col_updt=True)
 

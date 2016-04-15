@@ -1,3 +1,4 @@
+from datetime import datetime
 
 from redlib.api.http import HttpRequest, GlobalOptions, RequestOptions, HttpError
 from redlib.api.prnt import format_size
@@ -31,9 +32,16 @@ def get(url, save_filepath=None, open_file=None, callbacks=None, msg=None, heade
 		roptions.progress_cp 		= callbacks.progress_cp
 		roptions.content_length_cb	= lambda c : cb.col_updt_cb(0, format_size(c))
 		roptions.rate_cb		= lambda c : cb.col_updt_cb(2, format_size(c) + '/s')
-		roptions.cached_cb		= lambda c : cb.col_updt_cb(2, '[cached]')
+		roptions.cached_cb		= lambda i : cb.col_updt_cb(2, '[cached %s]'%(timestamp_to_date_str(i.get('mtime', None))))
 
 	return httprequest.get(url, roptions)
+
+
+def timestamp_to_date_str(ts):
+	if ts is not None:
+		return datetime.fromtimestamp(ts).strftime('%d-%b-%Y %H:%M:%S')
+	else:
+		return ''
 
 
 def exists(url):
