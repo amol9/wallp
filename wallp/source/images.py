@@ -1,7 +1,7 @@
 from random import randint
 
 from redlib.api.misc import Retry
-from redlib.http.cache2 import Cache2
+from redlib.api.http import Cache
 from asq.initiators import query
 
 from ..web.func import exists
@@ -19,13 +19,13 @@ class Images:
 	def __init__(self, source_params, cache=False, cache_timeout=None, url_exist_check=False, image_alias=None,
 			selector=None, trace=None, allow_seen_urls=False, cache_load=True):
 		self._list 	= []
-		self._cache 	= Cache2(const.cache_dir) if (cache and const.cache_enabled) else None
+		self._cache 	= Cache(const.cache_dir) if (cache and const.cache_enabled) else None
 		self._filter	= ImageFilter()
 
 		self._image_alias = image_alias
 
 		self._source_params	= source_params
-		self._cache_timeout	= 'never' if cache_timeout is None else cache_timeout
+		self._cache_timeout	= '1M' if cache_timeout is None else cache_timeout
 		self._url_exist_check	= url_exist_check
 
 		self._allow_seen_urls = allow_seen_urls
@@ -163,7 +163,7 @@ class Images:
 	def update_cache(self):
 		if self._cache is not None and self.available():
 			hash = self._source_params.get_hash()
-			self._cache.pickle_add(self._list, self._cache_timeout, id=hash)
+			self._cache.add(hash, self._list, self._cache_timeout, pickle=True)
 
 
 	def available(self):
