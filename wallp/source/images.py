@@ -17,7 +17,8 @@ from .image_selector import ImageSelector
 class Images:
 
 	def __init__(self, source_params, cache=False, cache_timeout=None, url_exist_check=False, image_alias=None,
-			selector=None, trace=None, allow_seen_urls=False, cache_load=True):
+			custom_select=None, trace=None, allow_seen_urls=False, cache_load=True):
+
 		self._list 	= []
 		self._cache 	= Cache(const.cache_dir) if (cache and const.cache_enabled) else None
 		self._filter	= ImageFilter()
@@ -25,7 +26,7 @@ class Images:
 		self._image_alias = image_alias
 
 		self._source_params	= source_params
-		self._cache_timeout	= '1M' if cache_timeout is None else cache_timeout
+		self._cache_timeout	= cache_timeout or '1M'
 		self._url_exist_check	= url_exist_check
 
 		self._allow_seen_urls = allow_seen_urls
@@ -38,13 +39,13 @@ class Images:
 		self._db_images = DBImages()
 
 		self._trace = trace
-		self._selector = selector or ImageSelector(self, self._trace)
+		self._selector = ImageSelector(self, self._trace, custom_select=custom_select)
 
 		self._rank = 1	# automatically added rank for images
 
 
-	def add_select_filter(self, fn):
-		self._select_filters.append(fn)
+	def add_select_filter(self, fl, retry=None, msg=None):
+		self._selector.add_filter(fl, retry=retry, msg=msg)
 
 
 	def add_filters(self):
@@ -91,32 +92,11 @@ class Images:
 
 
 	def select(self):
-		return self._selector.select()
+		image = self._selector.select()
 
-		if len(self._list) == 0:
+		'''if len(self._list) == 0:
 			log.error('no usable %s found'%self.image_alias)
-			raise SourceError('no usable %s found'%self.image_alias)
-
-		image = None
-		if self._url_exist_check:
-			retry = Retry(retries=10, exp_bkf=False, final_exc=SourceError('could not find usable image urls'))
-
-			cb = printer.printf('checking', ' ', progress=True)
-			while retry.left():
-				image = self._selector(print_step=False)
-				cb.progress_cb(-1)
-
-				if not exists(image.url):
-					retry.retry()
-				else:
-					retry.cancel()
-			cb.progress_cp()
-
-		elif len(self._select_filters) > 0:
-			image = self._selector()
-			map(lambda f : f(image), self._select_filters)
-		else:
-			image = self._selector()
+			raise SourceError('no usable %s found'%self.image_alias)'''
 
 		printer.printf('image title', image.title or '-', verbosity=3)
 		printer.printf('username', image.user or '-', verbosity=3)
@@ -126,17 +106,7 @@ class Images:
 
 		return image
 
-
-	def select_random(self, print_step=True):
-		rindex = randint(0, len(self._list) - 1)
-		image = self._list[rindex]
-
-		self._trace.add_step('random %s'%self.image_alias, image.url or image.context_url, overwrite=True, print_step=print_step)
-
-		del self._list[rindex]
-		return image
-
-
+	
 	def get_length(self):
 		return len(self._list)
 

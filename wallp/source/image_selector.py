@@ -10,6 +10,10 @@ ImageSelectorMethod = Enum('ImageSelectorMethod', ['random', 'rank', 'score', 's
 ImageSelectorMethodMod = Enum('ImageSelectorMethodMod', {'min': min, 'max': max, 'avg': None})
 
 
+class SelectError(Exception):
+	pass
+
+
 class SelectorParams:
 	def __init__(self, method, mod, value):
 		self.method	= method
@@ -46,14 +50,42 @@ class ImageSelector:
 
 
 	def select(self, retry=None):
-		item = self._select()
-		return item		
+		self._images.length > 0 or self.raise_exc('no images')
+
+		image = self._select()
+
+		for fl, retry, msg in self._filters:
+			r = False
+			if retry is not None:
+				cb = None
+				if msg is not None:
+					cb = printer.printf(msg, '', progress=True)
+				while retry.left():
+					cb or cb.progress_cb(None)
+					r = fl(image)
+					if r:
+						retry.cancel()
+						break
+					else:
+						image = self._select()
+						retry.retry()
+
+				cb or cb.progress_cp()
+			else:		
+				r = fl(image)
+			r or self.raise_exc('selection filter failed')
+
+		self.add_trace(image)
+		return image		
+
+
+	def raise_exc(self, msg):
+		raise SelectError(msg)
 
 
 	def select_random(self):
 		index = randint(0, self._images.length - 1)
 		image = self._images.get_image(index)
-
 		self._images.del_image(index)
 		return image
 
@@ -80,12 +112,11 @@ class ImageSelector:
 		pass
 
 
-	def add_trace(self, msg, print_step=True):
+	def add_trace(self, image, print_step=True):
 		if self._trace is not None:
-			self._trace.add_step('random %s'%self.image_alias, image.url or image.context_url, overwrite=True, print_step=print_step)
+			self._trace.add_step('random %s'%self._images.image_alias, image.url or image.context_url, overwrite=True, print_step=print_step)
 
 
-	def add_filter(self, fn):
-		self._filters.append(fn)
-
+	def add_filter(self, fl, retry=None, msg=None):
+		self._filters.append((fl, retry, msg))
 
