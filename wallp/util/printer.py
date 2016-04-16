@@ -28,7 +28,7 @@ class Printer:
 		elif progress:
 			progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=30)], row_width=55)
 			self._cp.printf(msg, progress_cp)
-			cb = progress_cp.printf('?', '?', '?', col_updt=True)
+			cb = progress_cp.printf('?', '?', '', col_updt=True)
 
 			pcb = cb.progress_cb
 			pcp = cb.progress_cp

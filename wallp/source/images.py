@@ -1,10 +1,11 @@
 from random import randint
+from time import time
 
 from redlib.api.misc import Retry
 from redlib.api.http import Cache
 from asq.initiators import query
 
-from ..web.func import exists
+from ..web.func import exists, timestamp_to_date_str
 from ..util import log
 from .base import SourceError
 from .. import const
@@ -31,8 +32,10 @@ class Images:
 
 		self._allow_seen_urls = allow_seen_urls
 
+		self._create_time = int(time())
 		if cache_load:
 			self.load_cache()
+
 		self.add_filters()
 
 		self._select_filters = []
@@ -74,11 +77,16 @@ class Images:
 			return
 
 		hash = self._source_params.get_hash()
-		cached_images = self._cache.get(hash)
-		if cached_images is not None:
+		cached_data = self._cache.get(hash)
+		if cached_data is not None:
+			cached_images = cached_data[0]
+			self._create_time = cached_data[1]
+
 			if len(cached_images) > 0:
 				item_desc = self.image_alias + 's' if len(cached_images) > 1 else ''
-				printer.printf('cached list', '%d %s'%(len(cached_images), item_desc), verbosity=2)
+				info = self._cache.info(hash)
+				printer.printf('cached list', '%d %s [%s]'%(len(cached_images), item_desc,
+					timestamp_to_date_str(self._create_time)), verbosity=2)
 				self._list = cached_images
 
 	
@@ -133,7 +141,7 @@ class Images:
 	def update_cache(self):
 		if self._cache is not None and self.available():
 			hash = self._source_params.get_hash()
-			self._cache.add(hash, self._list, self._cache_timeout, pickle=True)
+			self._cache.add(hash, [self._list, self._create_time], self._cache_timeout, pickle=True)
 
 
 	def available(self):

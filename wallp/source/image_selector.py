@@ -4,6 +4,7 @@ from enum import Enum
 from redlib.api.py23 import enum_attr
 
 from ..db.app.config import Config
+from ..util.printer import printer
 
 
 ImageSelectorMethod = Enum('ImageSelectorMethod', ['random', 'rank', 'score', 'size', 'time', 'domain', 'url', 'resolution'])
@@ -23,13 +24,15 @@ class SelectorParams:
 
 class ImageSelector:
 
-	def __init__(self, images, trace, params=None):
+	def __init__(self, images, trace, params=None, custom_select=None):
 		self._images = images
 		self._trace = trace
 
 		self._filters = []
 		self._params = params
 
+		self._custom_select = custom_select
+	
 		self.set_method()
 
 
@@ -50,6 +53,9 @@ class ImageSelector:
 
 
 	def select(self, retry=None):
+		if self._custom_select is not None:
+			return self._custom_select()
+
 		self._images.length > 0 or self.raise_exc('no images')
 
 		image = self._select()
@@ -60,8 +66,10 @@ class ImageSelector:
 				cb = None
 				if msg is not None:
 					cb = printer.printf(msg, '', progress=True)
+				r_count = 1
 				while retry.left():
-					cb or cb.progress_cb(None)
+					cb and cb.col_updt_cb(0, str(r_count))
+					cb and cb.progress_cb(None)
 					r = fl(image)
 					if r:
 						retry.cancel()
@@ -69,8 +77,9 @@ class ImageSelector:
 					else:
 						image = self._select()
 						retry.retry()
+						r_count += 1
 
-				cb or cb.progress_cp()
+				cb and cb.progress_cp()
 			else:		
 				r = fl(image)
 			r or self.raise_exc('selection filter failed')
