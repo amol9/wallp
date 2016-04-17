@@ -31,6 +31,8 @@ class Statistics:
 		usage_time = timedelta(seconds=int(time() - dbs.query(Image).first().time))
 		self.usage_time = usage_time
 
+		self.avg_wallpaper_life = str(self.usage_time / self.wallpaper_count).split('.')[0]
+
 
 	def freq_list(self, list, desc=True): 
 		freq_list = []

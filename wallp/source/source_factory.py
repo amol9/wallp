@@ -2,7 +2,7 @@ from random import choice
 
 from redlib.api.misc import Singleton
 
-from ..db.app.config import Config, ConfigError
+from ..db.app.sources import Sources, DBSourceError
 from ..util import log
 from .base import Source
 from .all_sources import *
@@ -35,12 +35,13 @@ class _SourceFactory():
 	def load_status(self):
 		if self._status_loaded:
 			return
-		config = Config()
+
+		db_sources = Sources()
 		for source_name in self._sources.keys():
 			try:
-				enabled = True or config.eget(source_name + '.enabled', default=True)
+				enabled = db_sources.enabled(source_name)
 				self._sources[source_name].enabled = enabled
-			except ConfigError as e:
+			except DBSourceError as e:
 				log.error(str(e))
 
 

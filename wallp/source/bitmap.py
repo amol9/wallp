@@ -13,14 +13,14 @@ from .trace import Trace
 
 
 class BitmapParams(SourceParams):
-	name = 'bitmap'
+	name = 'color'
 
 	def __init__(self, color=None, width=None, height=None):
 		self.color = color
 
 
 class Bitmap(Source):
-	name = 'bitmap'
+	name = 'color'
 	params_cls = BitmapParams
 
 	def __init__(self):
