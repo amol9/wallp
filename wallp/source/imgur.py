@@ -91,7 +91,7 @@ class Imgur(Source):
 				return self.random()
 		except ImgurError as e:
 			log.error(e)
-			raise SourceError()
+			raise SourceError(str(e))
 
 
 	def get_gimgur(self):
@@ -114,11 +114,11 @@ class Imgur(Source):
 
 		retry = Retry(retries=3, final_exc=ImgurError())
 		while retry.left():
-			album_url = self._album_list.get_random()
-			self._trace.add_step('random album', album_url)
+			album_id = self._album_list.get_random()
+			self._trace.add_step('random album', album_id)
 		
 			try:
-				self.get_album(album_url)
+				self.get_album(album_id)
 				retry.cancel()
 			except ImgurError as e:
 				log.error(e)
@@ -136,13 +136,11 @@ class Imgur(Source):
 		return self._images.available()
 
 
-	def get_album(self, album_url):
-		album_id = self.get_album_id_from_url(album_url)
+	def get_album(self, album_id):
 		if self.album_images_in_cache(album_id):
 			return
 
 		album = None
-
 		try:
 			album = self.get_gimgur().get_album(album_id)
 		except GImgurError as e:
@@ -157,8 +155,8 @@ class Imgur(Source):
 
 	def process_album(self, album):
 		for i in album.images:
-			image = self.make_image_obj(i)
-			self._images.add(image, album=album)
+			image = self.make_image_obj(i, album=album)
+			self._images.add(image)
 
 	
 	def search(self):
@@ -200,7 +198,7 @@ class Imgur(Source):
 		if type(gimage) == GalleryType.image.value:
 			get = lambda f : getattr(gimage, f, None) 
 		else:
-			get = lambda f : gimage.get(f)
+			get = lambda f : gimage.get(f, None)
 
 		drop_ext = lambda u : u[0 : u.rfind('.')]
 		image = Image()
@@ -209,10 +207,10 @@ class Imgur(Source):
 		image.width 	= get('width')
 		image.height 	= get('height')
 		image.size 	= get('size')
-	
-		image.title		= get('title') or album.title
+
+		image.title		= get('title') or (album and album.title)
 		image.description 	= get('description') or (album and album.description)
-		image.user		= get('account_url')
+		image.user		= get('account_url') or (album and album.account_url)
 		image.context_url	= (album and album.link) or drop_ext(image.url)
 		
 		image.nsfw = get('nsfw')
@@ -236,7 +234,7 @@ class Imgur(Source):
 				images.append(image)
 				count += 1
 			else:
-				albums.append(r.link)
+				albums.append(r.id)
 				count += r.images_count
 			if print_progress: update_result_count(count)
 
@@ -253,10 +251,9 @@ class Imgur(Source):
 				self._images.add(i)
 
 		def add_from_albums():
-			album_url = choice(albums)
-			albums.remove(album_url)
-
-			self.get_album(album_url)
+			album_id = choice(albums)
+			albums.remove(album_id)
+			self.get_album(album_id)
 
 		add_from_images()
 
@@ -308,32 +305,32 @@ class Imgur(Source):
 
 		retry = Retry(retries=3, delay=1, exp_bkf=False)
 
-		def get_random_album(album_urls):
-			album_url = choice(album_urls)
-			self._trace.add_step('random album', album_url)
-			self.get_album(album_url)
+		def get_random_album(album_ids):
+			album_id = choice(album_ids)
+			self._trace.add_step('random album', album_id)
+			self.get_album(album_id)
 
-		ex_album_urls = []
+		ex_album_ids = []
 
 		while retry.left():
 			self._params.start_page = page
 			result = self.get_gimgur().search(self._params)
 
 			found_new = False
-			new_album_urls = []
+			new_album_ids = []
 			for r in result:
-				if not self._album_list.exists(r.link):
-					self._album_list.add(r.link, True)
+				if not self._album_list.exists(r.id):
+					self._album_list.add(r.id, True)
 					found_new = True
-					new_album_urls.append(r.link)
+					new_album_ids.append(r.id)
 					log.debug('found new wallpaper album: %s'%r.link)
 				else:
-					ex_album_urls.append(r.link)
+					ex_album_ids.append(r.id)
 
 			if found_new:
 				self._album_list.commit()
-				printer.printf('new wallpaper albums', str(len(new_album_urls)))
-				get_random_album(new_album_urls)
+				printer.printf('new wallpaper albums', str(len(new_album_ids)))
+				get_random_album(new_album_ids)
 				return
 			else:
 				page += 1
@@ -342,8 +339,8 @@ class Imgur(Source):
 		if self._params.query == 'wallpaper':
 			self._config.pset('wallpaper_search_page', (page + 1) % 100)
 
-		if len(ex_album_urls) > 0:
-			get_random_album(ex_album_urls)
+		if len(ex_album_ids) > 0:
+			get_random_album(ex_album_ids)
 		else:
 			self.random_album()
 

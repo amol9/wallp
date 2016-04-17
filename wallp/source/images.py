@@ -12,7 +12,7 @@ from .. import const
 from ..util.printer import printer
 from .image_filter import ImageFilter
 from ..db.app.images import Images as DBImages
-from .image_selector import ImageSelector
+from .image_selector import ImageSelector, SelectError
 
 	
 class Images:
@@ -100,7 +100,10 @@ class Images:
 
 
 	def select(self):
-		image = self._selector.select()
+		try:
+			image = self._selector.select()
+		except SelectError as e:
+			raise SourceError(str(e))
 
 		'''if len(self._list) == 0:
 			log.error('no usable %s found'%self.image_alias)
@@ -139,9 +142,16 @@ class Images:
 
 
 	def update_cache(self):
-		if self._cache is not None and self.available():
-			hash = self._source_params.get_hash()
-			self._cache.add(hash, [self._list, self._create_time], self._cache_timeout, pickle=True)
+		if self._cache is None:
+			return
+
+		hash = self._source_params.get_hash()
+
+		if self.length == 0:
+			self._cache.delete(hash)
+			return
+
+		self._cache.add(hash, [self._list, self._create_time], self._cache_timeout, pickle=True)
 
 
 	def available(self):

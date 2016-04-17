@@ -15,7 +15,7 @@ class KVHelper(KVStore):
 		try:
 			return self.exc_call(self.get, self._prefix + name)
 		except KeyNotFound:
-			self.exc_call(self.add, name, default)
+			self.exc_call(self.add, self._prefix + name, default)
 
 		return default
 
@@ -24,7 +24,7 @@ class KVHelper(KVStore):
 		try:
 			self.exc_call(self.set, self._prefix + name, value)
 		except KeyNotFound:
-			self.exc_call(self.add, name, value)	
+			self.exc_call(self.add, self._prefix + name, value)	
 
 
 	def eget(self, name, default=None):

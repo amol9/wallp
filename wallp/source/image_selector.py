@@ -22,6 +22,14 @@ class SelectorParams:
 		self.value	= value
 
 
+class SelectFilter:
+	def __init__(self, filter_fn, output_msg=None, retry=None, retry_exc_msg=None):
+		self.filter_fn 		= filter_fn
+		self.output_msg		= output_msg
+		self.retry		= retry
+		self.retry.exc		= SelectError(retry_exc_msg)
+
+
 class ImageSelector:
 
 	def __init__(self, images, trace, params=None, custom_select=None):
@@ -56,7 +64,7 @@ class ImageSelector:
 		if self._custom_select is not None:
 			return self._custom_select()
 
-		self._images.length > 0 or self.raise_exc('no images')
+		self._images.length > 0 or self.raise_exc('no usable images')
 
 		image = self._select()
 
@@ -70,6 +78,7 @@ class ImageSelector:
 				while retry.left():
 					cb and cb.col_updt_cb(0, str(r_count))
 					cb and cb.progress_cb(None)
+					image.url += 'txt'
 					r = fl(image)
 					if r:
 						retry.cancel()
@@ -78,6 +87,8 @@ class ImageSelector:
 						image = self._select()
 						retry.retry()
 						r_count += 1
+				else:
+					self.raise_exc('selection filter retries exceeded limit')
 
 				cb and cb.progress_cp()
 			else:		

@@ -21,8 +21,14 @@ class KVStore:
 
 
 	def add(self, name, value):
-		svalue = str(value) if value is not None else None
-		record = self._table(name=name, value=svalue, type=type(value).__name__)
+		if value is None:
+			svalue = None
+			stype = None
+		else:
+			svalue = str(value)
+			stype= type(value).__name__
+
+		record = self._table(name=name, value=svalue, type=stype)
 		self._dbsession.add(record)
 		self.commit()
 
@@ -70,16 +76,16 @@ class KVStore:
 
 		if value is None:
 			record.value = None
-
 		else:
-			vtype = eval(record.type)
+			#vtype = eval(record.type)
 
-			try:
-				vtype(value)
-			except ValueError as e:
-				raise KVError(str(e))
+			#try:
+			#	vtype(value)
+			#except ValueError as e:
+			#	raise KVError(str(e))
 
 			record.value = str(value)
+			record.type = type(value).__name__
 
 		self.commit()
 
