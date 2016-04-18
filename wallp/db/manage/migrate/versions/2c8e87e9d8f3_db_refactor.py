@@ -82,7 +82,8 @@ def upgrade():
 	sa.Column('id', sa.Integer(), nullable=False),
 	sa.Column('name', sa.String(length=64), nullable=True),
 	sa.Column('enabled', sa.Boolean(), nullable=True),
-	sa.PrimaryKeyConstraint('id')
+	sa.PrimaryKeyConstraint('id'),
+	sa.UniqueConstraint('name')
 	)
 
 	op.create_table('subreddit',

@@ -78,7 +78,6 @@ class ImageSelector:
 				while retry.left():
 					cb and cb.col_updt_cb(0, str(r_count))
 					cb and cb.progress_cb(None)
-					image.url += 'txt'
 					r = fl(image)
 					if r:
 						retry.cancel()
