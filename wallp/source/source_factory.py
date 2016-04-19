@@ -54,7 +54,7 @@ class _SourceFactory():
 		source = self._sources.get(source_name, None)
 		if source is not None:
 			if not source.enabled:
-				raise SourceFactoryError('%s is disabled'%source_name)
+				raise SourceFactoryError('%s is disabled, enable using >wallp config enable %s'%(2*(source_name,)))
 			return source()
 
 

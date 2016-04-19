@@ -5,6 +5,7 @@ from .base import ConfigSubcommand
 from ...util.printer import printer
 from ...util import log
 from ...db.app.config import Config, ConfigError
+from ...db.app.sources import Sources, DBSourceError
 
 
 __all__ = ['GetSetSubcommands']
@@ -51,7 +52,19 @@ class GetSetSubcommands(ConfigSubcommand):
 
 		settings = self.exc_call(self._config.get_all)
 		for name, value in settings:
-			printer.printf(name, str(value))	
+			printer.printf(name, str(value))
+
+		printer.printf('', '')
+
+		try:
+			sources = Sources()
+			source_states = sources.get_all()
+		except DBSourceError as e:
+			print(e)
+			raise CommandError()
+
+		for name, enabled in source_states:
+			printer.printf(name, 'enabled' if enabled else 'disabled')
 
 
 	def exc_call(self, method, *args, **kwargs):

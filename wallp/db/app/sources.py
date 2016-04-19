@@ -29,15 +29,25 @@ class Sources:
 
 
 	def enable(self, name):
-		self.set_state(self, name, True)
+		self.set_state(name, True)
+
 
 	def disable(self, name):
-		self.set_state(self, name, False)
+		self.set_state(name, False)
 
 
 	def set_state(self, name, state):
 		try:
-			self._db_session.query(Source).update({'enabled': state}).where(Source.name == name)
+			self._db_session.query(Source).filter(Source.name == name).update({'enabled': state})
+			self._db_session.commit()
+		except (NoResultFound, OperationalError) as e:
+			raise DBSourceError(str(e))
+
+
+	def get_all(self):
+		try:
+			result = self._db_session.query(Source).all()
+			return map(lambda r : (r.name, r.enabled), result)
 		except (NoResultFound, OperationalError) as e:
 			raise DBSourceError(str(e))
 
