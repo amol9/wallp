@@ -43,6 +43,13 @@ class KVHelper(KVStore):
 			self.exc_call(self.add, name, value)
 
 
+	def sget(self, name):
+		try:
+			return self.get(name)
+		except KeyNotFound as e:
+			raise self._err_type('not found')
+
+
 	def exc_call(self, method, *args):
 		try:
 			return method(*args)

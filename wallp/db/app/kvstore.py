@@ -54,7 +54,7 @@ class KVStore:
 		return value
 
 
-	def get_all_names(self):
+	def get_all(self):
 		result = None
 		try:
 			result = self._dbsession.query(self._table).all()
@@ -62,14 +62,10 @@ class KVStore:
 			log.error(e.orig)
 			raise KVError()
 
-		names = []
-		for r in result:
-			names.append(r.name)
-
-		return names
+		return map(lambda r : (r.name, r.value), result)
 
 
-	def set(self, name, value):
+	def set(self, name, value, check_type=False):
 		try:
 			record = self._dbsession.query(self._table).filter(self._table.name == name).one()
 		except (NoResultFound, OperationalError) as e:
@@ -77,17 +73,21 @@ class KVStore:
 
 		if value is None:
 			record.value = None
-		else:
-			#vtype = eval(record.type)
 
-			#try:
-			#	vtype(value)
-			#except ValueError as e:
-			#	raise KVError(str(e))
+		else:
+			if check_type and record.type is not None:
+				vtype = eval(record.type)
+
+				try:
+					vtype(value)
+				except ValueError as e:
+					raise KVError(str(e))
+
+			else:
+				record.type = type(value).__name__
 
 			record.value = str(value)
-			record.type = type(value).__name__
-
+			
 		self.commit()
 
 
@@ -97,6 +97,4 @@ class KVStore:
 		except OperationalError as e:
 			self._dbsession.rollback()
 			raise KVError(str(e))
-
-	names = property(get_all_names)
 

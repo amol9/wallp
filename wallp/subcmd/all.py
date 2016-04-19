@@ -12,6 +12,7 @@ from .favorite import *
 from .stats import *
 
 from .source.all import *
+from .config.all import *
 
 from .change import *
 

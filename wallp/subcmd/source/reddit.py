@@ -11,7 +11,7 @@ __all__ = ['RedditSubcommand']
 class RedditSubcommand(SourceSubcommand):
 
 	@subcmd
-	def reddit(self, query=None, subreddit=None, posts_limit=IntArg(opt=True, default=10, max=100, min=10)):
+	def reddit(self, query=None, subreddit=None, posts_limit=IntArg(opt=True, default=None, max=100, min=10)):
 		'''Solid color
 
 		run "wallp list colors" to see a list of all supported colors'''

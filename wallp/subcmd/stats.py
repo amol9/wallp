@@ -12,6 +12,8 @@ class StatsSubcommand(Subcommand):
 
 	@subcmd
 	def stats(self):
+		'Print wallpaper statistics.'
+
 		st = Statistics()
 
 		cp = ColumnPrinter(cols=[Column(width=30), SepColumn(), Column(fill=True)])

@@ -21,7 +21,7 @@ from ..db.app.config import Config
 class RedditParams(SourceParams):
 	name = 'reddit'
 
-	def __init__(self, query=None, subreddit=None, limit=20):
+	def __init__(self, query=None, subreddit=None, limit=None):
 		self.query	= query
 		self.subreddit	= subreddit
 		self.limit	= limit
@@ -41,8 +41,6 @@ class Reddit(Source):
 		super(Reddit, self).__init__()
 
 		self._config = Config(group=self.name)
-		self._posts_limit = self._config.pget('posts_limit')
-
 		self._imgur = None
 
 		self._trace 	= Trace()
@@ -57,6 +55,7 @@ class Reddit(Source):
 
 	def get_image(self, params=None):
 		params = params or RedditParams()
+		params.limit = params.limit or self._config.pget('posts_limit')
 
 		cache = True
 		if params.query is None and params.subreddit is None:
@@ -77,12 +76,18 @@ class Reddit(Source):
 		posts = self.get_posts()
 
 		for p in posts:
-			url = p.url
+			get = lambda i : getattr(p, i, None)
+
+			url = get('url')
+			if url is None:
+				continue
+
 			url = url[url.rfind('?') + 1 : ]
 			ext = url[url.rfind('.') + 1 : ]
 
 			if ext in const.image_extensions:
-				image = Image(url=p.url, user=p.author.name, title=p.title, context_url=p.permalink)
+				get_user = lambda : get('author') and getattr(get('author'), 'name', None)
+				image = Image(url=get('url'), user=get_user(), title=get('title'), context_url=get('permalink'))
 				self._images.add(image)
 
 
