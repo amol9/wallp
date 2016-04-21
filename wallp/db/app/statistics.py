@@ -26,12 +26,13 @@ class Statistics:
 		domain_freq = self.freq_list(all_domains)
 		self.top_domains = domain_freq[0 : 10]
 
-		self.avg_downloaded_image_size = dbs.query(func.avg(Image.size)).filter(Image.url != None).scalar()
+		self.avg_downloaded_image_size = dbs.query(func.avg(Image.size)).filter(Image.url != None).scalar() or 0
 	
-		usage_time = timedelta(seconds=int(time() - dbs.query(Image).first().time))
+		first_image = dbs.query(Image).first()
+		usage_time = timedelta(seconds=int(time() - (first_image and first_image.time or int(time()))))
 		self.usage_time = usage_time
 
-		self.avg_wallpaper_life = str(self.usage_time / self.wallpaper_count).split('.')[0]
+		self.avg_wallpaper_life = self.usage_time and str(self.usage_time / self.wallpaper_count).split('.')[0] or '0:00:00'
 
 
 	def freq_list(self, list, desc=True): 
