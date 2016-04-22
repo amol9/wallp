@@ -4,6 +4,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from ..model.image import Image
 from ..dbsession import DBSession
+from .vars import Vars
 
 
 class DBImageError(Exception):
@@ -39,6 +40,17 @@ class Images:
 
 	def raise_exc(self, msg):
 		raise DBImageError(msg)
+
+
+	def get_current_wallpaper_image(self):
+		vars = Vars()
+		image_id = vars.eget('current_wallpaper_image', default=None) or self.raise_exc('wallpaper image not set')
+		try:
+			image = self._db_session.query(Image).filter(Image.id == image_id).one()
+		except NoResultFound:
+			self.raise_exc('image data not available')
+
+		return image
 
 
 		

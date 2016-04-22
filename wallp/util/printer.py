@@ -19,9 +19,12 @@ class Printer:
 		self._verbosity = Config().eget('output.verbosity', default=1)
 
 
-	def printf(self, msg, data, progress=False, col_updt=False, verbosity=1):
+	def printf(self, msg=None, data=None, progress=False, col_updt=False, verbosity=1):
 		if verbosity > self._verbosity:
 			return
+
+		msg = msg or ''
+		data = data or ''
 
 		if not progress and not col_updt:
 			self._cp.printf(msg, data)
