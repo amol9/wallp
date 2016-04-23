@@ -15,22 +15,27 @@ class ListOps:
 
 	@subcmd
 	def add(self, item):
+		'Add to list.'
 		pass
 
 	@subcmd
 	def remove(self, item):
+		'Remove from list.'
 		pass
 
 	@subcmd
 	def enable(self, item):
+		'Enable an item.'
 		pass
 
 	@subcmd
 	def disable(self, item):
+		'Disable an item.'
 		pass
 
 	@subcmd
 	def dump(self):
+		'Print entire list.'
 		pass
 
 
@@ -43,9 +48,4 @@ class ImgurAlbumSubcommand(ListSubcommand):
 
 class ImgurAlbumOps(ImgurAlbumSubcommand, ListOps):
 	pass
-
-
-	#imgur-album add/..
-	#query ..
-	#subreddit ..
 
