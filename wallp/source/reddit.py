@@ -9,7 +9,7 @@ from giraf.api import Imgur as GImgur, ImgurError as GImgurError
 
 from ..util import log, Retry
 from .. import const
-from ..db.itemlist import SubredditList
+from ..db.app.subreddit_list import SubredditList
 from .base import SourceError, SourceParams, Source
 from .image import Image
 from .images import Images
@@ -59,7 +59,7 @@ class Reddit(Source):
 
 		cache = True
 		if params.query is None and params.subreddit is None:
-			params.subreddit = SubredditList().get_random()
+			params.subreddit = SubredditList().random()
 			self._trace.add_step('random subreddit', params.subreddit)
 			cache = False
 

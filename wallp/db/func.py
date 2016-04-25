@@ -4,7 +4,6 @@ from random import choice
 
 from .app.vars import Vars
 from .dbsession import DBSession
-from .itemlist import ImgurAlbumList, SubredditList, SearchTermList
 from .model.image import Image
 from .exc import NotFoundError
 
@@ -82,10 +81,6 @@ def unfavorite_wallpaper():
 def get_last_change_time():
 	vars = Vars()
 	return vars.eget('last_change_time', default=None)
-
-
-def get_lists():
-	return [ImgurAlbumList, SubredditList, SearchTermList]
 
 
 def get_current_wallpaper_image():

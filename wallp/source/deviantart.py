@@ -7,7 +7,7 @@ from six.moves.urllib.parse import urlencode
 
 from ..util.logger import log
 from ..desktop import get_desktop, get_standard_desktop_size
-from ..db.itemlist import SearchTermList
+from ..db.app.query_list import QueryList
 from .base import SourceError, SourceParams, Source
 from .images import Images
 from .http_helper import HttpHelper
@@ -50,7 +50,7 @@ class DeviantArt(Source):
 
 	def search(self, params):
 		if params.query is None:
-			params.query = SearchTermList().get_random()
+			params.query = QueryList().random()
 			self._trace.add_step('random search', params.query)
 		else:
 			self._trace.add_step('search', params.query)

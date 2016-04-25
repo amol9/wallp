@@ -4,7 +4,7 @@ from redlib.api.web import HtmlParser
 from six.moves.urllib.parse import urlencode, urlparse, parse_qs
 
 from ..util import log
-from ..db.itemlist import SearchTermList
+from ..db.app.query_list import QueryList
 from ..util.printer import printer
 from .base import SourceError, SourceParams, Source
 from .images import Images
@@ -58,7 +58,7 @@ class Google(Source):
 
 	def search(self, params):
 		if params.query is None:
-			params.query = SearchTermList().get_random()
+			params.query = QueryList().random()
 			self._trace.add_step('random search term', params.query)
 
 		if params.color is not None and not params.color in self.colors:

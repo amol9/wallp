@@ -6,7 +6,7 @@ from enum import Enum
 from giraf.api import Imgur as GImgur, ImgurError as GImgurError, QueryType, ImageSize, GalleryType, ImgurErrorType, Filter as GImgurFilter
 
 from ..util import log, Retry
-from ..db.itemlist import ImgurAlbumList
+from ..db.app.imgur_album_list import ImgurAlbumList
 from ..desktop.desktop_factory import get_desktop
 from ..util.printer import printer
 from .base import SourceParams, SourceError, Source
@@ -16,7 +16,7 @@ from .image import Image
 from .images import Images
 from .http_helper import HttpHelper
 from .trace import Trace
-from ..db.itemlist import SearchTermList
+from ..db.app.query_list import QueryList
 
 
 ImgurMethod = Enum('ImgurMethod', ['random', 'search', 'random_album', 'wallpaper_album', 'favorite'])
@@ -114,7 +114,7 @@ class Imgur(Source):
 
 		retry = Retry(retries=3, final_exc=ImgurError())
 		while retry.left():
-			album_id = self._album_list.get_random()
+			album_id = self._album_list.random()
 			self._trace.add_step('random album', album_id)
 		
 			try:
@@ -146,7 +146,7 @@ class Imgur(Source):
 		except GImgurError as e:
 			log.error(e)
 			if e.err_type == ImgurErrorType.not_found:
-				self._album_list.disable(album_url)
+				self._album_list.disable(album_id)
 				log.debug('disabled album: %s'%album_url)
 				raise ImgurError(e)
 
@@ -161,7 +161,7 @@ class Imgur(Source):
 	
 	def search(self):
 		if self._params.query is None:
-			self._params.query = SearchTermList().get_random()
+			self._params.query = QueryList().random()
 		else:
 			self._trace.add_step('search', self._params.query)
 
@@ -320,7 +320,7 @@ class Imgur(Source):
 			new_album_ids = []
 			for r in result:
 				if not self._album_list.exists(r.id):
-					self._album_list.add(r.id, True)
+					self._album_list.add(r.id, commit=False)
 					found_new = True
 					new_album_ids.append(r.id)
 					log.debug('found new wallpaper album: %s'%r.link)

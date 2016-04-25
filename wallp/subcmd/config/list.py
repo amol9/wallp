@@ -3,6 +3,8 @@ from redcmd.api import subcmd, CommandError
 
 from .base import ConfigSubcommand
 from ...db.app.imgur_album_list import ImgurAlbumList, ImgurAlbumListError
+from ...db.app.query_list import QueryList, QueryListError
+from ...db.app.subreddit_list import SubredditList, SubredditListError
 from ...util.printer import printer
 
 
@@ -10,6 +12,7 @@ class ListSubcommand(ConfigSubcommand):
 
 	@subcmd
 	def list(self):
+		'Manage lists.'
 		pass
 
 
@@ -78,10 +81,11 @@ class ImgurAlbumSubcommand(ListSubcommand):
 
 	@subcmd
 	def imgur_album(self):
+		'Imgur album list.'
 		pass
 
 
-class ImgurAlbumOps(ImgurAlbumSubcommand, ListOps):
+class ImgurAlbumListOps(ImgurAlbumSubcommand, ListOps):
 	list_cls = ImgurAlbumList
 	list_exc_cls = ImgurAlbumListError
 
@@ -89,4 +93,37 @@ class ImgurAlbumOps(ImgurAlbumSubcommand, ListOps):
 		ImgurAlbumSubcommand.__init__(self)
 		ListOps.__init__(self)
 
+
+class QuerySubcommand(ListSubcommand):
+
+	@subcmd
+	def query(self):
+		'Query list.'
+		pass
+
+
+class QueryListOps(QuerySubcommand, ListOps):
+	list_cls = QueryList
+	list_exc_cls = QueryListError
+
+	def __init__(self):
+		QuerySubcommand.__init__(self)
+		ListOps.__init__(self)
+
+
+class SubredditSubcommand(ListSubcommand):
+
+	@subcmd
+	def subreddit(self):
+		'Subreddit list.'
+		pass
+
+
+class SubredditListOps(SubredditSubcommand, ListOps):
+	list_cls = SubredditList
+	list_exc_cls = SubredditListError
+
+	def __init__(self):
+		SubredditSubcommand.__init__(self)
+		ListOps.__init__(self)
 
