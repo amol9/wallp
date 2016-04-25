@@ -25,7 +25,7 @@ class ItemList:
 	def random(self):
 		item = self._db_session.query(self.table).filter(self.table.enabled == True).order_by(func.random()).first()
 		item or self.raise_exc('no usable %s in list'%self.item_name)
-		return item
+		return getattr(item, self.item_col, None)
 
 
 	def add(self, item, enabled=True, ex_values={}, commit=True):

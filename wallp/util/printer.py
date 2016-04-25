@@ -1,5 +1,5 @@
 
-from redlib.api.prnt import ColumnPrinter, Column, ColumnPrinterError, SepColumn, ProgressColumn
+from redlib.api.prnt import ColumnPrinter, Column, ColumnPrinterError, SepColumn, ProgressColumn, Callbacks
 from ..db.app.config import Config
 
 
@@ -12,7 +12,7 @@ class Printer:
 
 	def __init__(self, verbosity=3):
 		try:
-			self._cp = ColumnPrinter(cols=[Column(width=30), SepColumn(), Column(min=30, fill=True)])
+			self._cp = ColumnPrinter(cols=[Column(width=30), SepColumn(), Column(min=30, fill=True, wrap=True)])
 		except ColumnPrinterError as e:
 			raise PrinterError(str(e))
 
@@ -21,7 +21,15 @@ class Printer:
 
 	def printf(self, msg=None, data=None, progress=False, col_updt=False, verbosity=1):
 		if verbosity > self._verbosity:
-			return
+			if progress or col_updt:
+				cb = Callbacks()
+				cb.col_updt_cb = lambda x, y : None
+				cb.col_updt_cp = lambda : None
+				cb.progress_cb = lambda x : None
+				cb.progress_cp = lambda : None
+				return cb
+			else:
+				return
 
 		msg = msg or ''
 		data = data or ''
