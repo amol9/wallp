@@ -1,26 +1,33 @@
 
-from redcmd.api import Subcommand, subcmd
+from redcmd.api import Subcommand, subcmd, CommandError
 
-from ..db import func as dbfunc
+from ..db.app.images import Images, DBImageError
+
+
+__all__ = ['ScoreSubcommands']
 
 
 class ScoreSubcommands(Subcommand):
 
+	def __init__(self):
+		self._db_images = Images()
+
+
 	@subcmd
 	def like(self):
-		self.score_call(dbfunc.like_wallpaper)
+		self.exc_call(self._db_images.like_wallpaper)
 		
 
 	@subcmd
 	def dislike(self):
-		self.score_call(dbfunc.dislike_wallpaper)
+		self.exc_call(self._db_images.dislike_wallpaper)
 
 
-	def score_call(self, func):
+	def exc_call(self, method):
 		try:
-			score = func()
+			score = method()
 			print('image score: %d'%score)
-		except LikeError as e:
+		except DBImageError as e:
 			print(str(e))
 			raise CommandError()
 

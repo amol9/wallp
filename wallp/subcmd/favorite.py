@@ -1,8 +1,7 @@
 
 from redcmd.api import Subcommand, subcmd, CommandError
 
-from ..db.func import favorite_wallpaper, unfavorite_wallpaper, FavoriteError
-from ..db.exc import DBError
+from ..db.app.images import Images, DBImageError
 
 
 __all__ = ['FavoriteSubcommand']
@@ -13,17 +12,17 @@ class FavoriteSubcommand(Subcommand):
 	@subcmd
 	def favorite(self, unfavorite=False):
 		'''Favorite current wallpaper image.
-
 		unfavorite: remove current wallpaper image from favorites'''
 
+		db_images = Images()
 		try:
 			if not unfavorite:
-				favorite_wallpaper()
+				db_images.favorite_wallpaper()
 				print('favorited')
 			else:
-				unfavorite_wallpaper()
+				db_images.unfavorite_wallpaper()
 				print('removed from favorites')
-		except (DBError, FavoriteError) as e:
+		except DBImageError as e:
 			print(str(e))
 			raise CommandError()
 

@@ -1,6 +1,5 @@
 
 from ..util import log
-from ..db.func import get_random_favorite, FavoriteError
 from .base import SourceError, SourceParams, Source
 from .image import Image
 from .images import Images

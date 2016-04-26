@@ -2,7 +2,6 @@ import shutil
 import tempfile
 from os.path import join as joinpath, exists
 from time import time
-from os import stat
 from datetime import datetime, timedelta
 
 from redlib.api.system import *
@@ -56,7 +55,7 @@ class Wallpaper:
 			dt.set_wallpaper(wp_image_path, style=wp_style)
 			printer.printf('wallpaper changed', '', verbosity=2)
 
-			image_id = self.save_image_info(source, wp_image_path, image)
+			image_id = DBImages().save_image(source, wp_image_path, image)
 			self.update_global_vars(image_id)
 
 			self.write_to_transport(WPState.READY)
@@ -155,33 +154,4 @@ class Wallpaper:
 			raise GetImageError(str(e))
 
 		return wp_path
-
-
-	def save_image_info(self, source, wp_path, image):
-		if image.db_image is None:
-			db_image = Image()
-		else:
-			db_image = image.db_image
-
-		db_image.type = image.type
-		db_image.width = image.i_width
-		db_image.height = image.i_height
-
-		db_image.size = stat(wp_path).st_size
-
-		db_image.filepath = wp_path
-		db_image.time = int(time())
-
-		if image.db_image is None:
-			db_image.url = image.url
-
-			db_image.title = image.title
-			db_image.description = image.description[0: 1024] if image.description is not None else None
-			db_image.context_url = image.context_url
-			db_image.artist = image.user
-
-			db_image.trace = source.get_trace()
-
-		DBImages().add(db_image)
-		return db_image.id
 

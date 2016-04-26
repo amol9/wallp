@@ -54,7 +54,7 @@ class HttpHelper:
 
 				retry.cancel()
 
-			except HttpError as e:
+			except (HttpError, IOError) as e:
 				log.error(e)
 				printer.printf('error', str(e))
 				retry.retry()
