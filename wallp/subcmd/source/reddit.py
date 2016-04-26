@@ -12,7 +12,7 @@ class RedditSubcommand(SourceSubcommand):
 
 	@subcmd
 	def reddit(self, query=None, subreddit=None, posts_limit=IntArg(opt=True, default=None, max=100, min=10)):
-		'''Solid color
+		'''reddit.com
 
 		run "wallp list colors" to see a list of all supported colors'''
 

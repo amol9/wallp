@@ -12,7 +12,7 @@ class CodeSubcommand(SourceSubcommand):
 
 	@subcmd
 	def code(self, filepath, font_name=None, font_size=14):
-		'''Render code as image.
+		'''Source code
 
 		filepath:	path to source code file
 		font_name:	font name

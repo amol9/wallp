@@ -77,7 +77,8 @@ class Code(Source):
 		dt = get_desktop()
 		dw, dh = dt.get_size()
 
-		im = im.crop((0, 0, im.width, dh))
+		if im.height > dh:
+			im = im.crop((0, 0, im.width, dh))
 
 		image = Image()
 		image.i_width, image.i_height = im.width, im.height

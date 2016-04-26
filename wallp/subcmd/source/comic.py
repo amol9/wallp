@@ -12,6 +12,7 @@ class ComicSubcommand(SourceSubcommand):
 
 	@subcmd(add_skip=True)
 	def comic(self):
+		'Comic strip sources'
 		pass
 
 

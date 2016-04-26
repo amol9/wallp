@@ -12,7 +12,7 @@ class RandomSubcommand(SourceSubcommand):
 
 	@subcmd
 	def random(self): 
-		'Random Source'
+		'Random source'
 
 		sp = SourceParams()
 		self.change_wallpaper(sp)

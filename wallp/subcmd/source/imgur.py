@@ -14,7 +14,7 @@ class ImgurSubcommand(SourceSubcommand):
 
 	@subcmd
 	def imgur(self):
-		'imgur.com.'
+		'imgur.com'
 		pass
 
 
