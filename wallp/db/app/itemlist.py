@@ -3,7 +3,7 @@ from sqlalchemy.sql.expression import func, select
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
 
-from .. import DBSession
+from ..dbsession import DBSession
 
 
 class ItemListError(Exception):

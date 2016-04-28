@@ -2,7 +2,7 @@
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.exc import NoResultFound
 
-from .. import DBSession
+from ..dbsession import DBSession
 from ..model.source import Source
 
 

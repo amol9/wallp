@@ -9,6 +9,10 @@ from .exc import DBError
 from ..util import log
 
 
+class DBError(Exception):
+	pass
+
+
 class DBSession():
 	'Singleton for sqlalchemy session.'
 

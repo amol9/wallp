@@ -4,7 +4,7 @@ from six.moves import input
 from redcmd.api import Subcommand, subcmd
 
 from .. import const
-from ..db import DBSession
+from ..db.dbsession import DBSession
 from ..db.manage.db import DB
 
 

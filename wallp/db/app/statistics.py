@@ -5,7 +5,7 @@ from sqlalchemy import func
 from redlib.api.net import AbsUrl
 
 from ..model.image import Image
-from .. import DBSession
+from ..dbsession import DBSession
 
 
 class Statistics:
