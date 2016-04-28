@@ -63,7 +63,7 @@ class Reddit(Source):
 			self._trace.add_step('random subreddit', params.subreddit)
 			cache = False
 
-		self._images = Images(params, cache=cache, trace=self._trace)
+		self._images = Images(params, cache=cache, cache_timeout='1h', trace=self._trace)
 
 		if not self._images.available():
 			self._params = params

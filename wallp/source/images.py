@@ -151,7 +151,7 @@ class Images:
 			self._cache.delete(hash)
 			return
 
-		self._cache.add(hash, [self._list, self._create_time], self._cache_timeout, pickle=True)
+		self._cache.add(hash, [self._list, self._create_time], self._cache_timeout, pickle=True, updt_timeout=False)
 
 
 	def available(self):
