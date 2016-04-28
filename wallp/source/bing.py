@@ -88,10 +88,8 @@ class Bing(Source):
 				image_name = jdata['imageNames'][i]
 				image.url = 'http:' + server_url + image_name + '_' + str(width) + 'x' + str(height) + '.' + ext
 
-				image.description = 'country    : %s\ntags       : %s\nholidays   : %s\
-						\nregion     : %s\ncolor      : %s\ncategories : %s'\
-						%(jdata['countries'][i], jdata['tags'][i], jdata['holidays'][i],
-						jdata['regions'][i], jdata['colors'][i], jdata['categories'][i])
+				desc_items = ['countries', 'tags', 'holidays', 'regions', 'colors', 'categories']
+				image.description = '\n'.join(['{0:<10} : {1}'.format(item, jdata[item][i].rstrip(',')) for item in desc_items])
 
 				self._images.add(image)
 		
