@@ -1,5 +1,5 @@
 
-from redlib.api.prnt import ColumnPrinter, Column, ColumnPrinterError, SepColumn, ProgressColumn, Callbacks
+from redlib.api.prnt import ColumnPrinter, Column, ColumnPrinterError, SepColumn, ProgressColumn, Callbacks, terminal_utf8, filter_unicode_chars
 from ..db.app.config import Config
 
 
@@ -33,6 +33,10 @@ class Printer:
 
 		msg = msg or ''
 		data = data or ''
+
+		if not terminal_utf8():
+			msg = filter_unicode_chars(msg)
+			data = filter_unicode_chars(data)
 
 		if not progress and not col_updt:
 			self._cp.printf(msg, data)
