@@ -68,7 +68,7 @@ class Imgur(Source):
 		self._params = params or ImgurParams()
 
 		cache_load = self._params.method not in [ImgurMethod.random, ImgurMethod.random_album, ImgurMethod.wallpaper_album]
-		self._images = Images(self._params, cache=True, trace=self._trace, cache_load=cache_load)
+		self._images = Images(self._params, cache=True, cache_timeout='1h', trace=self._trace, cache_load=cache_load)
 
 		if not self._images.available():
 			self.map_call()
@@ -154,6 +154,7 @@ class Imgur(Source):
 
 
 	def process_album(self, album):
+		self._images.set_cache_timeout('1M')	# cache album contents for a month as they don't change much
 		for i in album.images:
 			image = self.make_image_obj(i, album=album)
 			self._images.add(image)

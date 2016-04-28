@@ -46,7 +46,7 @@ class Google(Source):
 			params = GoogleParams()
 
 		self._trace = Trace()
-		self._images = Images(params, cache=True, trace=self._trace)
+		self._images = Images(params, cache=True, cache_timeout='1d', trace=self._trace)
 
 		self._http = HttpHelper()
 

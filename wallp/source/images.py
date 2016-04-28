@@ -170,6 +170,10 @@ class Images:
 		return self._image_alias or 'image'
 
 
+	def set_cache_timeout(self, period):
+		self._cache_timeout = period
+
+
 	count 		= property(get_count)
 	filter 		= property(get_filter)
 	image_alias 	= property(get_image_alias)

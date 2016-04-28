@@ -48,7 +48,7 @@ class Xkcd(Source):
 
 		custom_select = select_latest if self._params.latest else None
 
-		self._images = Images(self._params, cache=True, image_alias='comic', custom_select=custom_select, trace=self._trace)
+		self._images = Images(self._params, cache=True, cache_timeout='1w', image_alias='comic', custom_select=custom_select, trace=self._trace)
 
 		self._images.add_db_filter(lambda i, d : i.context_url is None or not d.seen_by_context_url(i.context_url))
 		self._images.add_list_filter(lambda i, l : i.context_url is None or 

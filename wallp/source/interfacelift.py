@@ -49,7 +49,7 @@ class Interfacelift(Source):
 		if params is None:
 			params = InterfaceliftParams()
 
-		self._images = Images(params, cache=(params.page is None), trace=self._trace)
+		self._images = Images(params, cache=(params.page is None), cache_timeout='1d', trace=self._trace)
 
 		if not self._images.available():
 			url = self.parse(params)

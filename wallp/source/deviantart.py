@@ -40,7 +40,7 @@ class DeviantArt(Source):
 	def get_image(self, params=None):
 		params = params or DeviantArtParams()
 
-		self._images = Images(params, cache=True, trace=self._trace)
+		self._images = Images(params, cache=True, cache_timeout='1d', trace=self._trace)
 
 		if not self._images.available():
 			self.search(params)
