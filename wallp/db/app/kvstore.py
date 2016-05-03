@@ -47,7 +47,7 @@ class KVStore:
 
 		value = None
 		if vtype == bool:
-			value = bool(eval(record.value))	#fix for bool
+			value = True if value.lower() == 'true' else False
 		else:
 			value = vtype(record.value)
 
@@ -78,10 +78,14 @@ class KVStore:
 			if check_type and record.type is not None:
 				vtype = eval(record.type)
 
-				try:
-					vtype(value)
-				except ValueError as e:
-					raise KVError(str(e))
+				if vtype != bool:
+					try:
+						vtype(value)
+					except ValueError as e:
+						raise KVError(str(e))
+				else:
+					if not value.lower() in ['true', 'false']:
+						raise KVError('boolean value, must be true or false')
 
 			else:
 				record.type = type(value).__name__

@@ -24,7 +24,7 @@ class Scheduler:
 		if freq is None:
 			return
 
-		cmd = const.scheduler_cmd
+		cmd = const.scheduler_cmdline
 
 		taskname = const.scheduler_task_name
 		try:

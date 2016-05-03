@@ -1,6 +1,5 @@
 name,				value,		type
 reddit.posts_limit,		10,		int
-imgur.get_full_album,		True,		bool
 server.host,			None,		str
 server.port,			None,		int
 client.logfile,			stdout,		str

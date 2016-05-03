@@ -30,7 +30,7 @@ class GetSetSubcommands(ConfigSubcommand):
 		'''Set value of a configuration setting.
 		name:	name of the setting'''
 
-		self.exc_call(self._config.set, name, value, check_type=True)
+		self.exc_call(self._config.sset, name, value, check_type=True)
 		print('setting changed')
 
 

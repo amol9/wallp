@@ -50,6 +50,15 @@ class KVHelper(KVStore):
 			raise self._err_type('not found')
 
 
+	def sset(self, name, value, **kwargs):
+		try:
+			return self.set(name, value, **kwargs)
+		except KeyNotFound as e:
+			raise self._err_type('not found')
+		except KVError as e:
+			raise self._err_type(str(e))
+
+
 	def exc_call(self, method, *args):
 		try:
 			return method(*args)

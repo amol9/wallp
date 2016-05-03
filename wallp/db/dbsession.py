@@ -5,7 +5,6 @@ import sys
 
 from . import *
 from .. import const
-from .exc import DBError
 from ..util import log
 
 
