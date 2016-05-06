@@ -5,6 +5,7 @@ import sys
 def update_db():
 	args = sys.argv
 
+	print 'update db call'
 	if len(args) > 1 and args[1] == 'install':
 		wallp_db_manage_db = None
 		wallp_db_exc = None
@@ -16,8 +17,10 @@ def update_db():
 			return
 		
 		db = wallp_db_manage_db.DB()
+		print('updating db...')
 
 		try:
+			db.backup()
 			db.upgrade()
 			db.insert_data()
 		except Exception as e:

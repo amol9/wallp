@@ -2,7 +2,6 @@ import re
 import json
 from random import randint
 from os.path import join as joinpath
-from zope.interface import implementer
 
 from redlib.api.misc import Retry
 

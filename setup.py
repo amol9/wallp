@@ -5,9 +5,6 @@ import platform
 import sys
 from setuptools import setup, find_packages
 
-from rc_setup import setup_autocomp
-from wp_setup import update_db
-
 from wallp.version import __version__
 
 
@@ -26,9 +23,11 @@ setup(
 	url			= 'http://pypi.python.org/pypi/wallp/',
 	packages		= find_packages(),
 	include_package_data	= True,
-	scripts			= ['ez_setup.py', 'rc_setup.py', 'wp_setup.py'],
+	scripts			= ['ez_setup.py'],
 	entry_points 		= entry_points,
-	install_requires	= ['praw', 'sqlalchemy', 'zope.interface', 'mayloop', 'six', 'redcmd>=1.1.3', 'redlib>=1.1.2', 'giraf', 'asq'],
+	install_requires	= ['praw>=3.3.0', 'sqlalchemy>=1.0.12', 'zope.interface', 'mayloop', 'six', 'redcmd>=1.2.5',
+					'redlib>=1.5.0', 'giraf>=1.0.14', 'asq>=1.2.1', 'alembic>=0.8.5', 'enum34>=1.1.2',
+					'Pillow>=3.1.1', 'Pygments>=2.1.3'],
 	classifiers		= [
 					'Development Status :: 4 - Beta',
 					'Environment :: Console',
@@ -41,6 +40,4 @@ setup(
 					'Topic :: Multimedia :: Graphics'
 				]
 )
-
-setup_autocomp('wallp.subcmd.all', 'wallp', _to_hyphen=True)
 
