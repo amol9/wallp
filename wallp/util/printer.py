@@ -1,6 +1,8 @@
+import sys
 
 from redlib.api.prnt import ColumnPrinter, Column, ColumnPrinterError, SepColumn, ProgressColumn, Callbacks, terminal_utf8, filter_unicode_chars
 from ..db.app.config import Config
+from .logger import log
 
 
 class PrinterError(Exception):
@@ -8,7 +10,6 @@ class PrinterError(Exception):
 
 
 class Printer:
-	progress_col_width = 10
 
 	def __init__(self, verbosity=3):
 		try:
@@ -20,7 +21,7 @@ class Printer:
 
 
 	def printf(self, msg=None, data=None, progress=False, col_updt=False, verbosity=1):
-		if verbosity > self._verbosity:
+		if verbosity > self._verbosity or not sys.stdout.isatty():
 			if progress or col_updt:
 				cb = Callbacks()
 				cb.col_updt_cb = lambda x, y : None
@@ -33,6 +34,8 @@ class Printer:
 
 		msg = msg or ''
 		data = data or ''
+
+		log.info(msg + ': ' + data)
 
 		if not terminal_utf8():
 			msg = filter_unicode_chars(msg)

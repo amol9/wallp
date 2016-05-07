@@ -1,2 +1,4 @@
 include wallp/db/manage/data/*.csv
+include wallp/db/manage/alembic.ini
+
 recursive-exclude wallp/test *

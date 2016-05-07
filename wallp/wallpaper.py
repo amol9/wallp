@@ -134,6 +134,7 @@ class Wallpaper:
 				raise SourceError('error getting source')
 
 			printer.printf('source', source.name)
+			log.info('source: %s'%source.name)
 			return source
 		except SourceFactoryError as e:
 			log.error(e)

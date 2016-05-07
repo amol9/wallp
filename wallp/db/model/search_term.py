@@ -11,3 +11,5 @@ class SearchTerm(Base):
 	term = 		Column(String(100))
 	enabled = 	Column(Boolean, default=True)
 
+	__table_args__ = (UniqueConstraint('term'),)
+

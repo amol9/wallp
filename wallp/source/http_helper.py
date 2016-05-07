@@ -50,7 +50,6 @@ class HttpHelper:
 					image.ext = image.url[image.url.rfind('.') + 1 : ]
 
 				image.temp_filepath = temp_filepath
-				#trace.add_step('random url', image.url, printer_print=False)
 
 				retry.cancel()
 
