@@ -51,6 +51,11 @@ class TestDB(TestCase):
 		# check tables, count, etc. for each table
 
 
+	def test_check(self):
+		db = DB()
+		print(db.check())
+
+
 if __name__ == '__main__':
 	ut_main()
 

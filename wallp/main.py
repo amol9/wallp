@@ -7,21 +7,24 @@ def main():
 	from .db.manage.db import DB
 
 	db = DB()
-	db.check()
+	response = db.check()
+
+	from util.printer import printer
+
+	response and printer.printf('program maintenance', response)
 
 	from .util import log
 	from .db.app.config import Config, ConfigError
+	from . import const
 
 	config = Config()
 	try:
-		log.start(config.eget('client.logfile', default='stdout'), loglevel=config.eget('client.loglevel', default=40))
+		log.start(config.eget('client.logfile', default=const.logfile), loglevel=config.eget('client.loglevel', default=40))
 	except ConfigError as e:
 		print(str(e) + '\nlog start failed')
 
 	from .subcmd import all
 	from .version import __version__
-	from . import const
-	from util.printer import printer
 
 	def update_autocomplete_cb():
 		printer.printf('program maintenance', 'updated autocomplete data')

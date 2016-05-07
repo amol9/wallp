@@ -12,6 +12,7 @@ down_revision = '25eef620cf9e'
 branch_labels = None
 depends_on = None
 
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -35,7 +36,7 @@ def upgrade():
     	connection = op.get_bind()
 	Base.metadata.reflect(connection.engine)		
 
-	def copy_data(src_table, dst_table, values_fn, uniq=[]):
+	def copy_data(src_table, dst_table, values_fn, uniq=[], skip=lambda row : False):
 		st = Base.metadata.tables[src_table]
 		dt = Base.metadata.tables[dst_table]
 
@@ -43,6 +44,9 @@ def upgrade():
 
 		uniq_rows = []  
 		for row in connection.execute(st.select()):
+			if skip(row):
+				continue
+
 			values = values_fn(row)
 			
 			if check_uniq:
@@ -56,7 +60,9 @@ def upgrade():
 
 	# copy data from table: config
 	concat_group_name = lambda g, n: n if (g is None or g == '') else g + '.' + n
-	copy_data('config', 'config2', lambda row : {'name': concat_group_name(row.group, row.name), 'value': row.value, 'type': row.type }, uniq=['name'])
+
+	copy_data('config', 'config2', lambda row : {'name': concat_group_name(row.group, row.name), 'value': row.value, 'type': row.type }, uniq=['name'],
+			skip=lambda row : row.name == 'enabled')
 	#op.rename_table('config2', 'config')
 
 	op.create_table('imgur_album',

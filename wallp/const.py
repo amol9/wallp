@@ -26,3 +26,7 @@ min_ratio_to_desktop	= 0.8
 max_ratio_to_desktop	= 3.0
 ignore_image_filter	= False
 
+logfile			= joinpath(data_dir, 'wallp.log')
+db_logfile		= joinpath(data_dir, 'db.log')
+
+

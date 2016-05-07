@@ -3,10 +3,13 @@ from os import makedirs
 from shutil import copyfile
 from datetime import datetime
 import csv
+import logging
+import warnings
 
 from alembic.config import Config as AlConfig
 from alembic.script import ScriptDirectory
 from alembic.runtime.environment import EnvironmentContext
+from alembic.migration import MigrationContext
 from sqlalchemy import String, update
 from sqlalchemy.engine import reflection
 from sqlalchemy.exc import OperationalError
@@ -21,16 +24,48 @@ class ManageDBError(Exception):
 	pass
 
 
+class DBLogHandler(logging.Handler):
+
+	def __init__(self):
+		logging.Handler.__init__(self)
+		self._file = open(const.db_logfile, 'a')
+
+
+	def emit(self, record):
+		self._file.write(self.format(record) + '\n')
+
+
 class DB:
+	script_location = joinpath(dirname(abspath(__file__)), 'migrate')
 
 	def __init__(self):
 		pass
 
-
 	def check(self):
-		if not exists(const.db_path):
-			self.create()
+		response = None
 
+		if not exists(const.db_path):
+			warnings.filterwarnings('ignore', category=UserWarning, module='.*alembic.*')
+			self.upgrade()
+			response = 'created database'
+		else:
+			db_session = DBSession()
+			context = MigrationContext.configure(db_session.bind)
+			cur_rev = context.get_current_revision()
+
+			config_filepath = joinpath(dirname(self.script_location), 'alembic.ini')
+			config = AlConfig(file_=config_filepath)
+			config.set_main_option('script_location', self.script_location)
+			script = ScriptDirectory.from_config(config)
+			head_rev = script.get_current_head()
+
+			if cur_rev != head_rev:
+				self.backup()
+				self.upgrade()
+				response = 'upgraded database'
+
+		self.insert_data()
+		return response
 
 	def create(self):
 		self.upgrade()
@@ -100,7 +135,7 @@ class DB:
 
 
 	def upgrade(self, script_location=None, db_path=None, dest_rev=None):
-		script_location	= script_location or joinpath(dirname(abspath(__file__)), 'migrate')
+		script_location	= script_location or self.script_location 
 		db_path 	= db_path or const.db_path
 		dest_rev	= dest_rev or 'head'
 
@@ -109,11 +144,12 @@ class DB:
 
 		sa_url = 'sqlite:///' + db_path
 
-		config = AlConfig()
+		config_filepath = joinpath(dirname(script_location), 'alembic.ini')
+		config = AlConfig(file_=config_filepath)
+
 		config.set_main_option('script_location', script_location)
 		config.set_main_option('sqlalchemy.url', sa_url)
 
-		config.config_file_name = joinpath(dirname(script_location), 'alembic.ini')
 
 		script = ScriptDirectory.from_config(config)
 

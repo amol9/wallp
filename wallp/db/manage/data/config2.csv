@@ -2,10 +2,8 @@ name,				value,		type
 reddit.posts_limit,		10,		int
 server.host,			None,		str
 server.port,			None,		int
-client.logfile,			stdout,		str
-client.loglevel,		40,		int
 style.tiled_size,		100,		int
-output.verbosity,		1,		int
+output.verbosity,		10,		int
 image.max_size,			4194304,	int
 http.timeout,			15,		int
 interfacelift.page,		1,		int
