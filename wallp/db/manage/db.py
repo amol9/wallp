@@ -76,7 +76,7 @@ class DB:
 		db_session = DBSession()
 		inspector = reflection.Inspector.from_engine(db_session.bind)
 
-		tables = [Config, Source, ImgurAlbum, Var, Subreddit, SearchTerm]
+		tables = [Config, Source, ImgurAlbum, Var, Subreddit, Query]
 		data_dir_path = joinpath(dirname(abspath(__file__)), 'data')
 
 		for table in tables:
