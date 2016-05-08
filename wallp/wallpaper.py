@@ -103,20 +103,21 @@ class Wallpaper:
 
 	def get_image(self):
 		retry = Retry(retries=3, final_exc=GetImageError())
-
+		
+		random_source = self._params.name is None
 		while retry.left():
 			try:
 				source = self.get_source()
-				if self._params.name is None:
-					self._params = source.params_cls()
+				if random_source:
+					params = source.params_cls()
 
-				image = source.get_image(params=self._params)
+				image = source.get_image(params=params)
 				retry.cancel()
 
 			except SourceError as e:
 				log.error(e)
 
-				if self._params.name is not None:
+				if not random_source:
 					retry.cancel()
 					raise GetImageError(str(e))
 				else:

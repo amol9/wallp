@@ -57,7 +57,7 @@ class Printer:
 
 				return cb
 			else:
-				return self._cp.printf(msg, data, col_updt=True
+				return self._cp.printf(msg, data, col_updt=True)
 
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			log.error(e)
