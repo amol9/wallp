@@ -2,7 +2,6 @@ import sys
 
 from redlib.api.prnt import ColumnPrinter, Column, ColumnPrinterError, SepColumn, ProgressColumn, Callbacks, terminal_utf8, filter_unicode_chars
 from ..db.app.config import Config
-from .logger import log
 
 
 class PrinterError(Exception):
@@ -35,31 +34,33 @@ class Printer:
 		msg = msg or ''
 		data = data or ''
 
-		log.info(msg + ': ' + data)
+		try:
+			if not terminal_utf8():
+				msg = filter_unicode_chars(msg)
+				data = filter_unicode_chars(data)
 
-		if not terminal_utf8():
-			msg = filter_unicode_chars(msg)
-			data = filter_unicode_chars(data)
+			if not progress and not col_updt:
+				self._cp.printf(msg, data)
+			elif progress:
+				progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=30)], row_width=55)
+				self._cp.printf(msg, progress_cp)
+				cb = progress_cp.printf('?', '?', '', col_updt=True)
 
-		if not progress and not col_updt:
-			self._cp.printf(msg, data)
-		elif progress:
-			progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=30)], row_width=55)
-			self._cp.printf(msg, progress_cp)
-			cb = progress_cp.printf('?', '?', '', col_updt=True)
+				pcb = cb.progress_cb
+				pcp = cb.progress_cp
+				cb.progress_cb = lambda p : pcb(1, p)
 
-			pcb = cb.progress_cb
-			pcp = cb.progress_cp
-			cb.progress_cb = lambda p : pcb(1, p)
+				def pcp2():
+					pcp(1)
+					progress_cp.done()
+				cb.progress_cp = pcp2
 
-			def pcp2():
-				pcp(1)
-				progress_cp.done()
-			cb.progress_cp = pcp2
+				return cb
+			else:
+				return self._cp.printf(msg, data, col_updt=True
 
-			return cb
-		else:
-			return self._cp.printf(msg, data, col_updt=True)
+		except (UnicodeDecodeError, UnicodeEncodeError) as e:
+			log.error(e)
 
 
 printer = Printer()
