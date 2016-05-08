@@ -47,7 +47,7 @@ class DB:
 		if not exists(const.db_path):
 			warnings.filterwarnings('ignore', category=UserWarning, module='.*alembic.*')
 			self.upgrade()
-			response = 'created database'
+			response = 'database created'
 		else:
 			db_session = DBSession()
 			context = MigrationContext.configure(db_session.bind)
@@ -62,7 +62,7 @@ class DB:
 			if cur_rev != head_rev:
 				self.backup()
 				self.upgrade()
-				response = 'upgraded database'
+				response = 'database upgraded'
 
 		self.insert_data()
 		return response

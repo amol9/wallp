@@ -27,7 +27,7 @@ def main():
 	from .version import __version__
 
 	def update_autocomplete_cb():
-		printer.printf('program maintenance', 'updated autocomplete data')
+		printer.printf('program maintenance', 'autocomplete updated')
 
 	execute_commandline(prog=const.app_name, description=const.app_description, version=__version__, _to_hyphen=True, 
 			default_subcommand='source random', moves=True, update_autocomplete_cb=update_autocomplete_cb)
