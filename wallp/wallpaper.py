@@ -108,8 +108,7 @@ class Wallpaper:
 		while retry.left():
 			try:
 				source = self.get_source()
-				if random_source:
-					params = source.params_cls()
+				params = source.params_cls() if random_source else self._params
 
 				image = source.get_image(params=params)
 				retry.cancel()

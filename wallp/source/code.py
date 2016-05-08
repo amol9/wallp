@@ -2,7 +2,8 @@ import tempfile
 import os
 from time import time
 from io import BytesIO
-from os.path import abspath
+from os.path import abspath, join as joinpath
+import random
 
 from redlib.api.colors import colorlist
 from pygments.lexers import get_lexer_for_filename
@@ -19,10 +20,14 @@ from ..desktop.desktop_factory import get_desktop
 
 
 def src_path():
-	path = abspath(__file__)
-	if path[-1] == 'c':
-		path = path [0 : -1]
-	return path
+	path = os.sep.join(abspath(__file__).split(os.sep)[0: -2])
+	src_files = []
+
+	for root, _, files in os.walk(path):
+		for fname in files:
+			fname.endswith('.py') and src_files.append(joinpath(root, fname))
+
+	return random.choice(src_files)
 
 
 class CodeParams(SourceParams):
@@ -62,6 +67,7 @@ class Code(Source):
 		if lexer is None:
 			raise SourceError('cannot find a lexer for %s'%filepath)
 
+		self._trace.add_step('source file', filepath)
 		self._trace.add_step('detected language', lexer.name.lower())
 
 		formatter = ImageFormatter(font_name=params.font_name, font_size=params.font_size, line_numbers=False)
