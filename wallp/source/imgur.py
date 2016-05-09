@@ -147,7 +147,7 @@ class Imgur(Source):
 			log.error(e)
 			if e.err_type == ImgurErrorType.not_found:
 				self._album_list.disable(album_id)
-				log.debug('disabled album: %s'%album_url)
+				log.debug('disabled album: %s'%album_id)
 				raise ImgurError(e)
 
 		self.process_album(album)
