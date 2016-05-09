@@ -1,4 +1,5 @@
 import sys
+from os.path import expanduser
 
 from redcmd.api import execute_commandline
 
@@ -19,7 +20,7 @@ def main():
 
 	config = Config()
 	try:
-		log.start(config.eget('client.logfile', default=const.logfile), loglevel=config.eget('client.loglevel', default=40))
+		log.start(expanduser(config.eget('client.logfile', default=const.logfile)), loglevel=config.eget('client.loglevel', default=40))
 	except ConfigError as e:
 		print(str(e) + '\nlog start failed')
 

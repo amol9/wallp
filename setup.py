@@ -25,8 +25,8 @@ setup(
 	include_package_data	= True,
 	scripts			= ['ez_setup.py'],
 	entry_points 		= entry_points,
-	install_requires	= ['praw>=3.3.0', 'sqlalchemy>=1.0.12', 'zope.interface', 'mayloop', 'six', 'redcmd>=1.2.6',
-					'redlib>=1.5.0', 'giraf>=1.0.14', 'asq>=1.2.1', 'alembic>=0.8.5', 'enum34>=1.1.2',
+	install_requires	= ['praw>=3.3.0', 'sqlalchemy>=1.0.12', 'zope.interface', 'mayloop', 'six', 'redcmd>=1.2.7',
+					'redlib>=1.5.4', 'giraf>=1.0.14', 'asq>=1.2.1', 'alembic>=0.8.5', 'enum34>=1.1.2',
 					'Pillow>=3.1.1', 'Pygments>=2.1.3'],
 	classifiers		= [
 					'Development Status :: 4 - Beta',

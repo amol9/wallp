@@ -39,7 +39,7 @@ class SourceStateSubcommands(ConfigSubcommand):
 		action_str = 'enabled' if enabled else 'disabled'
 
 		if self._arg_name == 'all':
-			map(lambda n : self.exc_call(method, n), source_names)
+			list(map(lambda n : self.exc_call(method, n), source_names))
 			msg = 'all sources %s'%action_str
 		else:
 			self.exc_call(method, self._arg_name)
