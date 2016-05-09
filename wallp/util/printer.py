@@ -11,23 +11,19 @@ class PrinterError(Exception):
 class Printer:
 
 	def __init__(self, verbosity=3):
+		self._cp = None
 		try:
 			self._cp = ColumnPrinter(cols=[Column(width=30), SepColumn(), Column(min=30, fill=True, wrap=True)])
 		except ColumnPrinterError as e:
-			raise PrinterError(str(e))
+			pass
 
 		self._verbosity = Config().eget('output.verbosity', default=1)
 
 
 	def printf(self, msg=None, data=None, progress=False, col_updt=False, verbosity=1):
-		if verbosity > self._verbosity or not sys.stdout.isatty():
+		if verbosity > self._verbosity or not sys.stdout.isatty() or self._cp is None:
 			if progress or col_updt:
-				cb = Callbacks()
-				cb.col_updt_cb = lambda x, y : None
-				cb.col_updt_cp = lambda : None
-				cb.progress_cb = lambda x : None
-				cb.progress_cp = lambda : None
-				return cb
+				return self.empty_callbacks()
 			else:
 				return
 
@@ -42,8 +38,13 @@ class Printer:
 			if not progress and not col_updt:
 				self._cp.printf(msg, data)
 			elif progress:
-				progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=30)], row_width=55)
-				self._cp.printf(msg, progress_cp)
+				try:
+					progress_cp = ColumnPrinter(cols=[Column(width=12), ProgressColumn(pwidth=12), Column(width=30)], row_width=55)
+					self._cp.printf(msg, progress_cp)
+				except ColumnPrinterError as e:
+					pass
+					return self.empty_callbacks()
+
 				cb = progress_cp.printf('?', '?', '', col_updt=True)
 
 				pcb = cb.progress_cb
@@ -61,6 +62,15 @@ class Printer:
 
 		except (UnicodeDecodeError, UnicodeEncodeError) as e:
 			log.error(e)
+
+
+	def empty_callbacks(self):
+		cb = Callbacks()
+		cb.col_updt_cb = lambda x, y : None
+		cb.col_updt_cp = lambda : None
+		cb.progress_cb = lambda x : None
+		cb.progress_cp = lambda : None
+		return cb
 
 
 printer = Printer()
