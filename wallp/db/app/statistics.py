@@ -21,7 +21,7 @@ class Statistics:
 		self.wallpaper_count = dbs.query(Image).count()
 
 		all_image_urls = dbs.query(Image).filter(Image.url != None).distinct(Image.url).with_entities(Image.url)
-		all_domains = map(lambda t : AbsUrl(t[0]).domain, all_image_urls)
+		all_domains = list(map(lambda t : AbsUrl(t[0]).domain, all_image_urls))
 	
 		domain_freq = self.freq_list(all_domains)
 		self.top_domains = domain_freq[0 : 10]

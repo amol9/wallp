@@ -33,7 +33,7 @@ def upgrade():
 	)
 
 	# Amol
-    	connection = op.get_bind()
+	connection = op.get_bind()
 	Base.metadata.reflect(connection.engine)		
 
 	def copy_data(src_table, dst_table, values_fn, uniq=[], skip=lambda row : False):

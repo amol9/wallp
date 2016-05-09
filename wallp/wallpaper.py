@@ -7,18 +7,18 @@ from datetime import datetime, timedelta
 from redlib.api.system import *
 from mayloop.transport.pipe_connection import PipeConnection
 
-from util.retry import Retry
-from util.logger import log
-from db.model.image import Image
+from .util.retry import Retry
+from .util.logger import log
+from .db.model.image import Image
 from . import const
-from desktop import DesktopError, get_desktop
-from desktop.wpstyle import WPStyle, compute_style
-from server.protocol import WPState
-from db.app.vars import Vars, VarError
-from db.app.images import Images as DBImages
-from util.printer import printer
-from source.source_factory import SourceFactory, SourceFactoryError
-from source.base import SourceError, SourceParams
+from .desktop import DesktopError, get_desktop
+from .desktop.wpstyle import WPStyle, compute_style
+from .server.protocol import WPState
+from .db.app.vars import Vars, VarError
+from .db.app.images import Images as DBImages
+from .util.printer import printer
+from .source.source_factory import SourceFactory, SourceFactoryError
+from .source.base import SourceError, SourceParams
 
 
 # for outside of this module

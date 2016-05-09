@@ -9,7 +9,7 @@ def main():
 	db = DB()
 	response = db.check()
 
-	from util.printer import printer
+	from .util.printer import printer
 
 	response and printer.printf('program maintenance', response)
 
