@@ -197,9 +197,13 @@ class DB:
 		db_session = DBSession()
 		db_session.close()
 
+		backup_db_path = self.backup()
+
 		db_path = const.db_path
 		remove(db_path)
 
 		self.upgrade()
 		self.insert_data()
+
+		return backup_db_path
 
