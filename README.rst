@@ -2,28 +2,31 @@
 wallp
 =====
 
-A command line utility to download or create an image and set it as a wallpaper.
+*wallp* selects one of the sources at random, downloads/creates image from it and sets it as desktop wallpaper. 
 
 
-*wallp* is a command line utility to download and set wallpapers. It works on Linux(Gnome / KDE Plasma) and on Windows. It can select images from a variety of sources on the Internet. 
+Supported Sources
+=================
 
-Following is the list of sources it currently supports:
+**online**
 
-* reddit
+* reddit (subreddits, search)
 * bing (gallery)
-* google
-* deviantart
-* imgur
+* google (image search)
+* deviantart 
+* imgur (search, wallpaper albums, favorites)
+* xkcd
 
-Also, it can generate single color bitmaps as wallpapers.
+**offline**
 
-By default, whenever run, it selects a source at random, selects a random image from the source, downloads it and sets it as a wallpaper.
+* single color bitmap
+* source code (rendered as image)
+  
 
-
-Supported platforms
+Supported Platforms
 ===================
 
-* python 2.7 or python 3.x
+* Python 2.7 / 3.4
 * Linux (Gnome or KDE Plasma)
 * Windows
 
@@ -31,30 +34,43 @@ Supported platforms
 Features
 ========
 
-* Schedule the change of wallpaper.
-* Specify search term for wallpaper.
-* Specify preferred color.
-* Enable / disable certain sources.
-* Editable database of subreddits, imgur albums, search terms to search wallpapers.
-* Make a wallpaper stick (no change) for a certain period of time.
-* Print detailed info on image, such as, source url, size, path, artist, description, etc.
 * Never repeats an image.
-
-
-ReadTheDocs
-===========
-http://wallp.readthedocs.org/en/latest/
+* Can schedule the change of wallpaper.
+* Editable database of subreddits, imgur albums, search queries to get wallpapers.
+* Make a wallpaper stick (no change) for a certain period of time.
+* Print detailed info on image, such as, source url, size, path, username, description, etc.
+* Can manage favorites.
 
 
 Usage
 =====
-For basic usage, see: http://wallp.readthedocs.org/en/latest/usage
 
-For advanced usage, check out the commands in help docs.
+Some sample commands::
+
+   wallp                                    # change wallpaper
+   wallp source -h                          # list all sources
+   wallp schedule add 1h                    # change wallpaper every 1 hour
+   wallp info                               # print information about the current wallpaper image
+
+   wallp config dump                        # dump the program configuration
+   wallp config disable deviantart          # disable deviantart as a source of images
+   wallp config list query add 'linux'      # add 'linux' as a query to be used (at random) when searching for wallpapers
+   wallp config list subreddit add pics     # add subreddit pics
+   wallp config list imgur-album add SVFae  # add imgur album SVFae
+   wallp config set image.max_size 1000000  # limit image size to 1MB
+
+   wallp source imgur wallpaper-album       # select a random wallpaper album from imgur and get a random image from it
+   wallp source google -q 'wallpapers'      # query google for 'wallpapers' and get a random image from results
+
+   wallp keep 1d                            # like a wallpaper very much? keep it unchanged for 1 day
+   wallp stats                              # print usage stats
+
+   wallp -h                                 # get help 
 
 
 Download
 ========
+
 * PyPI: http://pypi.python.org/pypi/wallp
 * Source: https://github.com/amol9/wallp
 

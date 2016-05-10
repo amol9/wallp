@@ -21,7 +21,7 @@ class Printer:
 
 
 	def printf(self, msg=None, data=None, progress=False, col_updt=False, verbosity=1):
-		if verbosity > self._verbosity or not sys.stdout.isatty() or self._cp is None:
+		if verbosity > self._verbosity or sys.stdout is None or not sys.stdout.isatty() or self._cp is None:
 			if progress or col_updt:
 				return self.empty_callbacks()
 			else:

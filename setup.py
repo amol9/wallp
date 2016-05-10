@@ -17,7 +17,7 @@ if platform.system() == 'Windows':
 setup(	
 	name			= 'wallp',
 	version			= __version__,
-	description		= 'A command line utility to download and set wallpapers from various sources.',
+	description		= 'A command line utility to download/create and set wallpapers from various sources.',
 	author			= 'Amol Umrale',
 	author_email 		= 'babaiscool@gmail.com',
 	url			= 'http://pypi.python.org/pypi/wallp/',
