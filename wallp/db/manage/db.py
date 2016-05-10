@@ -1,5 +1,5 @@
-from os.path import dirname, join as joinpath, basename, abspath, exists
-from os import makedirs
+from os.path import dirname, join as joinpath, basename, abspath, exists, isdir
+from os import makedirs, remove
 from shutil import copyfile
 from datetime import datetime
 import csv
@@ -45,7 +45,6 @@ class DB:
 		response = None
 
 		if not exists(const.db_path):
-			warnings.filterwarnings('ignore', category=UserWarning, module='.*alembic.*')
 			self.upgrade()
 			response = 'database created'
 		else:
@@ -153,6 +152,8 @@ class DB:
 
 		script = ScriptDirectory.from_config(config)
 
+		warnings.filterwarnings('ignore', category=UserWarning, module='.*alembic.*')
+
 		def upgrade(rev, context):
 			return script._upgrade_revs(dest_rev, rev)
 
@@ -171,6 +172,9 @@ class DB:
 	def backup(self, dest_path=None):
 		if dest_path is None:
 			dest_path = dirname(const.db_path)
+		else:
+			if not isdir(dest_path):
+				raise ManageDBError('%s is not a valid directory'%dest_path)
 
 		db_path = const.db_path
 
@@ -190,4 +194,12 @@ class DB:
 
 
 	def reset(self):
-		pass
+		db_session = DBSession()
+		db_session.close()
+
+		db_path = const.db_path
+		remove(db_path)
+
+		self.upgrade()
+		self.insert_data()
+

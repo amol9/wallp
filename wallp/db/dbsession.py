@@ -38,7 +38,10 @@ class DBSession():
 
 
 	def close(self):
+		engine = self.instance.bind
 		self.instance.close()
+		engine.dispose()
+
 		DBSession.instance = None
 		DBSession.session_class = None
 
