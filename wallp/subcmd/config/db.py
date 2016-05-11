@@ -30,7 +30,7 @@ class DbSubSubcommands(DbSubcommand):
 		'''Reset the database.
 		**WARNING** all custom settings, image history, etc. will be lost.'''
 
-		choice = input('WARNING: all custom settings, image history, etc. will be lost.\n' +
+		choice = input('WARNING: ALL CUSTOM SETTINGS, IMAGE HISTORY, ETC. WILL BE LOST.\n' +
 				'Are you sure you want to reset the db? [y/N]: ')
 		if choice == 'y':
 			backup_db_path = self.exc_call(self._db.reset)
