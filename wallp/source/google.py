@@ -92,8 +92,9 @@ class Google(Source):
 		
 	def extract_results(self, response):
 		etree = self.get_etree(response)
-		result_div_path = './/div[@class=\'rg_di rg_el ivg-i\']'
+		result_div_path = './/div[@class=\'rg_di rg_bx rg_el ivg-i\']'
 
+		import pdb; pdb.set_trace()
 		for div in etree.findall(result_div_path):
 			meta_div = div.find(".//div[@class='rg_meta']")
 
