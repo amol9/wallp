@@ -31,6 +31,7 @@ class Google(Source):
 	db		= False
 	gen		= False
 
+	host_url	= "https://www.google.com"
 	search_base_url = "https://www.google.com/search?tbm=isch&"
 	colors 		= ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown']
 	user_agent 	= 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0'
@@ -53,7 +54,7 @@ class Google(Source):
 		if not self._images.available():
 			self.search(params)
 
-		return self._http.download_image(self._images, self._trace)
+		return self._http.download_image(self._images, self._trace, headers={'User-Agent': self.user_agent, 'Referer': self.host_url})
 
 
 	def search(self, params):
