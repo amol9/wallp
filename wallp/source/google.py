@@ -11,6 +11,7 @@ from .images import Images
 from .http_helper import HttpHelper
 from .trace import Trace
 from .image import Image
+from .filters.fansshare import FansshareFilter
 
 
 class GoogleParams(SourceParams):
@@ -48,6 +49,9 @@ class Google(Source):
 
 		self._trace = Trace()
 		self._images = Images(params, cache=True, cache_timeout='1d', trace=self._trace)
+
+		fansshare_filter = FansshareFilter(referer=self.host_url)
+		self._images.add_select_filter(fansshare_filter.filter)
 
 		self._http = HttpHelper()
 

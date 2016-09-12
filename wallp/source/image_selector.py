@@ -139,3 +139,8 @@ class ImageSelector:
 	def add_filter(self, fl, retry=None, msg=None):
 		self._filters.append((fl, retry, msg))
 
+
+	def add_filter_class(self, flc, retry=None, msg=None):
+		fli = flc()
+		self._filters.append((fli.filter, retry, msg))
+
