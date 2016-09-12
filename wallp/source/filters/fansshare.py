@@ -22,7 +22,8 @@ class FansshareFilter:
 			return True
 
 		http = HttpHelper()
-		response = http.get(image.context_url, msg='getting fansshare page', headers={'User-Agent': self.user_agent, 'Referer': self._referer})
+		response = http.get(image.context_url, msg='getting fansshare page', 
+				headers={'User-Agent': self.user_agent, 'Referer': self._referer}, verbosity=5)
 
 		url = self.get_image_url(response)
 		if url is not None and len(url) > 10:

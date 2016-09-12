@@ -19,12 +19,12 @@ except ConfigError as e:
 httprequest = HttpRequest(global_options=http_global_options)
 
 
-def get(url, save_filepath=None, open_file=None, callbacks=None, msg=None, headers=None, max_content_length=None, save_to_temp_file=False):
+def get(url, save_filepath=None, open_file=None, callbacks=None, msg=None, headers=None, max_content_length=None, save_to_temp_file=False, verbosity=1):
 	roptions = RequestOptions(save_filepath=save_filepath, open_file=open_file, headers=headers,
 			save_to_temp_file=save_to_temp_file, max_content_length=max_content_length)
 
 	if msg is not None:
-		cb = printer.printf(msg, '?', progress=True)
+		cb = printer.printf(msg, '?', progress=True, verbosity=verbosity)
 		callbacks = cb
 
 	if callbacks is not None:

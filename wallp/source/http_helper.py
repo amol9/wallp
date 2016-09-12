@@ -16,9 +16,9 @@ class HttpHelper:
 		pass
 
 
-	def get(self, url, msg=None, headers=None):
+	def get(self, url, msg=None, headers=None, verbosity=1):
 		try:
-			return get(url, msg=msg, headers=headers)
+			return get(url, msg=msg, headers=headers, verbosity=verbosity)
 		except HttpError as e:
 			log.error(e)
 			raise SourceError(str(e))
