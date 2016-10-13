@@ -4,7 +4,7 @@ from redlib.api.system import sys_command, CronDBus, CronDBusError, is_linux, is
 
 from ..util.logger import log
 from . import Desktop
-from . import gnome_desktop
+from . import gnome_desktop, i3_desktop
 if is_windows():
 	from .windows_desktop import WindowsDesktop
 
