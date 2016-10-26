@@ -38,17 +38,13 @@ class KdePlasmaDesktop(Desktop):
 	plasma_desktop_config_file = '~/.kde/share/config/plasma-desktop-appletsrc'
 
 	@staticmethod
-	def supports(gdmsession):
-		return gdmsession == 'kde-plasma'
+	def supports(gdmsession, xdg_current_desktop):
+		return (xdg_current_desktop is not None and xdg_current_desktop == 'KDE') or \
+			(gdmsession is not None and gdmsession == 'kde-plasma')
 
 
 	def __init__(self):
-		self._crondbus = CronDBus(vars=['GDMSESSION', 'DISPLAY'])
-		self._crondbus.setup()
-
-
-	def __del__(self):
-		self._crondbus.remove()
+		pass
 
 
 	def get_size(self):

@@ -18,16 +18,13 @@ class GnomeDesktop(Desktop):
 	}
 
 	@staticmethod
-	def supports(gdmsession):
-		return gdmsession.startswith('ubuntu') or gdmsession.startswith('gnome')
+	def supports(gdmsession, xdg_current_desktop):
+		return (xdg_current_desktop is not None and xdg_current_desktop == 'Unity') or \
+			(gdmsession is not None and (gdmsession.startswith('ubuntu') or gdmsession.startswith('gnome')))
+	
 
 	def __init__(self):
-		self._crondbus = CronDBus(vars=['GDMSESSION', 'DISPLAY'])
-		self._crondbus.setup()
-
-
-	def __del__(self):
-		self._crondbus.remove()
+		pass
 
 
 	def get_size(self):
