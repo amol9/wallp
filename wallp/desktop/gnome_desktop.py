@@ -13,13 +13,13 @@ class GnomeDesktop(Desktop):
 		WPStyle.TILED : 	'wallpaper',
 		WPStyle.CENTERED : 	'centered',
 		WPStyle.SCALED : 	'scaled',
-		WPStyle.STRETCHED : 	'strecthed',
+		WPStyle.STRETCHED : 'strecthed',
 		WPStyle.ZOOM : 		'zoom'
 	}
 
 	@staticmethod
 	def supports(gdmsession, xdg_current_desktop):
-		return (xdg_current_desktop is not None and xdg_current_desktop == 'Unity') or \
+		return (xdg_current_desktop is not None and xdg_current_desktop.find('Unity') > -1) or \
 			(gdmsession is not None and (gdmsession.startswith('ubuntu') or gdmsession.startswith('gnome')))
 	
 
