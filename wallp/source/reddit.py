@@ -3,7 +3,7 @@ from os.path import join as joinpath
 import re
 
 import praw
-from praw.errors import InvalidSubreddit, NotFound
+#from praw.errors import InvalidSubreddit, NotFound
 from requests.exceptions import HTTPError, ConnectionError
 from giraf.api import Imgur as GImgur, ImgurError as GImgurError
 
@@ -169,8 +169,8 @@ class Reddit(Source):
 		try:
 			return method(*args, **kwargs)
 
-		except (HTTPError, ConnectionError, InvalidSubreddit, NotFound) as e:
-			msg = 'invalid subreddit' if type(e) == InvalidSubreddit else str(e)
+		except (HTTPError, ConnectionError) as e: #, InvalidSubreddit, NotFound) as e:
+			msg = str(e) #'invalid subreddit' if type(e) == InvalidSubreddit else str(e)
 			log.error(msg)
 			raise SourceError(msg)
 

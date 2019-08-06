@@ -49,7 +49,7 @@ class DB:
 			response = 'database created'
 		else:
 			db_session = DBSession()
-			context = MigrationContext.configure(db_session.bind)
+			context = MigrationContext.configure(db_session.connection())
 			cur_rev = context.get_current_revision()
 
 			config_filepath = joinpath(dirname(self.script_location), 'alembic.ini')
