@@ -49,6 +49,7 @@ class DB:
 			response = 'database created'
 		else:
 			db_session = DBSession()
+			#import pdb; pdb.set_trace()
 			context = MigrationContext.configure(db_session.connection())
 			cur_rev = context.get_current_revision()
 
